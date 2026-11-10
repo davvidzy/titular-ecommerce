@@ -2,18 +2,68 @@
   "sections": {
     "hero": {
       "type": "image-banner",
-      "blocks": {
-        "heading": { "type": "heading", "settings": { "heading": "Welcome to your store" } },
-        "text": { "type": "text", "settings": { "text": "<p>Add your headline and shop link here.</p>" } },
-        "button": { "type": "button", "settings": { "button_label": "Shop now" } }
-      },
-      "block_order": ["heading", "text", "button"],
-      "settings": { "height": "medium", "text_alignment": "center" }
+      "settings": {
+        "eyebrow": "Escalação da temporada",
+        "button_label": "Ver lançamentos"
+      }
     },
-    "featured": {
+    "shortcuts": {
+      "type": "collection-list",
+      "blocks": {
+        "brasileirao": { "type": "collection", "settings": { "label": "Brasileirão" } },
+        "internacionais": { "type": "collection", "settings": { "label": "Internacionais" } },
+        "selecoes": { "type": "collection", "settings": { "label": "Seleções" } },
+        "retro": { "type": "collection", "settings": { "label": "Retrô" } }
+      },
+      "block_order": ["brasileirao", "internacionais", "selecoes", "retro"]
+    },
+    "clubs": {
+      "type": "club-list",
+      "blocks": {
+        "c1": { "type": "club" },
+        "c2": { "type": "club" },
+        "c3": { "type": "club" },
+        "c4": { "type": "club" },
+        "c5": { "type": "club" },
+        "c6": { "type": "club" },
+        "c7": { "type": "club" },
+        "c8": { "type": "club" }
+      },
+      "block_order": ["c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8"]
+    },
+    "best-sellers": {
       "type": "featured-collection",
-      "settings": { "heading": "Featured collection", "products_to_show": 4, "columns_desktop": 4 }
+      "settings": { "heading": "Mais vendidos", "products_to_show": 8 }
+    },
+    "versions": {
+      "type": "version-explainer",
+      "blocks": {
+        "fan": { "type": "version", "settings": { "version": "Torcedor", "text": "Tecido mais grosso, corte reto. Leve o tamanho que você usa." } },
+        "player": { "type": "version", "settings": { "version": "Jogador", "text": "Tecido leve e corte justo, igual ao do campo. Na dúvida, um número acima." } },
+        "retro": { "type": "version", "settings": { "version": "Retrô", "text": "Modelos clássicos refeitos, com corte largo dos anos 90." } }
+      },
+      "block_order": ["fan", "player", "retro"]
+    },
+    "reviews": {
+      "type": "reviews",
+      "blocks": {
+        "r1": { "type": "review" },
+        "r2": { "type": "review" },
+        "r3": { "type": "review" },
+        "r4": { "type": "review" }
+      },
+      "block_order": ["r1", "r2", "r3", "r4"]
+    },
+    "guarantees": {
+      "type": "guarantees",
+      "blocks": {
+        "pix": { "type": "item", "settings": { "icon": "pix", "title": "Pix", "text": "5% de desconto pagando no Pix." } },
+        "card": { "type": "item", "settings": { "icon": "card", "title": "Cartão", "text": "Até 6x sem juros." } },
+        "exchange": { "type": "item", "settings": { "icon": "exchange", "title": "Troca", "text": "Primeira troca de tamanho grátis." } },
+        "shipping": { "type": "item", "settings": { "icon": "truck", "title": "Prazo", "text": "Prazo calculado pelo CEP na página do produto." } }
+      },
+      "block_order": ["pix", "card", "exchange", "shipping"]
     }
   },
-  "order": ["hero", "featured"]
+  "order": ["hero", "shortcuts", "clubs", "best-sellers", "versions", "reviews", "guarantees"]
 }

@@ -1,204 +1,91 @@
 [
   {
     "name": "theme_info",
-    "theme_name": "Base Liquid",
-    "theme_version": "1.0.0",
-    "theme_author": "Team Lecdt",
+    "theme_name": "Titular",
+    "theme_version": "0.1.0",
+    "theme_author": "Titular",
     "theme_documentation_url": "https://lecdt.com",
     "theme_support_url": "https://lecdt.com"
   },
   {
-    "name": "t:settings_schema.logo.name",
+    "name": "Comercial",
     "settings": [
       {
-        "type": "image_picker",
-        "id": "logo",
-        "label": "t:settings_schema.logo.settings.logo.label"
+        "type": "paragraph",
+        "content": "Cores, fonte, espaçamento e logo vêm de brand/tokens.json e brand/logos. Não são editáveis aqui."
       },
       {
         "type": "range",
-        "id": "logo_width",
-        "min": 50,
-        "max": 300,
-        "step": 10,
-        "unit": "px",
-        "label": "t:settings_schema.logo.settings.logo_width.label",
-        "default": 120
-      },
-      {
-        "type": "image_picker",
-        "id": "favicon",
-        "label": "t:settings_schema.logo.settings.favicon.label",
-        "info": "t:settings_schema.logo.settings.favicon.info"
-      }
-    ]
-  },
-  {
-    "name": "t:settings_schema.colors.name",
-    "settings": [
-      {
-        "type": "header",
-        "content": "t:settings_schema.colors.settings.header__primary.content"
-      },
-      {
-        "type": "color",
-        "id": "color_background",
-        "label": "t:settings_schema.colors.settings.color_background.label",
-        "default": "#ffffff"
-      },
-      {
-        "type": "color",
-        "id": "color_text",
-        "label": "t:settings_schema.colors.settings.color_text.label",
-        "default": "#000000"
-      },
-      {
-        "type": "header",
-        "content": "t:settings_schema.colors.settings.header__secondary.content"
-      },
-      {
-        "type": "color",
-        "id": "color_background_contrast",
-        "label": "t:settings_schema.colors.settings.color_background_contrast.label",
-        "default": "#f2f3f8"
-      },
-      {
-        "type": "color",
-        "id": "color_text_contrast",
-        "label": "t:settings_schema.colors.settings.color_text_contrast.label",
-        "default": "#000000"
-      },
-      {
-        "type": "header",
-        "content": "t:settings_schema.colors.settings.header__accent.content"
-      },
-      {
-        "type": "color",
-        "id": "color_accent",
-        "label": "t:settings_schema.colors.settings.color_accent.label",
-        "default": "#ff0033"
-      },
-      {
-        "type": "color",
-        "id": "color_accent_text",
-        "label": "t:settings_schema.colors.settings.color_accent_text.label",
-        "default": "#ffffff"
-      },
-      {
-        "type": "header",
-        "content": "t:settings_schema.colors.settings.header__sale.content"
-      },
-      {
-        "type": "color",
-        "id": "color_sale",
-        "label": "t:settings_schema.colors.settings.color_sale.label",
-        "default": "#1cb744"
-      },
-      {
-        "type": "color",
-        "id": "color_border",
-        "label": "t:settings_schema.colors.settings.color_border.label",
-        "default": "#c2c2c2"
-      }
-    ]
-  },
-  {
-    "name": "t:settings_schema.typography.name",
-    "settings": [
-      {
-        "type": "header",
-        "content": "t:settings_schema.typography.settings.header__heading.content"
-      },
-      {
-        "type": "font_picker",
-        "id": "type_header_font",
-        "default": "assistant_n7",
-        "label": "t:settings_schema.typography.settings.type_header_font.label"
-      },
-      {
-        "type": "range",
-        "id": "heading_scale",
-        "min": 100,
-        "max": 150,
-        "step": 5,
+        "id": "pix_discount",
+        "min": 0,
+        "max": 20,
+        "step": 1,
         "unit": "%",
-        "label": "t:settings_schema.typography.settings.heading_scale.label",
-        "default": 100
-      },
-      {
-        "type": "header",
-        "content": "t:settings_schema.typography.settings.header__body.content"
-      },
-      {
-        "type": "font_picker",
-        "id": "type_body_font",
-        "default": "assistant_n4",
-        "label": "t:settings_schema.typography.settings.type_body_font.label"
+        "default": 5,
+        "label": "Desconto no Pix"
       },
       {
         "type": "range",
-        "id": "body_scale",
-        "min": 100,
-        "max": 130,
-        "step": 5,
-        "unit": "%",
-        "label": "t:settings_schema.typography.settings.body_scale.label",
-        "default": 100
+        "id": "installments_max",
+        "min": 1,
+        "max": 12,
+        "step": 1,
+        "default": 6,
+        "label": "Parcelas sem juros (máximo)"
+      },
+      {
+        "type": "number",
+        "id": "installment_min",
+        "default": 30,
+        "label": "Valor mínimo da parcela (R$)"
+      },
+      {
+        "type": "number",
+        "id": "free_shipping_threshold",
+        "default": 0,
+        "label": "Frete grátis a partir de (R$)",
+        "info": "0 desliga a barra de frete grátis no carrinho."
+      },
+      {
+        "type": "collection",
+        "id": "collection_best_sellers",
+        "label": "Coleção \"Mais vendidos\"",
+        "info": "Aparece quando a busca não encontra nada (nunca uma página vazia)."
       }
     ]
   },
   {
-    "name": "t:settings_schema.layout.name",
+    "name": "Páginas de ajuda",
     "settings": [
       {
-        "type": "range",
-        "id": "page_width",
-        "min": 1000,
-        "max": 1600,
-        "step": 20,
-        "unit": "px",
-        "label": "t:settings_schema.layout.settings.page_width.label",
-        "default": 1200
+        "type": "paragraph",
+        "content": "O conteúdo destas páginas também aparece no produto (modal do guia e acordeões)."
       },
       {
-        "type": "range",
-        "id": "spacing_sections",
-        "min": 0,
-        "max": 100,
-        "step": 4,
-        "unit": "px",
-        "label": "t:settings_schema.layout.settings.spacing_sections.label",
-        "default": 40
+        "type": "page",
+        "id": "page_size_guide",
+        "label": "Guia de tamanhos"
       },
       {
-        "type": "range",
-        "id": "buttons_radius",
-        "min": 0,
-        "max": 40,
-        "step": 2,
-        "unit": "px",
-        "label": "t:settings_schema.layout.settings.buttons_radius.label",
-        "default": 4
+        "type": "page",
+        "id": "page_versions",
+        "label": "Torcedor x Jogador"
       },
       {
-        "type": "range",
-        "id": "inputs_radius",
-        "min": 0,
-        "max": 40,
-        "step": 2,
-        "unit": "px",
-        "label": "t:settings_schema.layout.settings.inputs_radius.label",
-        "default": 4
+        "type": "page",
+        "id": "page_shipping",
+        "label": "Frete e prazos"
       },
       {
-        "type": "range",
-        "id": "media_radius",
-        "min": 0,
-        "max": 40,
-        "step": 2,
-        "unit": "px",
-        "label": "t:settings_schema.layout.settings.media_radius.label",
-        "default": 8
+        "type": "page",
+        "id": "page_exchanges",
+        "label": "Trocas e devoluções"
+      },
+      {
+        "type": "text",
+        "id": "whatsapp_number",
+        "label": "WhatsApp (só números, com DDI)",
+        "info": "Ex.: 5511999999999"
       }
     ]
   },
@@ -206,36 +93,10 @@
     "name": "t:settings_schema.product_cards.name",
     "settings": [
       {
-        "type": "select",
-        "id": "card_image_ratio",
-        "options": [
-          {
-            "value": "adapt",
-            "label": "t:settings_schema.product_cards.settings.card_image_ratio.options__1.label"
-          },
-          {
-            "value": "portrait",
-            "label": "t:settings_schema.product_cards.settings.card_image_ratio.options__2.label"
-          },
-          {
-            "value": "square",
-            "label": "t:settings_schema.product_cards.settings.card_image_ratio.options__3.label"
-          }
-        ],
-        "default": "portrait",
-        "label": "t:settings_schema.product_cards.settings.card_image_ratio.label"
-      },
-      {
-        "type": "checkbox",
-        "id": "card_show_vendor",
-        "default": false,
-        "label": "t:settings_schema.product_cards.settings.card_show_vendor.label"
-      },
-      {
         "type": "checkbox",
         "id": "card_show_second_image",
         "default": true,
-        "label": "t:settings_schema.product_cards.settings.card_show_second_image.label"
+        "label": "Mostrar costas da camisa no hover (desktop)"
       }
     ]
   },
@@ -243,25 +104,9 @@
     "name": "t:settings_schema.cart.name",
     "settings": [
       {
-        "type": "select",
-        "id": "cart_type",
-        "options": [
-          {
-            "value": "drawer",
-            "label": "t:settings_schema.cart.settings.cart_type.options__1.label"
-          },
-          {
-            "value": "page",
-            "label": "t:settings_schema.cart.settings.cart_type.options__2.label"
-          }
-        ],
-        "default": "drawer",
-        "label": "t:settings_schema.cart.settings.cart_type.label"
-      },
-      {
         "type": "checkbox",
         "id": "cart_show_note",
-        "default": true,
+        "default": false,
         "label": "t:settings_schema.cart.settings.cart_show_note.label"
       }
     ]
@@ -270,24 +115,14 @@
     "name": "t:settings_schema.social_media.name",
     "settings": [
       {
-        "type": "header",
-        "content": "t:settings_schema.social_media.settings.header__accounts.content"
-      },
-      {
         "type": "text",
         "id": "social_instagram_link",
-        "label": "t:settings_schema.social_media.settings.social_instagram_link.label",
-        "info": "t:settings_schema.social_media.settings.social_instagram_link.info"
+        "label": "t:settings_schema.social_media.settings.social_instagram_link.label"
       },
       {
         "type": "text",
-        "id": "social_facebook_link",
-        "label": "t:settings_schema.social_media.settings.social_facebook_link.label"
-      },
-      {
-        "type": "text",
-        "id": "social_linkedin_link",
-        "label": "t:settings_schema.social_media.settings.social_linkedin_link.label"
+        "id": "social_tiktok_link",
+        "label": "TikTok"
       }
     ]
   },

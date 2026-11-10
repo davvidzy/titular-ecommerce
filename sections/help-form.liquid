@@ -1,0 +1,91 @@
+{%- comment -%}
+  ============================================================
+  HELP FORM — rastrear pedido / pedir troca
+  ============================================================
+
+  TRABALHO:
+  - "tracking" (§3.6 Rastrear pedido): número do pedido + e-mail.
+  - "exchange" (fluxo §4.3): pedido + e-mail + item + novo tamanho.
+    Personalizadas não têm troca: o aviso aparece antes do form.
+
+  COMO FUNCIONA HOJE (esqueleto):
+  Usa o formulário de contato nativo do Shopify ({% form 'contact' %}),
+  que manda um e-mail para a loja. Loja fictícia, sem backend.
+  Fase 2 (rastreio) e Fase 3 (troca na conta): trocar por app de
+  rastreio / fluxo de devolução de pedidos do Shopify.
+{%- endcomment -%}
+{%- assign mode = section.settings.mode -%}
+<section class="section page-width help-form">
+  <h2 class="text-h2">{{ section.settings.heading | escape }}</h2>
+
+  {%- if mode == 'exchange' -%}
+    <p class="notice text-small">{% render 'icon', name: 'info' %}<span>{{ 'titular.personalization.no_exchange' | t }}</span></p>
+  {%- endif -%}
+
+  {%- form 'contact', id: section.id, class: 'stack' -%}
+    {%- if form.posted_successfully? -%}
+      <p class="notice notice--success text-body" tabindex="-1" autofocus>{% render 'icon', name: 'check' %}<span>{{ section.settings.success | escape }}</span></p>
+    {%- elsif form.errors -%}
+      <div class="notice notice--danger text-small" role="alert">{% render 'icon', name: 'alert' %}{{ form.errors | default_errors }}</div>
+    {%- endif -%}
+
+    <input type="hidden" name="contact[Assunto]" value="{% if mode == 'exchange' %}Troca{% else %}Rastreio{% endif %}">
+
+    <div class="field">
+      <label class="text-small" for="{{ section.id }}-order">{{ 'titular.help.order_number' | t }}</label>
+      <input class="field__input" id="{{ section.id }}-order" type="text" name="contact[Pedido]" placeholder="#1001" required>
+    </div>
+    <div class="field">
+      <label class="text-small" for="{{ section.id }}-email">{{ 'templates.contact.form.email' | t }}</label>
+      <input class="field__input" id="{{ section.id }}-email" type="email" name="contact[email]" autocomplete="email" required>
+    </div>
+
+    {%- if mode == 'exchange' -%}
+      <div class="field">
+        <label class="text-small" for="{{ section.id }}-item">{{ 'titular.help.item' | t }}</label>
+        <input class="field__input" id="{{ section.id }}-item" type="text" name="contact[Item]" required>
+      </div>
+      <div class="field">
+        <label class="text-small" for="{{ section.id }}-size">{{ 'titular.help.new_size' | t }}</label>
+        <select class="select__select" id="{{ section.id }}-size" name="contact[Novo tamanho]">
+          {%- assign size_list = section.settings.sizes | split: ',' -%}
+          {%- for size in size_list -%}
+            <option value="{{ size | strip }}">{{ size | strip }}</option>
+          {%- endfor -%}
+        </select>
+      </div>
+    {%- endif -%}
+
+    <button type="submit" class="button text-label">{{ section.settings.button | escape }}</button>
+  {%- endform -%}
+</section>
+
+{% stylesheet %}
+  .help-form { max-width: calc(70ch + var(--page-gutter) * 2); }
+  .help-form > * + * { margin-top: var(--space-6); }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Formulário de ajuda",
+  "tag": "section",
+  "class": "section-help-form",
+  "settings": [
+    {
+      "type": "select",
+      "id": "mode",
+      "label": "Tipo",
+      "default": "tracking",
+      "options": [
+        { "value": "tracking", "label": "Rastrear pedido" },
+        { "value": "exchange", "label": "Pedir troca" }
+      ]
+    },
+    { "type": "text", "id": "heading", "label": "Título", "default": "Rastrear pedido" },
+    { "type": "text", "id": "button", "label": "Botão", "default": "Enviar" },
+    { "type": "text", "id": "success", "label": "Mensagem de sucesso", "default": "Recebemos. Você recebe a resposta por e-mail em até 1 dia útil." },
+    { "type": "text", "id": "sizes", "label": "Tamanhos (troca)", "default": "P, M, G, GG, 2GG, 3GG" }
+  ],
+  "presets": [{ "name": "Formulário de ajuda" }]
+}
+{% endschema %}

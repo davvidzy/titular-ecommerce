@@ -3,7 +3,14 @@
   "name": "t:section_groups.footer.name",
   "sections": {
     "footer": {
-      "type": "footer"
+      "type": "footer",
+      "blocks": {
+        "brand": { "type": "brand" },
+        "help": { "type": "menu", "settings": { "heading": "Ajuda", "menu": "ajuda" } },
+        "about": { "type": "menu", "settings": { "heading": "Titular", "menu": "footer" } },
+        "contact": { "type": "contact" }
+      },
+      "block_order": ["brand", "help", "about", "contact"]
     }
   },
   "order": ["footer"]

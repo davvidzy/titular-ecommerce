@@ -1,20 +1,17 @@
 /*
   ============================================================
-  index.css — Ponto de entrada do CSS do tema
+  index.css — ponto de entrada do CSS do tema
   ============================================================
 
-  O QUE FAZ:
-  Este é o unico arquivo CSS carregado pelo layout (theme.liquid).
-  Ele importa os demais na ordem correta:
-  1. fontes.css     — carregamento de fontes / @font-face
-  2. normalizar.css — reset e normalizacao entre navegadores
-  3. base.css       — estilos base, utilitarios e componentes compartilhados
+  Ordem de carga no layout (theme.liquid):
+  1. tokens.css     — tokens da marca (cópia de brand/tokens.css; não editar)
+  2. index.css      — este arquivo:
+     a. normalizar.css — reset entre navegadores
+     b. base.css       — layout e componentes compartilhados
+  3. css-variables  — aliases legados (snippet)
 
-  OBSERVACOES:
-  A ordem dos @import importa: fontes primeiro, depois o reset e por
-  ultimo os estilos base (que dependem do reset ja aplicado).
-  Para adicionar CSS global novo, prefira base.css em vez deste arquivo.
+  CSS específico de cada section fica no {% stylesheet %} da própria
+  section. Fonte: Archivo, carregada pelo @import de tokens.css.
 */
-@import url('./fontes.css');
 @import url('./normalizar.css');
 @import url('./base.css');

@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "nav": { "type": "help-nav" },
+    "main": { "type": "main-page" },
+    "form": {
+      "type": "help-form",
+      "settings": { "mode": "tracking", "heading": "Rastrear pedido", "button": "Rastrear" }
+    }
+  },
+  "order": ["nav", "main", "form"]
+}

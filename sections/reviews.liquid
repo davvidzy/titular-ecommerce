@@ -1,0 +1,96 @@
+{%- comment -%}
+  ============================================================
+  REVIEWS — avaliações (Produto #11 e Home #8)
+  ============================================================
+
+  TRABALHO (docs/arquitetura-informacao.md §3.1 #11 e §3.2 #8):
+  Prova social / confiança para quem não conhece a marca.
+
+  REGRA: só avaliações reais. Na loja fictícia, os blocks "review"
+  são placeholders e aparecem marcados como EXEMPLO. Quando houver
+  app de avaliações (Fase 3), use o block "@app" e apague os exemplos.
+{%- endcomment -%}
+<section class="section page-width reviews" data-section-id="{{ section.id }}">
+  <div class="section__header">
+    <h2 class="text-h2">{{ section.settings.heading | escape }}</h2>
+  </div>
+
+  {%- assign has_examples = false -%}
+  {%- for block in section.blocks -%}
+    {%- if block.type == 'review' -%}{%- assign has_examples = true -%}{%- endif -%}
+  {%- endfor -%}
+
+  {%- if has_examples -%}
+    <p class="placeholder-note text-small">{{ 'titular.placeholder.reviews' | t }}</p>
+  {%- endif -%}
+
+  <ul class="reviews__list" role="list">
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when '@app' -%}
+          <li>{% render block %}</li>
+        {%- when 'review' -%}
+          <li class="reviews__item stack--sm" {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank -%}
+              <div class="media" style="--ratio: 1;">
+                {{ block.settings.image | image_url: width: 600 | image_tag: loading: 'lazy', widths: '300, 600', sizes: '(min-width: 990px) 25vw, 80vw' }}
+              </div>
+            {%- endif -%}
+            <p class="reviews__stars" aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: block.settings.rating, rating_max: 5 }}">
+              {%- for i in (1..block.settings.rating) -%}{% render 'icon', name: 'star' %}{%- endfor -%}
+            </p>
+            <blockquote class="text-body">{{ block.settings.text | escape }}</blockquote>
+            <p class="text-small muted">{{ block.settings.author | escape }}{% if block.settings.product_label != blank %} · {{ block.settings.product_label | escape }}{% endif %}</p>
+          </li>
+      {%- endcase -%}
+    {%- endfor -%}
+  </ul>
+</section>
+
+{% stylesheet %}
+  .reviews .placeholder-note { margin-bottom: var(--space-6); }
+  .reviews__list {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 80%;
+    gap: var(--space-4);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .reviews__item { scroll-snap-align: start; }
+  .reviews__stars { display: flex; gap: var(--space-1); }
+  @media (min-width: 990px) {
+    .reviews__list { grid-auto-flow: row; grid-template-columns: repeat(4, 1fr); gap: var(--space-6); overflow: visible; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Avaliações",
+  "tag": "section",
+  "class": "section-reviews",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Título", "default": "Quem já vestiu" }
+  ],
+  "blocks": [
+    { "type": "@app" },
+    {
+      "type": "review",
+      "name": "Avaliação (exemplo)",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Foto do cliente" },
+        { "type": "range", "id": "rating", "label": "Nota", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "textarea", "id": "text", "label": "Texto", "default": "Tamanho certinho seguindo o guia. Chegou em 6 dias úteis." },
+        { "type": "text", "id": "author", "label": "Nome", "default": "Cliente de exemplo" },
+        { "type": "text", "id": "product_label", "label": "Produto", "default": "Torcedor M" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Avaliações",
+      "blocks": [{ "type": "review" }, { "type": "review" }, { "type": "review" }, { "type": "review" }]
+    }
+  ]
+}
+{% endschema %}

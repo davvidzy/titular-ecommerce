@@ -1,0 +1,7 @@
+# Arquivos do projeto que não fazem parte do tema Shopify
+brand/
+docs/
+scripts/
+CLAUDE.md
+README.md
+*.zip

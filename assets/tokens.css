@@ -1,0 +1,40 @@
+/* Titular: gerado de brand/tokens.json. Não editar à mão; edite o JSON e regenere. */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;700;800&display=swap");
+
+:root {
+  --surface: #FFFFFF;  /* Fundo de todas as páginas. */
+  --surface-alt: #F5F5F5;  /* Fundo atrás das fotos de produto e de blocos de destaque. ink e ink-muted passam AAA sobre ele. */
+  --ink: #0A0A0A;  /* Texto principal, logo, fundo do botão primário. 19,8:1 sobre surface. */
+  --ink-muted: #525252;  /* Texto secundário, legendas, preço antigo. 7,8:1 sobre surface, 7,2:1 sobre surface-alt. */
+  --ink-inverse: #FFFFFF;  /* Texto sobre ink (botão primário, faixa de aviso, selo de desconto). */
+  --ink-disabled: #A3A3A3;  /* Texto de item esgotado ou desabilitado. Sempre acompanhado de rótulo 'Esgotado'. */
+  --line: #E5E5E5;  /* Divisórias decorativas entre seções e itens de lista. Não usar como borda de controle. */
+  --line-strong: #767676;  /* Borda de campos, seletor de tamanho e botão secundário. 4,5:1, acima do mínimo de 3:1 para componentes. */
+  --focus: #0A0A0A;  /* Anel de foco de 2px com 2px de afastamento em todo elemento interativo. */
+  --danger: #A30F0F;  /* Erro de formulário e aviso de estoque crítico, sempre com ícone. 8,0:1 sobre surface. */
+  --success: #0D6630;  /* Confirmação (pedido feito, cupom aplicado), sempre com ícone. 7,1:1 sobre surface. */
+  --font-sans: "Archivo", system-ui, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-12: 48px;
+  --space-24: 96px;
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius-pill: 999px;
+}
+
+.text-display { font-family: var(--font-sans); font-size: 56px; line-height: 56px; font-weight: 800; letter-spacing: -0.02em; text-transform: uppercase; }  /* Títulos de banner e hero. Maiúsculas. */
+.text-h1 { font-family: var(--font-sans); font-size: 40px; line-height: 44px; font-weight: 800; letter-spacing: -0.01em; text-transform: uppercase; }  /* Título de página e coleção. Maiúsculas. */
+.text-h2 { font-family: var(--font-sans); font-size: 28px; line-height: 34px; font-weight: 700; }  /* Título de seção. */
+.text-h3 { font-family: var(--font-sans); font-size: 20px; line-height: 28px; font-weight: 700; }  /* Nome do produto no card e subtítulos. */
+.text-body-lg { font-family: var(--font-sans); font-size: 18px; line-height: 29px; font-weight: 400; max-width: 70ch; }  /* Descrição de produto, máximo 70 caracteres por linha. */
+.text-body { font-family: var(--font-sans); font-size: 16px; line-height: 26px; font-weight: 400; max-width: 70ch; }  /* Texto padrão. */
+.text-small { font-family: var(--font-sans); font-size: 14px; line-height: 22px; font-weight: 400; }  /* Legendas, detalhes de entrega. */
+.text-label { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }  /* Rótulos curtos, selos e navegação. Maiúsculas, +0,08em. */
+.text-price { font-family: var(--font-sans); font-size: 20px; line-height: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }  /* Preço, sempre com tabular-nums. */
+
+/* Foco visível em todo elemento interativo (WCAG AAA) */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+body { background: var(--surface); color: var(--ink); font-family: var(--font-sans); }

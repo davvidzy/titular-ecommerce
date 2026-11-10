@@ -1,200 +1,371 @@
 /*
   ============================================================
-  base.css — Estilos base, utilitarios e componentes compartilhados
+  base.css — fundação de layout e componentes compartilhados
   ============================================================
 
   O QUE FAZ:
-  Reune os estilos globais reutilizaveis do tema:
-  - Utilitarios de acessibilidade (.visually-hidden, skip link,
-    foco visivel para teclado / WCAG, alvos de toque de 44px).
-  - Container de largura de pagina (.page-width).
-  - Componentes compartilhados: botoes (.button), campos de
-    formulario (.field__input), grade e card de produto
-    (.product-grid, .card-product__*), texto rico (.rte).
+  Estrutura (esqueleto) do site da Titular: container, ritmo entre
+  seções, botões, campos, selos, grade e card de produto, gaveta,
+  modal, acordeão, chips e avisos. Só usa tokens de assets/tokens.css
+  (cópia de brand/tokens.css). Tipografia vem das classes .text-*
+  aplicadas no HTML, não daqui.
 
-  OBSERVACOES:
-  Todas as cores e raios usam variaveis CSS do tema com fallback
-  (ex: var(--color-accent, #000)), definidas em
-  snippets/css-variables.liquid.
-  Breakpoint mobile em 1000px. Alvos interativos respeitam o
-  minimo de 44px (WCAG 2.5.5).
+  BREAKPOINTS (mobile first):
+  - base: 390px (celular)
+  - 750px: tablet
+  - 990px: desktop (adaptação)
+
+  OBSERVAÇÕES:
+  --page-max e --header-height não existem em brand/tokens.json.
+  São valores de layout candidatos a token; se virarem token, mova
+  para o JSON e regenere.
 */
 
-/* Utilitarios de acessibilidade e estilos de componentes compartilhados */
+:root {
+  --page-max: 1440px;   /* candidato a token: largura máxima do conteúdo */
+  --drawer-max: 440px;  /* candidato a token: largura da gaveta lateral */
+  --tap: 44px;          /* área de toque mínima (regra de acessibilidade) */
+  --page-gutter: var(--space-6);
+  --section-gap: var(--space-12);
+}
+
+@media (min-width: 990px) {
+  :root {
+    --page-gutter: var(--space-12);
+    --section-gap: var(--space-24);
+  }
+}
+
+/* ---------- Base ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img, svg, video { display: block; max-width: 100%; height: auto; }
+a { color: inherit; }
+h1, h2, h3, h4, p, ul, ol, figure, blockquote, dl, dd { margin: 0; }
+ul[role="list"], ol[role="list"] { list-style: none; padding: 0; }
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+/* ---------- Acessibilidade ---------- */
 
 .visually-hidden {
   position: absolute !important;
-  overflow: hidden;
   width: 1px;
   height: 1px;
   margin: -1px;
   padding: 0;
-  border: 0;
+  overflow: hidden;
   clip: rect(0 0 0 0);
-  word-wrap: normal !important;
+  border: 0;
+  white-space: nowrap;
 }
 
 .skip-to-content-link {
   position: absolute;
-  top: -100px;
-  left: 0;
-  z-index: 9999;
-  padding: 12px 20px;
-  color: var(--color-accent-text, #fff);
-  background-color: var(--color-accent, #000);
-  border-radius: 0 0 var(--buttons-radius, 4px) 0;
-  transition: top 0.15s ease;
-}
-
-.skip-to-content-link:focus {
   top: 0;
+  left: 0;
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  color: var(--ink-inverse);
+  background: var(--ink);
+  transform: translateY(-120%);
 }
+.skip-to-content-link:focus { transform: none; }
 
-/* Visible focus state for keyboard users (WCAG) */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-summary:focus-visible,
-[tabindex]:focus-visible {
-  outline: 2px solid var(--color-accent, #000);
-  outline-offset: 2px;
-}
+summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.focus-none:focus { outline: none; }
 
-.focus-none:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-/* Page width container */
-.page-width {
-  width: 100%;
-  max-width: var(--page-width, 1200px);
-  margin: 0 auto;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
-
-/* Shared button */
-.button,
-button.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 12px 24px;
-  font-family: var(--font-heading-family);
-  font-size: var(--f2);
-  color: var(--color-accent-text, #fff);
-  background-color: var(--color-accent, #000);
-  border: 1px solid var(--color-accent, #000);
-  border-radius: var(--buttons-radius, 4px);
-  cursor: pointer;
-  text-decoration: none;
-  transition: opacity 0.15s ease;
-}
-
-.button:hover {
-  opacity: 0.85;
-}
-
-.button--secondary {
-  color: var(--color-text, #000);
-  background-color: transparent;
-  border-color: var(--color-border, #c2c2c2);
-}
-
-.button[disabled],
-.button[aria-disabled="true"] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Shared form inputs */
-.field__input,
-.select__select,
-textarea.field__input {
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 12px;
-  font-family: var(--font-body-family);
-  font-size: var(--f2);
-  color: var(--color-text, #000);
-  background-color: var(--color-background, #fff);
-  border: 1px solid var(--color-border, #c2c2c2);
-  border-radius: var(--inputs-radius, 4px);
-  box-sizing: border-box;
-}
-
-.field__label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: var(--f1);
-}
-
-/* Minimum touch target for interactive icons (WCAG 2.5.5) */
 .tap-target {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--tap);
+  min-height: var(--tap);
 }
 
-/* Product grid */
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
-  gap: 24px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
+/* ---------- Layout ---------- */
 
-@media screen and (max-width: 1000px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-}
-
-/* Product card */
-.card-product__link { text-decoration: none; color: inherit; display: block; }
-.card-product__media {
-  position: relative;
+.page-width {
   width: 100%;
-  overflow: hidden;
-  border-radius: var(--media-radius, 8px);
-  background-color: var(--color-background-contrast, #f2f3f8);
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
 }
-.card-product__image {
+
+.section { margin-block: var(--section-gap); }
+.section--flush-top { margin-top: 0; }
+.section--alt { background: var(--surface-alt); padding-block: var(--section-gap); margin-block: 0; }
+
+.section__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.stack > * + * { margin-top: var(--space-4); }
+.stack--sm > * + * { margin-top: var(--space-2); }
+.stack--lg > * + * { margin-top: var(--space-6); }
+
+.cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+
+.muted { color: var(--ink-muted); }
+
+/* ---------- Botões ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  padding: 0 var(--space-6);
+  color: var(--ink-inverse);
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  cursor: pointer;
+}
+.button--secondary { color: var(--ink); background: var(--surface); border-color: var(--line-strong); }
+.button--full { width: 100%; }
+.button--link {
+  min-height: var(--tap);
+  padding: 0;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.button[disabled], .button[aria-disabled="true"] {
+  color: var(--ink-disabled);
+  background: var(--surface-alt);
+  border-color: var(--line);
+  cursor: not-allowed;
+}
+.button[aria-busy="true"] { cursor: progress; }
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* ---------- Campos ---------- */
+
+.field { display: flex; flex-direction: column; gap: var(--space-2); }
+.field__label { color: var(--ink); }
+.field__input,
+.select__select {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+textarea.field__input { padding-block: var(--space-2); min-height: calc(var(--tap) * 3); }
+.field__input[aria-invalid="true"] { border-color: var(--danger); }
+.field__error { display: flex; gap: var(--space-1); color: var(--danger); }
+
+.inline-form { display: flex; gap: var(--space-2); }
+.inline-form .field__input { flex: 1; min-width: 0; }
+
+/* ---------- Selos ---------- */
+
+/* Selo de versão (Torcedor, Jogador, Retrô): retângulo com borda. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+
+/* Selo curto (Novo, -20%): pílula preta. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  color: var(--ink-inverse);
+  background: var(--ink);
+  border-radius: var(--radius-pill);
+}
+
+/* ---------- Avisos de estado (sempre com ícone) ---------- */
+
+.notice { display: flex; align-items: flex-start; gap: var(--space-2); }
+.notice svg { flex: none; }
+.notice--danger { color: var(--danger); }
+.notice--success { color: var(--success); }
+
+/* Marcador de conteúdo de exemplo (loja fictícia / esqueleto). */
+.placeholder-note {
+  padding: var(--space-4);
+  color: var(--ink-muted);
+  border: 1px dashed var(--line-strong);
+}
+
+/* ---------- Mídia ---------- */
+
+.media {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-alt);
+  border-radius: var(--radius-none);
+  aspect-ratio: var(--ratio, 3 / 4);
+}
+.media > img,
+.media > svg,
+.media > video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.card-product__image--secondary { opacity: 0; transition: opacity 0.25s ease; }
-.card-product:hover .card-product__image--secondary { opacity: 1; }
-.card-product__badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 3px 8px;
-  font-size: var(--f0, 0.7rem);
-  text-transform: uppercase;
-  color: var(--color-accent-text, #fff);
-  background-color: var(--color-sale, #1cb744);
-  border-radius: 4px;
-}
-.card-product__badge--sold-out { background-color: var(--color-border, #c2c2c2); color: var(--color-text, #000); }
-.card-product__info { padding: 12px 4px; }
-.card-product__vendor { display: block; font-size: var(--f0); opacity: 0.6; margin-bottom: 4px; }
-.card-product__title { font-size: var(--f2); font-weight: normal; margin-bottom: 6px; }
-.price--card { font-size: var(--f2); }
+.media--contain > img { object-fit: contain; }
 
-/* Rich text content (RTE) shared styles */
-.rte a { color: var(--color-accent); }
-.rte img { max-width: 100%; height: auto; border-radius: var(--media-radius); }
-.rte ul, .rte ol { padding-left: 1.5em; }
+/* ---------- Grade e card de produto ---------- */
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-4);
+}
+@media (min-width: 990px) {
+  .product-grid { grid-template-columns: repeat(var(--grid-columns, 4), minmax(0, 1fr)); gap: var(--space-6); }
+}
+
+.card-product { position: relative; }
+.card-product__link { display: block; text-decoration: none; }
+.card-product__link::after { content: ''; position: absolute; inset: 0; }
+.card-product__image--secondary { opacity: 0; }
+@media (hover: hover) and (min-width: 990px) {
+  .card-product:hover .card-product__image--secondary { opacity: 1; }
+}
+.card-product__badges { position: absolute; top: var(--space-2); left: var(--space-2); display: flex; gap: var(--space-1); }
+.card-product__info { padding-top: var(--space-2); }
+.card-product__info > * + * { margin-top: var(--space-1); }
+
+/* ---------- Preço ---------- */
+
+.price { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); }
+.price__compare { color: var(--ink-muted); }
+
+/* ---------- Gaveta e modal (elemento <dialog>) ---------- */
+
+dialog { color: var(--ink); background: var(--surface); border: 0; padding: 0; }
+dialog::backdrop { background: var(--ink); opacity: 0.4; }
+
+.drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: 100%;
+  max-width: var(--drawer-max);
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+}
+.drawer--left { inset: 0 auto 0 0; }
+.drawer--full { max-width: none; }
+.drawer__inner { display: flex; flex-direction: column; height: 100%; }
+.drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-6);
+  border-bottom: 1px solid var(--line);
+}
+.drawer__body { flex: 1; overflow-y: auto; padding: var(--space-6); }
+.drawer__footer { padding: var(--space-6); border-top: 1px solid var(--line); }
+
+.modal {
+  width: calc(100% - var(--space-6) * 2);
+  max-width: 720px;
+  max-height: calc(100% - var(--space-12));
+}
+
+/* ---------- Acordeão (<details>) ---------- */
+
+.accordion { border-top: 1px solid var(--line); }
+.accordion__item { border-bottom: 1px solid var(--line); }
+.accordion__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--tap);
+  padding-block: var(--space-2);
+  cursor: pointer;
+  list-style: none;
+}
+.accordion__summary::-webkit-details-marker { display: none; }
+.accordion__item[open] .accordion__chevron { transform: rotate(180deg); }
+.accordion__content { padding-bottom: var(--space-4); }
+
+/* ---------- Chips (filtros ativos) ---------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+}
+
+/* ---------- Texto rico ---------- */
+
+.rte > * + * { margin-top: var(--space-4); }
+.rte a { text-decoration: underline; text-underline-offset: 2px; }
+.rte ul, .rte ol { padding-left: var(--space-6); }
+.rte table { width: 100%; border-collapse: collapse; }
+.rte th, .rte td { padding: var(--space-2); text-align: left; border-bottom: 1px solid var(--line); }
+.rte img { border-radius: var(--radius-none); }
+
+/* Tabelas de dados (guia de tamanhos, prazos) rolam na horizontal no celular. */
+.table-scroll { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.data-table th, .data-table td { padding: var(--space-2) var(--space-4) var(--space-2) 0; text-align: left; border-bottom: 1px solid var(--line); }
+
+/* ---------- Conta (templates/customers/*) ---------- */
+
+.account { padding-block: var(--space-12); }
+.account-page { max-width: calc(480px + var(--page-gutter) * 2); padding-block: var(--space-12); }
+.account-page__recover { display: none; }
+.account-page__recover:target { display: block; }
+
+/* ---------- Paginação ---------- */
+
+.pagination__list { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
+.pagination__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+}
+.pagination__item--current { border-color: var(--ink); }

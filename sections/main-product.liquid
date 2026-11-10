@@ -1,79 +1,76 @@
 {%- comment -%}
   ============================================================
-  MAIN PRODUCT — página nativa de produto (Shopify OS 2.0)
+  MAIN PRODUCT — página de produto  ← PRIORIDADE MÁXIMA
   ============================================================
 
-  O QUE FAZ:
-  Renderiza a página completa de um produto: galeria de mídias
-  (imagem, vídeo, vídeo externo e modelo 3D), seletor de variantes
-  e o formulário nativo de adicionar ao carrinho. O conteúdo é
-  montado por blocks configuráveis no editor de temas.
+  TRABALHO (docs/arquitetura-informacao.md §3.1). Ordem na página:
+   1. Galeria (frente, costas, tecido, etiqueta)  → fixa, fora dos blocks
+   2. Nome, clube, temporada e versão             → block "title"
+   3. Preço, desconto no Pix e parcelas           → block "price"
+   4. Seletor de tamanho + "Guia de tamanhos"     → block "size" (modal)
+   5. Recomendação de caimento                    → block "fit"
+   6. Personalização (opcional)                   → block "personalization"
+   7. Adicionar ao carrinho (fixo no mobile)      → block "buy_buttons"
+   8. Prazo por CEP                               → block "shipping"
+   9. Garantias                                   → block "guarantees"
+  10. Detalhes em acordeão                        → blocks "accordion"
+  11. Avaliações com foto                         → sections/reviews.liquid
+  12. Mesmo clube / outras versões                → sections/related-products.liquid
 
-  ONDE É USADA:
-  No template de produto (templates/product.json), como section
-  principal da página de produto.
+  DADOS (§5.1): só o tamanho é variante. O resto vem de metafields
+  product.metafields.titular.* (clube, liga, temporada, uniforme,
+  versao, modelagem, manga, personalizavel, prazo_dias).
+  Personalização = line item properties (Nome, Número, _personalizada).
 
-  PRINCIPAIS PARTES:
-  - product__media-wrapper: percorre product.media e monta cada
-    mídia conforme o media_type (image/video/external_video/model).
-  - {% form 'product' %}: form nativo com input hidden da variante
-    selecionada (current_variant) que dispara o add-to-cart.
-  - Loop de section.blocks (case block.type) que renderiza cada
-    parte: vendor, title, price, description, variant_picker,
-    quantity, buy_buttons, share, custom_liquid e blocos de app.
-  - variant_picker: gera swatches por opção e um <script
-    data-variant-json> com os dados das variantes (id, options,
-    available, mídia e HTML do preço) consumido pelo JS.
-  - Renders finais: 'product-media-gallery' e
-    'product-variant-selection' cuidam da interatividade (troca
-    de mídia ao selecionar variante, etc.).
-
-  OBSERVAÇÕES:
-  - A lógica JS de galeria/seleção de variante vive nos snippets
-    renderizados no fim do arquivo, não aqui.
-  - buy_buttons tem setting show_dynamic_checkout para exibir os
-    botões de checkout dinâmico (payment_button).
-  - Preço usa o snippet 'price'; ajuste lá para mudar formatação.
+  JS: assets/produto.js (variante, preço, personalização, CEP, galeria).
+  Sem JS: o form envia para /cart/add com a variante pré-selecionada.
 {%- endcomment -%}
-
 {%- liquid
   assign product_form_id = 'product-form-' | append: section.id
   assign current_variant = product.selected_or_first_available_variant
+  assign mf = product.metafields.titular
+  assign versao = mf.versao.value
 -%}
 
-<section class="product page-width" data-section-id="{{ section.id }}">
-  <div class="product__media-wrapper">
-    {%- if product.featured_media != blank -%}
-      <div class="product__media-list" id="ProductMedia-{{ section.id }}">
-        {%- for media in product.media -%}
-          <div class="product__media-item" data-media-id="{{ media.id }}">
-            {%- case media.media_type -%}
-              {%- when 'image' -%}
-                {{
-                  media
-                  | image_url: width: 1920
-                  | image_tag:
-                    loading: 'lazy',
-                    sizes: '(min-width: 1000px) 55vw, 100vw',
-                    widths: '360, 540, 720, 900, 1080, 1440, 1920',
-                    alt: media.alt | default: product.title | escape
-                }}
-              {%- when 'external_video' -%}
-                {{ media | external_video_tag }}
-              {%- when 'video' -%}
-                {{ media | video_tag: controls: true, image_size: '1920x' }}
-              {%- when 'model' -%}
-                {{ media | model_viewer_tag }}
-              {%- else -%}
-                {{ media | media_tag }}
-            {%- endcase -%}
-          </div>
-        {%- endfor -%}
-      </div>
-    {%- else -%}
-      <div class="product__media-item product__media-placeholder">
-        {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
-      </div>
+<section class="product page-width" data-section-id="{{ section.id }}" data-product-section>
+  {%- comment -%} 1. Galeria {%- endcomment -%}
+  <div class="product__gallery" aria-label="{{ 'products.product.media.gallery_viewer' | t }}">
+    <ul class="product__media-list" role="list" id="ProductMedia-{{ section.id }}" data-gallery>
+      {%- for media in product.media -%}
+        <li class="product__media-item media" style="--ratio: 3 / 4;" data-media-id="{{ media.id }}">
+          {%- case media.media_type -%}
+            {%- when 'image' -%}
+              {%- liquid
+                assign loading = 'lazy'
+                if forloop.first
+                  assign loading = 'eager'
+                endif
+              -%}
+              {{
+                media
+                | image_url: width: 1440
+                | image_tag:
+                  loading: loading,
+                  sizes: '(min-width: 990px) 30vw, 100vw',
+                  widths: '390, 600, 780, 1080, 1440',
+                  alt: media.alt | default: product.title | escape
+              }}
+            {%- when 'external_video' -%}
+              {{ media | external_video_tag }}
+            {%- when 'video' -%}
+              {{ media | video_tag: controls: true, image_size: '1080x' }}
+            {%- else -%}
+              {{ media | media_tag }}
+          {%- endcase -%}
+        </li>
+      {%- else -%}
+        <li class="product__media-item media" style="--ratio: 3 / 4;">
+          {{ 'product-1' | placeholder_svg_tag }}
+        </li>
+      {%- endfor -%}
+    </ul>
+    {%- if product.media.size > 1 -%}
+      <p class="product__media-counter text-label muted" aria-hidden="true" data-gallery-counter>1 / {{ product.media.size }}</p>
     {%- endif -%}
   </div>
 
@@ -81,143 +78,142 @@
     {%- form 'product',
       product,
       id: product_form_id,
-      class: 'product__form',
+      class: 'product__form stack--lg',
       novalidate: 'novalidate',
       data-type: 'add-to-cart-form'
     -%}
-      <input
-        type="hidden"
-        name="id"
-        value="{{ current_variant.id }}"
-        {% if current_variant.available == false %}disabled{% endif %}
-        class="product-variant-id"
-      >
+      <input type="hidden" name="id" value="{{ current_variant.id }}" class="product-variant-id">
 
       {%- for block in section.blocks -%}
         {%- case block.type -%}
           {%- when '@app' -%}
             {% render block %}
 
-          {%- when 'vendor' -%}
-            {%- if product.vendor != blank -%}
-              <p class="product__vendor" {{ block.shopify_attributes }}>{{ product.vendor }}</p>
-            {%- endif -%}
-
+          {%- comment -%} 2. Nome, clube, temporada e versão {%- endcomment -%}
           {%- when 'title' -%}
-            <h1 class="product__title" {{ block.shopify_attributes }}>{{ product.title | escape }}</h1>
-
-          {%- when 'price' -%}
-            <div class="product__price" {{ block.shopify_attributes }}>
-              {% render 'price', product: product, use_variant: true, show_compare: true %}
-              {%- if current_variant.unit_price_measurement -%}
-                <div class="product__unit-price">
-                  {{ current_variant.unit_price | money }}
-                  <span aria-hidden="true">/</span>
-                  {%- if current_variant.unit_price_measurement.reference_value != 1 -%}
-                    {{ current_variant.unit_price_measurement.reference_value }}
-                  {%- endif -%}
-                  {{ current_variant.unit_price_measurement.reference_unit }}
-                </div>
+            <div class="product__title stack--sm" {{ block.shopify_attributes }}>
+              {%- if versao != blank -%}
+                <span class="tag text-label">{{ versao | escape }}</span>
               {%- endif -%}
-              {%- if cart.taxes_included or shop.shipping_policy.body != blank -%}
-                <div class="product__tax caption">
-                  {%- if cart.taxes_included -%}
-                    {{ 'products.product.include_taxes' | t }}
-                  {%- endif -%}
-                  {%- if shop.shipping_policy.body != blank -%}
-                    {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
-                  {%- endif -%}
-                </div>
+              <h1 class="text-h2">{{ product.title | escape }}</h1>
+              {%- capture meta_line -%}
+                {%- if mf.clube != blank -%}{{ mf.clube.value | escape }}{%- endif -%}
+                {%- if mf.temporada != blank %} · {{ mf.temporada.value | escape }}{% endif -%}
+                {%- if mf.modelagem != blank %} · {{ mf.modelagem.value | escape }}{% endif -%}
+              {%- endcapture -%}
+              {%- if meta_line != blank -%}
+                <p class="text-small muted">{{ meta_line }}</p>
               {%- endif -%}
             </div>
 
-          {%- when 'description' -%}
-            {%- if product.description != blank -%}
-              <div class="product__description rte" {{ block.shopify_attributes }}>
-                {{ product.description }}
-              </div>
-            {%- endif -%}
+          {%- comment -%} 3. Preço, Pix e parcelas {%- endcomment -%}
+          {%- when 'price' -%}
+            <div class="product__price stack--sm" {{ block.shopify_attributes }} data-product-price>
+              {% render 'price', product: current_variant, use_variant: false, show_compare: true %}
+              {% render 'price-extras', amount: current_variant.price %}
+            </div>
 
-          {%- when 'variant_picker' -%}
+          {%- comment -%} 4. Tamanho + guia (modal) {%- endcomment -%}
+          {%- when 'size' -%}
             {%- unless product.has_only_default_variant -%}
-              <div class="product__variants" {{ block.shopify_attributes }}>
+              <div class="product__options stack" {{ block.shopify_attributes }}>
                 {%- for option in product.options_with_values -%}
-                  <fieldset class="product__option">
-                    <legend class="product__option-name">{{ option.name }}</legend>
-                    {%- for value in option.values -%}
-                      {%- liquid
-                        assign option_disabled = true
-                        for variant in product.variants
-                          if variant.available and variant.options[forloop.parentloop.index0] == value
-                            assign option_disabled = false
-                            break
-                          endif
-                        endfor
-                      -%}
-                      <label class="product__swatch {% if option.selected_value == value %}is-selected{% endif %} {% if option_disabled %}is-unavailable{% endif %}">
+                  <fieldset class="product__option" data-option-index="{{ forloop.index0 }}">
+                    <div class="product__option-head">
+                      <legend class="text-label">{{ option.name }}</legend>
+                      {%- if forloop.first and settings.page_size_guide != blank -%}
+                        <button type="button" class="button--link text-small" aria-haspopup="dialog" data-dialog-open="SizeGuide-{{ section.id }}">
+                          {% render 'icon', name: 'ruler' %}{{ 'titular.product.size_guide' | t }}
+                        </button>
+                      {%- endif -%}
+                    </div>
+                    <div class="size-picker">
+                      {%- for value in option.values -%}
+                        {%- liquid
+                          assign value_available = false
+                          for variant in product.variants
+                            if variant.available and variant.options[forloop.parentloop.index0] == value
+                              assign value_available = true
+                              break
+                            endif
+                          endfor
+                          assign input_id = 'Option-' | append: section.id | append: '-' | append: forloop.parentloop.index0 | append: '-' | append: forloop.index0
+                        -%}
                         <input
                           type="radio"
-                          name="{{ option.name }}"
+                          class="visually-hidden size-picker__input"
+                          id="{{ input_id }}"
+                          name="option-{{ forloop.parentloop.index0 }}"
                           value="{{ value | escape }}"
-                          class="visually-hidden"
                           {% if option.selected_value == value %}checked{% endif %}
-                          data-option-index="{{ forloop.parentloop.index0 }}"
                         >
-                        {%- if value.swatch.image -%}
-                          <span class="product__swatch-media" style="background-image:url({{ value.swatch.image | image_url: width: 100 }})"></span>
-                        {%- elsif value.swatch.color -%}
-                          <span class="product__swatch-color" style="background-color:{{ value.swatch.color }}"></span>
-                        {%- else -%}
-                          <span class="product__swatch-label">{{ value }}</span>
-                        {%- endif -%}
-                      </label>
-                    {%- endfor -%}
+                        <label for="{{ input_id }}" class="size-picker__label {% unless value_available %}is-sold-out{% endunless %}">
+                          <span class="text-label">{{ value }}</span>
+                          {%- unless value_available -%}
+                            <span class="text-small">{{ 'products.product.sold_out' | t }}</span>
+                          {%- endunless -%}
+                        </label>
+                      {%- endfor -%}
+                    </div>
                   </fieldset>
                 {%- endfor -%}
               </div>
-
-              <script type="application/json" data-variant-json>
-                [
-                  {%- for variant in product.variants -%}
-                    {
-                      "id": {{ variant.id | json }},
-                      "options": {{ variant.options | json }},
-                      "available": {{ variant.available | json }},
-                      "featured_media_id": {{ variant.featured_media.id | json }},
-                      "price_html": {%- capture variant_price_html -%}{% render 'price', product: variant, use_variant: false, show_compare: true %}{%- endcapture -%}{{ variant_price_html | strip_newlines | json }}
-                    }{%- unless forloop.last -%},{%- endunless -%}
-                  {%- endfor -%}
-                ]
-              </script>
             {%- endunless -%}
 
-          {%- when 'quantity' -%}
-            <div class="product__quantity" {{ block.shopify_attributes }}>
-              <label class="field__label" for="Quantity-{{ section.id }}">
-                {{ 'products.product.quantity.label' | t }}
-              </label>
-              <div class="quantity-selector">
-                <button type="button" class="quantity__button" name="minus" aria-label="{{ 'products.product.quantity.decrease' | t: product: product.title | escape }}">&minus;</button>
-                <input
-                  class="quantity__input"
-                  type="number"
-                  name="quantity"
-                  id="Quantity-{{ section.id }}"
-                  min="1"
-                  value="1"
-                  aria-label="{{ 'products.product.quantity.input_label' | t: product: product.title | escape }}"
-                >
-                <button type="button" class="quantity__button" name="plus" aria-label="{{ 'products.product.quantity.increase' | t: product: product.title | escape }}">&plus;</button>
-              </div>
-            </div>
+          {%- comment -%} 5. Recomendação de caimento (1 frase, pela versão) {%- endcomment -%}
+          {%- when 'fit' -%}
+            {%- liquid
+              case versao
+                when 'Jogador'
+                  assign fit_text = block.settings.fit_player
+                when 'Retrô'
+                  assign fit_text = block.settings.fit_retro
+                else
+                  assign fit_text = block.settings.fit_fan
+              endcase
+            -%}
+            {%- if fit_text != blank -%}
+              <p class="product__fit notice text-small" {{ block.shopify_attributes }}>
+                {% render 'icon', name: 'info' %}<span>{{ fit_text | escape }}</span>
+              </p>
+            {%- endif -%}
 
+          {%- comment -%} 6. Personalização: só se titular.personalizavel = true {%- endcomment -%}
+          {%- when 'personalization' -%}
+            {%- if mf.personalizavel.value == true or request.design_mode -%}
+              <div class="product__personalization stack" {{ block.shopify_attributes }} data-personalization data-extra-days="{{ block.settings.extra_days }}">
+                {%- if mf.personalizavel.value != true -%}
+                  <p class="placeholder-note text-small">{{ 'titular.placeholder.personalization' | t }}</p>
+                {%- endif -%}
+                <label class="product__personalization-toggle text-body">
+                  <input type="checkbox" data-personalization-toggle>
+                  {{ 'titular.personalization.toggle' | t }}
+                  {%- if block.settings.price_label != blank %} <span class="muted">({{ block.settings.price_label | escape }})</span>{% endif -%}
+                </label>
+                <fieldset class="stack" data-personalization-fields disabled hidden>
+                  <legend class="visually-hidden">{{ 'titular.personalization.toggle' | t }}</legend>
+                  <input type="hidden" name="properties[_personalizada]" value="sim">
+                  <div class="field">
+                    <label class="text-small" for="PersonalName-{{ section.id }}">{{ 'titular.personalization.name' | t }}</label>
+                    <input class="field__input" id="PersonalName-{{ section.id }}" type="text" name="properties[Nome]" maxlength="{{ block.settings.max_name }}" autocomplete="off" autocapitalize="characters">
+                  </div>
+                  <div class="field">
+                    <label class="text-small" for="PersonalNumber-{{ section.id }}">{{ 'titular.personalization.number' | t }}</label>
+                    <input class="field__input" id="PersonalNumber-{{ section.id }}" type="text" name="properties[Número]" inputmode="numeric" pattern="[0-9]{1,2}" maxlength="2" autocomplete="off">
+                  </div>
+                  <p class="notice text-small">{% render 'icon', name: 'info' %}<span>{{ 'titular.personalization.terms' | t: days: block.settings.extra_days }}</span></p>
+                </fieldset>
+              </div>
+            {%- endif -%}
+
+          {%- comment -%} 7. Comprar (fixo no rodapé no mobile) {%- endcomment -%}
           {%- when 'buy_buttons' -%}
-            <div class="product__buy-buttons" {{ block.shopify_attributes }}>
+            <div class="product__buy" {{ block.shopify_attributes }}>
               <button
                 type="submit"
                 name="add"
-                class="button product__add-to-cart"
-                {% if current_variant.available == false %}disabled{% endif %}
+                class="button button--full text-label product__add-to-cart"
+                {% unless current_variant.available %}disabled{% endunless %}
               >
                 <span>
                   {%- if current_variant.available -%}
@@ -232,10 +228,56 @@
               {%- endif -%}
             </div>
 
-          {%- when 'share' -%}
-            <div class="product__share" {{ block.shopify_attributes }}>
-              {% render 'share-button', share_link: product.url, share_title: product.title %}
+          {%- comment -%} 8. Prazo por CEP {%- endcomment -%}
+          {%- when 'shipping' -%}
+            <div
+              class="product__shipping stack--sm"
+              {{ block.shopify_attributes }}
+              data-shipping-estimate
+              data-handling-days="{{ mf.prazo_dias.value | default: 0 }}"
+              data-regions='{{ block.settings.regions | escape }}'
+            >
+              <label class="text-label" for="Cep-{{ section.id }}">{{ 'titular.shipping.label' | t }}</label>
+              <div class="inline-form">
+                <input class="field__input" id="Cep-{{ section.id }}" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" maxlength="9" data-cep-input>
+                <button type="button" class="button button--secondary" data-cep-submit>{{ 'titular.shipping.submit' | t }}</button>
+              </div>
+              <p class="text-small" aria-live="polite" data-cep-result></p>
             </div>
+
+          {%- comment -%} 9. Garantias {%- endcomment -%}
+          {%- when 'guarantees' -%}
+            <ul class="product__guarantees" role="list" {{ block.shopify_attributes }}>
+              {%- if block.settings.text_1 != blank -%}<li class="notice text-small">{% render 'icon', name: 'exchange' %}<span>{{ block.settings.text_1 | escape }}</span></li>{%- endif -%}
+              {%- if block.settings.text_2 != blank -%}<li class="notice text-small">{% render 'icon', name: 'truck' %}<span>{{ block.settings.text_2 | escape }}</span></li>{%- endif -%}
+              {%- if block.settings.text_3 != blank -%}<li class="notice text-small">{% render 'icon', name: 'shield' %}<span>{{ block.settings.text_3 | escape }}</span></li>{%- endif -%}
+            </ul>
+
+          {%- comment -%} 10. Detalhes em acordeão (fechados por padrão) {%- endcomment -%}
+          {%- when 'accordion' -%}
+            {%- liquid
+              assign accordion_content = blank
+              case block.settings.source
+                when 'description'
+                  assign accordion_content = product.description
+                when 'page'
+                  assign accordion_content = block.settings.page.content
+                  if accordion_content == blank
+                    assign accordion_content = settings.page_versions.content
+                  endif
+                else
+                  assign accordion_content = block.settings.text
+              endcase
+            -%}
+            {%- if accordion_content != blank -%}
+              <details class="accordion__item" {{ block.shopify_attributes }}>
+                <summary class="accordion__summary text-label">
+                  {{ block.settings.heading | escape }}
+                  {% render 'icon', name: 'chevron' %}
+                </summary>
+                <div class="accordion__content rte text-body">{{ accordion_content }}</div>
+              </details>
+            {%- endif -%}
 
           {%- when 'custom_liquid' -%}
             <div {{ block.shopify_attributes }}>{{ block.settings.custom_liquid }}</div>
@@ -243,10 +285,113 @@
       {%- endfor -%}
     {%- endform -%}
   </div>
+
+  <script type="application/json" data-variant-json>
+    [
+      {%- for variant in product.variants -%}
+        {%- capture variant_price_html -%}
+          {% render 'price', product: variant, use_variant: false, show_compare: true %}
+          {% render 'price-extras', amount: variant.price %}
+        {%- endcapture -%}
+        {
+          "id": {{ variant.id | json }},
+          "options": {{ variant.options | json }},
+          "available": {{ variant.available | json }},
+          "featured_media_id": {{ variant.featured_media.id | json }},
+          "price_html": {{ variant_price_html | strip_newlines | json }}
+        }{%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ]
+  </script>
 </section>
 
-{% render 'product-media-gallery', section_id: section.id %}
-{% render 'product-variant-selection', section_id: section.id, product_form_id: product_form_id %}
+{%- comment -%} Modal do guia de tamanhos: mesmo conteúdo da página de ajuda {%- endcomment -%}
+{%- if settings.page_size_guide != blank -%}
+  <dialog id="SizeGuide-{{ section.id }}" class="modal" aria-labelledby="SizeGuide-{{ section.id }}-title">
+    <div class="drawer__header">
+      <h2 id="SizeGuide-{{ section.id }}-title" class="text-h3">{{ settings.page_size_guide.title | escape }}</h2>
+      <button type="button" class="icon-button" data-dialog-close aria-label="{{ 'accessibility.close' | t }}">
+        {% render 'icon', name: 'close' %}
+      </button>
+    </div>
+    <div class="drawer__body rte text-body table-scroll">{{ settings.page_size_guide.content }}</div>
+  </dialog>
+{%- endif -%}
+
+<script src="{{ 'produto.js' | asset_url }}" defer="defer"></script>
+
+{% stylesheet %}
+  .product { display: grid; gap: var(--space-6); padding-top: var(--space-4); }
+
+  /* Galeria: carrossel deslizável no mobile, grade no desktop. */
+  .product__gallery { position: relative; margin-inline: calc(var(--page-gutter) * -1); }
+  .product__media-list {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .product__media-list::-webkit-scrollbar { display: none; }
+  .product__media-item { scroll-snap-align: start; }
+  .product__media-counter {
+    position: absolute;
+    right: var(--page-gutter);
+    bottom: var(--space-4);
+    padding: var(--space-1) var(--space-2);
+    background: var(--surface);
+  }
+
+  .product__option { border: 0; margin: 0; padding: 0; }
+  .product__option-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-2); }
+  .product__option-head .button--link { display: inline-flex; align-items: center; gap: var(--space-1); }
+  .size-picker { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .size-picker__label {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: calc(var(--tap) + var(--space-2));
+    min-height: calc(var(--tap) + var(--space-2));
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .size-picker__input:checked + .size-picker__label { color: var(--ink-inverse); background: var(--ink); border-color: var(--ink); }
+  .size-picker__input:focus-visible + .size-picker__label { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .size-picker__label.is-sold-out { color: var(--ink-disabled); border-style: dashed; }
+
+  .product__personalization-toggle { display: flex; align-items: center; gap: var(--space-2); min-height: var(--tap); }
+  .product__personalization fieldset { border: 0; margin: 0; padding: 0; }
+
+  /* 7. Botão fixo no rodapé da tela no mobile. */
+  .product__buy {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin-inline: calc(var(--page-gutter) * -1);
+    padding: var(--space-2) var(--page-gutter);
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+  }
+  .product__buy > * + * { margin-top: var(--space-2); }
+
+  .product__guarantees > * + * { margin-top: var(--space-2); }
+  .product__form > .accordion__item { border-bottom: 1px solid var(--line); }
+  .product__form > :not(.accordion__item) + .accordion__item { border-top: 1px solid var(--line); }
+  .product__form > .accordion__item + .accordion__item { margin-top: 0; }
+
+  @media (min-width: 990px) {
+    .product { grid-template-columns: 3fr 2fr; gap: var(--space-12); padding-top: var(--space-6); align-items: start; }
+    .product__gallery { margin-inline: 0; }
+    .product__media-list { grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); gap: var(--space-2); overflow: visible; }
+    .product__media-counter { display: none; }
+    .product__info { position: sticky; top: var(--space-6); }
+    .product__buy { position: static; margin-inline: 0; padding: 0; border: 0; }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -255,54 +400,98 @@
   "class": "section-main-product",
   "blocks": [
     { "type": "@app" },
-    { "type": "vendor", "name": "t:sections.main_product.blocks.vendor.name", "limit": 1 },
-    { "type": "title", "name": "t:sections.main_product.blocks.title.name", "limit": 1 },
-    { "type": "price", "name": "t:sections.main_product.blocks.price.name", "limit": 1 },
-    { "type": "variant_picker", "name": "t:sections.main_product.blocks.variant_picker.name", "limit": 1 },
-    { "type": "quantity", "name": "t:sections.main_product.blocks.quantity.name", "limit": 1 },
+    { "type": "title", "name": "2. Nome, clube e versão", "limit": 1 },
+    { "type": "price", "name": "3. Preço, Pix e parcelas", "limit": 1 },
+    { "type": "size", "name": "4. Tamanho + guia", "limit": 1 },
+    {
+      "type": "fit",
+      "name": "5. Recomendação de caimento",
+      "limit": 1,
+      "settings": [
+        { "type": "paragraph", "content": "Uma frase. Escolhida pela versão do produto (metafield titular.versao)." },
+        { "type": "text", "id": "fit_fan", "label": "Torcedor", "default": "Corte reto: se você usa M no dia a dia, leve M." },
+        { "type": "text", "id": "fit_player", "label": "Jogador", "default": "Corte justo: se está entre dois tamanhos, leve o maior." },
+        { "type": "text", "id": "fit_retro", "label": "Retrô", "default": "Corte largo, como nos anos 90: se prefere justo, leve um número menor." }
+      ]
+    },
+    {
+      "type": "personalization",
+      "name": "6. Personalização",
+      "limit": 1,
+      "settings": [
+        { "type": "paragraph", "content": "Só aparece se o metafield titular.personalizavel for verdadeiro. Fase 4 da arquitetura: a cobrança do valor extra ainda não está ligada." },
+        { "type": "text", "id": "price_label", "label": "Preço exibido", "default": "+ R$ 30" },
+        { "type": "number", "id": "extra_days", "label": "Dias úteis a mais no prazo", "default": 5 },
+        { "type": "number", "id": "max_name", "label": "Máximo de letras no nome", "default": 12 }
+      ]
+    },
     {
       "type": "buy_buttons",
-      "name": "t:sections.main_product.blocks.buy_buttons.name",
+      "name": "7. Adicionar ao carrinho",
       "limit": 1,
       "settings": [
         {
           "type": "checkbox",
           "id": "show_dynamic_checkout",
-          "default": true,
+          "default": false,
           "label": "t:sections.main_product.blocks.buy_buttons.settings.show_dynamic_checkout.label",
           "info": "t:sections.main_product.blocks.buy_buttons.settings.show_dynamic_checkout.info"
         }
       ]
     },
-    { "type": "description", "name": "t:sections.main_product.blocks.description.name", "limit": 1 },
-    { "type": "share", "name": "t:sections.main_product.blocks.share.name", "limit": 1 },
+    {
+      "type": "shipping",
+      "name": "8. Prazo por CEP",
+      "limit": 1,
+      "settings": [
+        { "type": "paragraph", "content": "Loja fictícia: o prazo vem desta tabela pela região do CEP, não de transportadora. Soma o metafield titular.prazo_dias (preparo)." },
+        {
+          "type": "textarea",
+          "id": "regions",
+          "label": "Prazo por região (JSON)",
+          "default": "{\"sudeste\":[3,5],\"sul\":[4,6],\"centro-oeste\":[5,8],\"nordeste\":[6,9],\"norte\":[8,12]}",
+          "info": "Dias úteis [mínimo, máximo] por região."
+        }
+      ]
+    },
+    {
+      "type": "guarantees",
+      "name": "9. Garantias",
+      "limit": 1,
+      "settings": [
+        { "type": "text", "id": "text_1", "label": "Troca", "default": "Primeira troca de tamanho grátis." },
+        { "type": "text", "id": "text_2", "label": "Devolução", "default": "Devolução em até 7 dias após a entrega." },
+        { "type": "text", "id": "text_3", "label": "Pagamento", "default": "Pagamento seguro no Pix ou cartão." }
+      ]
+    },
+    {
+      "type": "accordion",
+      "name": "10. Detalhe (acordeão)",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Título", "default": "Detalhes" },
+        {
+          "type": "select",
+          "id": "source",
+          "label": "Conteúdo",
+          "default": "description",
+          "options": [
+            { "value": "description", "label": "Descrição do produto" },
+            { "value": "page", "label": "Página (ex.: Torcedor x Jogador)" },
+            { "value": "text", "label": "Texto abaixo" }
+          ]
+        },
+        { "type": "page", "id": "page", "label": "Página", "info": "Vazio usa a página Torcedor x Jogador das configurações do tema." },
+        { "type": "richtext", "id": "text", "label": "Texto" }
+      ]
+    },
     {
       "type": "custom_liquid",
       "name": "t:sections.main_product.blocks.custom_liquid.name",
       "settings": [
-        {
-          "type": "liquid",
-          "id": "custom_liquid",
-          "label": "t:sections.main_product.blocks.custom_liquid.settings.custom_liquid.label"
-        }
+        { "type": "liquid", "id": "custom_liquid", "label": "t:sections.main_product.blocks.custom_liquid.settings.custom_liquid.label" }
       ]
     }
   ],
-  "settings": [],
-  "presets": [
-    {
-      "name": "t:sections.main_product.name",
-      "blocks": [
-        { "type": "vendor" },
-        { "type": "title" },
-        { "type": "price" },
-        { "type": "variant_picker" },
-        { "type": "quantity" },
-        { "type": "buy_buttons" },
-        { "type": "description" },
-        { "type": "share" }
-      ]
-    }
-  ]
+  "settings": []
 }
 {% endschema %}

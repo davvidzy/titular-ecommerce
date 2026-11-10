@@ -1,0 +1,68 @@
+{%- comment -%}
+  ============================================================
+  VERSION COMPARISON — Torcedor x Jogador lado a lado
+  ============================================================
+
+  TRABALHO (docs/arquitetura-informacao.md §3.6):
+  Diferença de tecido, corte e preço, com foto lado a lado.
+  Um block por versão (máx. 3: Torcedor, Jogador, Retrô).
+{%- endcomment -%}
+<section class="section page-width">
+  <div class="version-compare">
+    {%- for block in section.blocks -%}
+      <article class="stack" {{ block.shopify_attributes }}>
+        <div class="media" style="--ratio: 3 / 4;">
+          {%- if block.settings.image != blank -%}
+            {{ block.settings.image | image_url: width: 900 | image_tag: loading: 'lazy', widths: '390, 600, 900', sizes: '(min-width: 990px) 33vw, 50vw' }}
+          {%- else -%}
+            {{ 'product-1' | placeholder_svg_tag }}
+          {%- endif -%}
+        </div>
+        <h2 class="text-h3">{{ block.settings.version | escape }}</h2>
+        <dl class="version-compare__specs text-small">
+          <div><dt class="text-label">{{ 'titular.versions.fabric' | t }}</dt><dd>{{ block.settings.fabric | escape }}</dd></div>
+          <div><dt class="text-label">{{ 'titular.versions.fit' | t }}</dt><dd>{{ block.settings.fit | escape }}</dd></div>
+          <div><dt class="text-label">{{ 'titular.versions.price' | t }}</dt><dd>{{ block.settings.price | escape }}</dd></div>
+        </dl>
+      </article>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .version-compare { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+  .version-compare__specs > div { padding-block: var(--space-2); border-bottom: 1px solid var(--line); }
+  @media (min-width: 990px) { .version-compare { grid-template-columns: repeat(3, 1fr); gap: var(--space-6); } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Comparação de versões",
+  "tag": "section",
+  "class": "section-version-comparison",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "version",
+      "name": "Versão",
+      "limit": 3,
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Foto" },
+        { "type": "text", "id": "version", "label": "Versão", "default": "Torcedor" },
+        { "type": "text", "id": "fabric", "label": "Tecido", "default": "Poliéster mais grosso, escudo bordado." },
+        { "type": "text", "id": "fit", "label": "Corte", "default": "Reto. Leve o tamanho que você usa." },
+        { "type": "text", "id": "price", "label": "Preço", "default": "Faixa de exemplo: R$ 199 a R$ 249." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Comparação de versões",
+      "blocks": [
+        { "type": "version", "settings": { "version": "Torcedor" } },
+        { "type": "version", "settings": { "version": "Jogador", "fabric": "Tecido leve com furos de ventilação, escudo termocolado.", "fit": "Justo. Na dúvida, um número acima.", "price": "Faixa de exemplo: R$ 349 a R$ 449." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

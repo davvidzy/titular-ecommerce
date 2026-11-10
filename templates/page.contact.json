@@ -1,11 +1,20 @@
 {
   "sections": {
-    "main": {
+    "nav": { "type": "help-nav" },
+    "main": { "type": "main-page" },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q1": { "type": "question", "settings": { "question": "A camisa é original?", "answer": "<p>Resposta de exemplo. Loja fictícia: substitua pelo texto real.</p>" } },
+        "q2": { "type": "question", "settings": { "question": "Posso pagar no Pix?", "answer": "<p>Sim, com desconto. O valor aparece na página do produto.</p>" } },
+        "q3": { "type": "question", "settings": { "question": "Quanto tempo leva a personalização?", "answer": "<p>Soma alguns dias úteis ao prazo normal. O prazo exato aparece no produto.</p>" } }
+      },
+      "block_order": ["q1", "q2", "q3"]
+    },
+    "contact": {
       "type": "contact-form",
-      "settings": {
-        "heading": "Contact"
-      }
+      "settings": { "heading": "Fale com a gente" }
     }
   },
-  "order": ["main"]
+  "order": ["nav", "main", "faq", "contact"]
 }

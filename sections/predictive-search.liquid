@@ -1,0 +1,76 @@
+{%- comment -%}
+  ============================================================
+  PREDICTIVE SEARCH — sugestões da busca em tela cheia
+  ============================================================
+
+  TRABALHO (docs/arquitetura-informacao.md §4.2):
+  1. Sugestões a partir de 2 letras: clubes primeiro (coleções),
+     depois produtos com foto.
+  2. Sem resultado: "Não achamos X" + mais vendidos. Nunca vazio.
+
+  COMO É CHAMADA:
+  Não entra em template. assets/global.js busca
+  /search/suggest?q=...&section_id=predictive-search
+  &resources[type]=collection,product e injeta o HTML no overlay
+  aberto pelo cabeçalho (sections/nav.liquid).
+{%- endcomment -%}
+<div class="predictive-search" data-predictive-search-payload>
+  {%- if predictive_search.performed -%}
+    {%- liquid
+      assign collections_found = predictive_search.resources.collections
+      assign products_found = predictive_search.resources.products
+    -%}
+    {%- if collections_found.size > 0 or products_found.size > 0 -%}
+      {%- if collections_found.size > 0 -%}
+        <h2 class="text-label muted">{{ 'titular.search.clubs' | t }}</h2>
+        <ul class="predictive-search__clubs" role="list">
+          {%- for collection in collections_found -%}
+            <li><a href="{{ collection.url }}" class="chip text-small">{{ collection.title | escape }}</a></li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if products_found.size > 0 -%}
+        <h2 class="text-label muted">{{ 'templates.search.products' | t }}</h2>
+        <ul class="predictive-search__products" role="list">
+          {%- for product in products_found -%}
+            <li>
+              <a href="{{ product.url }}" class="predictive-search__product">
+                <span class="media" style="--ratio: 1;">
+                  {%- if product.featured_media -%}
+                    {{ product.featured_media | image_url: width: 160 | image_tag: loading: 'lazy', alt: '' }}
+                  {%- endif -%}
+                </span>
+                <span>
+                  <span class="text-body">{{ product.title | escape }}</span>
+                  <span class="text-small muted">{{ product.price | money }}</span>
+                </span>
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      <a href="{{ routes.search_url }}?q={{ predictive_search.terms | url_encode }}&options%5Bprefix%5D=last" class="button button--secondary button--full">
+        {{ 'templates.search.search_for' | t: terms: predictive_search.terms }}
+      </a>
+    {%- else -%}
+      <p class="text-body">{{ 'titular.search.not_found' | t: terms: predictive_search.terms }}</p>
+      {%- render 'best-sellers', limit: 4 -%}
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .predictive-search > * + * { margin-top: var(--space-4); }
+  .predictive-search__clubs { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .predictive-search__product { display: grid; grid-template-columns: var(--space-12) 1fr; align-items: center; gap: var(--space-4); min-height: var(--tap); padding-block: var(--space-2); text-decoration: none; }
+  .predictive-search__product > span:last-child { display: flex; flex-direction: column; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Busca preditiva",
+  "settings": []
+}
+{% endschema %}

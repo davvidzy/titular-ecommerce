@@ -1,0 +1,167 @@
+{%- comment -%}
+  ============================================================
+  CART DRAWER — carrinho em gaveta lateral (não é página)
+  ============================================================
+
+  TRABALHO (docs/arquitetura-informacao.md §3.4), de cima para baixo:
+  1. Itens: tamanho e personalização editáveis na gaveta.
+  2. Barra de frete grátis: só se settings.free_shipping_threshold > 0.
+  3. Cupom: aplicar sem sair da gaveta.
+  4. Subtotal + "Finalizar compra": ação única.
+  Itens personalizados mostram o aviso "sem troca" também aqui.
+
+  COMO FUNCIONA:
+  - Renderizada uma vez no layout ({% section 'cart-drawer' %}).
+  - assets/carrinho.js abre a gaveta depois do add-to-cart e, em toda
+    mudança (/cart/add, /cart/change, /cart/update), pede o HTML desta
+    section (sections=cart-drawer) e troca [data-cart-drawer-content].
+  - Sem JS: o ícone do carrinho leva para /cart (sections/main-cart).
+
+  DADOS DE PERSONALIZAÇÃO:
+  Propriedades do item (line item properties) vindas do produto:
+  "Nome", "Número" e a oculta "_personalizada". Propriedades que
+  começam com "_" não aparecem para o cliente.
+{%- endcomment -%}
+<dialog id="CartDrawer" class="drawer cart-drawer" aria-labelledby="CartDrawer-title">
+  <div class="drawer__inner" data-cart-drawer-content>
+    <div class="drawer__header">
+      <h2 id="CartDrawer-title" class="text-label">
+        {{ 'sections.cart.title' | t }}
+        {%- if cart.item_count > 0 %} ({{ cart.item_count }}){% endif -%}
+      </h2>
+      <button type="button" class="icon-button" data-dialog-close aria-label="{{ 'accessibility.close' | t }}">
+        {% render 'icon', name: 'close' %}
+      </button>
+    </div>
+
+    {%- if cart.item_count == 0 -%}
+      <div class="drawer__body stack--lg">
+        <p class="text-body">{{ 'sections.cart.empty' | t }}</p>
+        <a href="{{ routes.collections_url }}" class="button button--secondary button--full">{{ 'general.continue_shopping' | t }}</a>
+      </div>
+    {%- else -%}
+      <div class="drawer__body stack--lg">
+        {%- comment -%} 2. Frete grátis {%- endcomment -%}
+        {%- assign threshold = settings.free_shipping_threshold | times: 100 -%}
+        {%- if threshold > 0 -%}
+          <div class="cart-drawer__shipping stack--sm">
+            {%- if cart.total_price >= threshold -%}
+              <p class="notice notice--success text-small">{% render 'icon', name: 'check' %}{{ 'titular.cart.free_shipping_reached' | t }}</p>
+              {%- assign progress = 100 -%}
+            {%- else -%}
+              {%- assign remaining_money = threshold | minus: cart.total_price | money -%}
+              <p class="text-small">{{ 'titular.cart.free_shipping_remaining' | t: amount: remaining_money }}</p>
+              {%- assign progress = cart.total_price | times: 100 | divided_by: threshold -%}
+            {%- endif -%}
+            <div class="cart-drawer__bar" aria-hidden="true"><span style="width: {{ progress }}%;"></span></div>
+          </div>
+        {%- endif -%}
+
+        {%- comment -%} 1. Itens {%- endcomment -%}
+        <ul class="cart-drawer__items" role="list">
+          {%- for item in cart.items -%}
+            {%- assign personalized = false -%}
+            {%- if item.properties._personalizada != blank -%}{%- assign personalized = true -%}{%- endif -%}
+            <li class="drawer-item" data-line-key="{{ item.key }}" data-quantity="{{ item.quantity }}">
+              <a href="{{ item.url }}" class="drawer-item__media media" style="--ratio: 3 / 4;" tabindex="-1" aria-hidden="true">
+                {%- if item.image -%}
+                  {{ item.image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '' }}
+                {%- endif -%}
+              </a>
+
+              <div class="drawer-item__info stack--sm">
+                <a href="{{ item.url }}" class="text-body drawer-item__title">{{ item.product.title | escape }}</a>
+
+                {%- comment -%} Tamanho editável: troca a variante mantendo as propriedades. {%- endcomment -%}
+                {%- unless item.product.has_only_default_variant -%}
+                  <div class="field">
+                    <label class="text-small muted" for="CartSize-{{ item.key }}">{{ item.product.options.first }}</label>
+                    <select id="CartSize-{{ item.key }}" class="select__select" data-cart-variant>
+                      {%- for variant in item.product.variants -%}
+                        <option value="{{ variant.id }}" {% if variant.id == item.variant_id %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
+                          {{ variant.title | escape }}{% unless variant.available %} · {{ 'products.product.sold_out' | t }}{% endunless %}
+                        </option>
+                      {%- endfor -%}
+                    </select>
+                  </div>
+                {%- endunless -%}
+
+                {%- for property in item.properties -%}
+                  {%- assign first_char = property.first | slice: 0 -%}
+                  {%- if property.last != blank and first_char != '_' -%}
+                    <p class="text-small">{{ property.first }}: {{ property.last }}</p>
+                  {%- endif -%}
+                {%- endfor -%}
+
+                {%- if personalized -%}
+                  <p class="notice text-small">{% render 'icon', name: 'info' %}{{ 'titular.personalization.no_exchange' | t }}</p>
+                {%- endif -%}
+
+                <div class="drawer-item__row">
+                  <div class="quantity" role="group" aria-label="{{ 'products.product.quantity.label' | t }}">
+                    <button type="button" class="icon-button" data-cart-quantity="{{ item.quantity | minus: 1 }}" aria-label="{{ 'products.product.quantity.decrease' | t: product: item.product.title | escape }}">{% render 'icon', name: 'minus' %}</button>
+                    <span class="text-body quantity__value" aria-live="polite">{{ item.quantity }}</span>
+                    <button type="button" class="icon-button" data-cart-quantity="{{ item.quantity | plus: 1 }}" aria-label="{{ 'products.product.quantity.increase' | t: product: item.product.title | escape }}">{% render 'icon', name: 'plus' %}</button>
+                  </div>
+                  <span class="text-price">{{ item.final_line_price | money }}</span>
+                </div>
+
+                <button type="button" class="button--link text-small" data-cart-quantity="0">
+                  {{ 'sections.cart.remove' | t }}<span class="visually-hidden"> {{ item.product.title | escape }}</span>
+                </button>
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        {%- comment -%} 3. Cupom {%- endcomment -%}
+        <form class="cart-drawer__discount stack--sm" data-cart-discount>
+          <label class="text-small" for="CartDiscount">{{ 'titular.cart.discount_label' | t }}</label>
+          <div class="inline-form">
+            <input id="CartDiscount" class="field__input" type="text" name="discount" autocomplete="off" autocapitalize="characters">
+            <button type="submit" class="button button--secondary">{{ 'products.facets.apply' | t }}</button>
+          </div>
+          {%- for application in cart.cart_level_discount_applications -%}
+            <p class="notice notice--success text-small">
+              {% render 'icon', name: 'check' %}
+              {{ application.title | escape }} (−{{ application.total_allocated_amount | money }})
+            </p>
+          {%- endfor -%}
+          <p class="text-small" data-cart-discount-error hidden></p>
+        </form>
+      </div>
+
+      {%- comment -%} 4. Subtotal + Finalizar {%- endcomment -%}
+      <div class="drawer__footer stack">
+        <div class="cart-drawer__subtotal">
+          <span class="text-body">{{ 'sections.cart.subtotal' | t }}</span>
+          <span class="text-price">{{ cart.total_price | money }}</span>
+        </div>
+        <p class="text-small muted">{{ 'titular.cart.shipping_at_checkout' | t }}</p>
+        <form action="{{ routes.cart_url }}" method="post">
+          <button type="submit" name="checkout" class="button button--full text-label">{{ 'sections.cart.checkout' | t }}</button>
+        </form>
+      </div>
+    {%- endif -%}
+  </div>
+</dialog>
+
+{% stylesheet %}
+  .cart-drawer__items > li + li { margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--line); }
+  .drawer-item { display: grid; grid-template-columns: calc(var(--space-24) - var(--space-4)) 1fr; gap: var(--space-4); }
+  .drawer-item__title { text-decoration: none; }
+  .drawer-item__row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+  .quantity { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
+  .quantity__value { min-width: var(--space-6); text-align: center; font-variant-numeric: tabular-nums; }
+  .cart-drawer__bar { height: var(--space-1); background: var(--line); }
+  .cart-drawer__bar > span { display: block; height: 100%; max-width: 100%; background: var(--ink); }
+  .cart-drawer__subtotal { display: flex; align-items: baseline; justify-content: space-between; }
+  .cart-drawer[aria-busy="true"] .drawer__body { opacity: 0.6; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Carrinho (gaveta)",
+  "settings": []
+}
+{% endschema %}

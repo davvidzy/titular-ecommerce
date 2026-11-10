@@ -1,36 +1,55 @@
 {%- comment -%}
   ============================================================
-  RELATED PRODUCTS — produtos relacionados (recomendações)
+  RELATED PRODUCTS — mesmo clube / outras versões (Produto #12)
   ============================================================
 
-  O QUE FAZ:
-  Exibe produtos relacionados usando a API de recomendações do Shopify.
-  Um web component (<product-recommendations>) busca via fetch os
-  produtos sugeridos e injeta o grid no DOM (lazy, sem lib externa).
+  TRABALHO (docs/arquitetura-informacao.md §3.1 #12):
+  Segunda chance: grade de 4 produtos.
 
-  ONDE É USADA:
-  Template product (abaixo da página do produto).
-
-  PRINCIPAIS PARTES:
-  - data-url monta a requisição com section_id, product_id e limit
-  - customElements 'product-recommendations': faz o fetch e injeta o HTML
-  - render 'card-product': card de cada produto recomendado
-  - Settings: enable, heading, products_to_show
-
-  OBSERVAÇÕES:
-  Só renderiza se enable estiver marcado. O grid só aparece quando
-  recommendations.performed e há produtos retornados.
+  ORIGEM DOS PRODUTOS:
+  1. Coleção do clube: collections[handle do metafield titular.clube]
+     (ex.: clube "Santos" -> coleção /collections/santos, §5.2 "Uma por
+     clube"). Tira o produto atual da lista.
+  2. Sem coleção do clube: recomendações do Shopify, buscadas por JS
+     (product_recommendations_url com section_id desta section).
 {%- endcomment -%}
-{%- if section.settings.enable -%}
+{%- liquid
+  assign limit = section.settings.products_to_show
+  assign club_collection = blank
+  if product.metafields.titular.clube != blank
+    assign club_handle = product.metafields.titular.clube.value | handleize
+    assign club_collection = collections[club_handle]
+  endif
+-%}
+
+{%- if club_collection != blank and club_collection.products_count > 1 -%}
+  <section class="section page-width related-products">
+    <div class="section__header">
+      <h2 class="text-h2">{{ 'titular.product.same_club' | t: club: club_collection.title }}</h2>
+      <a href="{{ club_collection.url }}" class="text-label">{{ 'sections.collection_list.view_all' | t }}</a>
+    </div>
+    <ul class="product-grid" role="list">
+      {%- assign shown = 0 -%}
+      {%- for item in club_collection.products -%}
+        {%- if item.id != product.id and shown < limit -%}
+          <li>{% render 'card-product', card_product: item %}</li>
+          {%- assign shown = shown | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </section>
+{%- else -%}
   <product-recommendations
-    class="related-products page-width"
-    data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.products_to_show }}"
+    class="section page-width related-products"
+    data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ limit }}"
   >
     {%- if recommendations.performed and recommendations.products_count > 0 -%}
-      <h2 class="related-products__title">{{ section.settings.heading | escape }}</h2>
+      <div class="section__header">
+        <h2 class="text-h2">{{ section.settings.heading | escape }}</h2>
+      </div>
       <ul class="product-grid" role="list">
-        {%- for product in recommendations.products -%}
-          <li>{% render 'card-product', card_product: product %}</li>
+        {%- for item in recommendations.products -%}
+          <li>{% render 'card-product', card_product: item %}</li>
         {%- endfor -%}
       </ul>
     {%- endif -%}
@@ -45,12 +64,11 @@
           fetch(el.dataset.url)
             .then(function (r) { return r.text(); })
             .then(function (text) {
-              var html = document.createElement('div');
-              html.innerHTML = text;
-              var recos = html.querySelector('product-recommendations');
-              if (recos && recos.innerHTML.trim().length) { el.innerHTML = recos.innerHTML; }
+              var doc = new DOMParser().parseFromString(text, 'text/html');
+              var recos = doc.querySelector('product-recommendations');
+              if (recos && recos.innerHTML.trim().length) el.innerHTML = recos.innerHTML;
             })
-            .catch(function (e) { console.error(e); });
+            .catch(function () {});
         }
       });
     }
@@ -59,30 +77,24 @@
 
 {% schema %}
 {
-  "name": "t:sections.related_products.name",
+  "name": "Mesmo clube",
   "tag": "section",
   "class": "section-related-products",
   "settings": [
     {
-      "type": "checkbox",
-      "id": "enable",
-      "default": true,
-      "label": "t:sections.related_products.settings.enable.label"
-    },
-    {
       "type": "text",
       "id": "heading",
-      "default": "You may also like",
-      "label": "t:sections.related_products.settings.heading.label"
+      "default": "Outras versões",
+      "label": "Título (quando não há coleção do clube)"
     },
     {
       "type": "range",
       "id": "products_to_show",
       "min": 2,
-      "max": 10,
+      "max": 8,
       "step": 1,
       "default": 4,
-      "label": "t:sections.related_products.settings.products_to_show.label"
+      "label": "Quantidade de produtos"
     }
   ]
 }

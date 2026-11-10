@@ -1,0 +1,41 @@
+{%- comment -%}
+  ============================================================
+  HELP NAV — navegação entre as páginas de Ajuda
+  ============================================================
+
+  O QUE FAZ:
+  Lista horizontal (rola no celular) com as 6 páginas de Ajuda
+  (§2 do mapa do site): Guia de tamanhos, Torcedor x Jogador, Frete e
+  prazos, Trocas e devoluções, Rastrear pedido, FAQ e contato.
+  Fonte: menu "ajuda" do admin (o mesmo do rodapé).
+{%- endcomment -%}
+{%- if section.settings.menu != blank -%}
+  <nav class="page-width help-nav" aria-label="{{ 'titular.help.nav_label' | t }}">
+    <ul class="help-nav__list" role="list">
+      {%- for link in section.settings.menu.links -%}
+        <li>
+          <a href="{{ link.url }}" class="chip text-small" {% if link.current %}aria-current="page"{% endif %}>{{ link.title | escape }}</a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </nav>
+{%- endif -%}
+
+{% stylesheet %}
+  .help-nav { padding-top: var(--space-4); }
+  .help-nav__list { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); }
+  .help-nav__list a { white-space: nowrap; }
+  .help-nav__list a[aria-current="page"] { color: var(--ink-inverse); background: var(--ink); border-color: var(--ink); }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Navegação da ajuda",
+  "tag": "section",
+  "class": "section-help-nav",
+  "settings": [
+    { "type": "link_list", "id": "menu", "label": "Menu", "default": "ajuda" }
+  ],
+  "presets": [{ "name": "Navegação da ajuda" }]
+}
+{% endschema %}

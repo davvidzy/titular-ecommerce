@@ -2,9 +2,12 @@
   "type": "header",
   "name": "t:section_groups.header.name",
   "sections": {
+    "announcement": {
+      "type": "announcement-bar"
+    },
     "nav": {
       "type": "nav"
     }
   },
-  "order": ["nav"]
+  "order": ["announcement", "nav"]
 }

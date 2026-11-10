@@ -5,7 +5,10 @@
     },
     "product-grid": {
       "type": "main-collection"
+    },
+    "text": {
+      "type": "collection-text"
     }
   },
-  "order": ["banner", "product-grid"]
+  "order": ["banner", "product-grid", "text"]
 }

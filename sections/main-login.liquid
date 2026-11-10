@@ -1,0 +1,45 @@
+{%- comment -%}
+  ============================================================
+  MAIN LOGIN — entrar + recuperar senha (Conta, Fase 3)
+  ============================================================
+  Contas clássicas do Shopify. Se a loja usar as "novas contas de
+  cliente" (hospedadas pelo Shopify), estes templates não são usados.
+  O formulário de recuperação aparece com #recover na URL.
+{%- endcomment -%}
+<section class="page-width account-page stack--lg">
+  <div id="login" class="stack">
+    <h1 class="text-h1">{{ 'customer.login_page.title' | t }}</h1>
+    {%- form 'customer_login', class: 'stack' -%}
+      {%- if form.errors -%}<div class="notice notice--danger text-small" role="alert">{% render 'icon', name: 'alert' %}{{ form.errors | default_errors }}</div>{%- endif -%}
+      <div class="field">
+        <label class="text-small" for="CustomerEmail">{{ 'customer.login_page.email' | t }}</label>
+        <input class="field__input" type="email" name="customer[email]" id="CustomerEmail" autocomplete="email" required>
+      </div>
+      {%- if form.password_needed -%}
+        <div class="field">
+          <label class="text-small" for="CustomerPassword">{{ 'customer.login_page.password' | t }}</label>
+          <input class="field__input" type="password" name="customer[password]" id="CustomerPassword" autocomplete="current-password" required>
+        </div>
+        <a href="#recover" class="button--link text-small">{{ 'titular.account.forgot' | t }}</a>
+      {%- endif -%}
+      <button class="button button--full text-label">{{ 'customer.login_page.sign_in' | t }}</button>
+    {%- endform -%}
+    <a href="{{ routes.account_register_url }}" class="button button--secondary button--full">{{ 'customer.login_page.create_account' | t }}</a>
+  </div>
+
+  <div id="recover" class="stack account-page__recover">
+    <h2 class="text-h2">{{ 'titular.account.recover_title' | t }}</h2>
+    {%- form 'recover_customer_password', class: 'stack' -%}
+      {%- if form.posted_successfully? -%}<p class="notice notice--success text-small">{% render 'icon', name: 'check' %}{{ 'titular.account.recover_sent' | t }}</p>{%- endif -%}
+      <div class="field">
+        <label class="text-small" for="RecoverEmail">{{ 'customer.login_page.email' | t }}</label>
+        <input class="field__input" type="email" name="email" id="RecoverEmail" autocomplete="email" required>
+      </div>
+      <button class="button button--full text-label">{{ 'templates.contact.form.send' | t }}</button>
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}
+{ "name": "Entrar", "settings": [] }
+{% endschema %}

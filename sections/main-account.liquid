@@ -1,0 +1,48 @@
+{%- comment -%}
+  MAIN ACCOUNT — Meus pedidos (Conta, Fase 3). Contas clássicas.
+  Lista de pedidos com status de pagamento e entrega + link para o
+  detalhe (templates/customers/order.json).
+{%- endcomment -%}
+<section class="page-width account stack--lg">
+  <div class="section__header">
+    <h1 class="text-h1">{{ 'customer.orders.title' | t }}</h1>
+    <a href="{{ routes.account_logout_url }}" class="text-label">{{ 'titular.account.logout' | t }}</a>
+  </div>
+
+  {%- paginate customer.orders by 10 -%}
+    {%- if customer.orders.size > 0 -%}
+      <div class="table-scroll">
+        <table class="data-table text-body">
+          <thead>
+            <tr>
+              <th scope="col" class="text-label">{{ 'customer.orders.order_number' | t }}</th>
+              <th scope="col" class="text-label">{{ 'customer.orders.date' | t }}</th>
+              <th scope="col" class="text-label">{{ 'titular.account.status' | t }}</th>
+              <th scope="col" class="text-label">{{ 'customer.orders.total' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {%- for order in customer.orders -%}
+              <tr>
+                <th scope="row"><a href="{{ order.customer_url }}">{{ order.name }}</a></th>
+                <td>{{ order.created_at | date: '%d/%m/%Y' }}</td>
+                <td>{{ order.fulfillment_status_label }}</td>
+                <td class="text-price">{{ order.total_price | money }}</td>
+              </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+      </div>
+      {% render 'pagination', paginate: paginate %}
+    {%- else -%}
+      <p class="text-body">{{ 'titular.account.no_orders' | t }}</p>
+      <a href="{{ routes.collections_url }}" class="button text-label">{{ 'general.continue_shopping' | t }}</a>
+    {%- endif -%}
+  {%- endpaginate -%}
+
+  <a href="{{ routes.account_addresses_url }}" class="button button--secondary">{{ 'customer.account.view_addresses' | t }}</a>
+</section>
+
+{% schema %}
+{ "name": "Meus pedidos", "settings": [] }
+{% endschema %}

@@ -43,8 +43,7 @@
     "@type": "Organization",
     "name": {{ shop.name | json }},
     "url": {{ shop.url | append: routes.root_url | json }}
-    {%- if settings.logo %},
-      "logo": {{ settings.logo | image_url: width: 500 | prepend: "https:" | json }}
-    {%- endif -%}
+,
+    "logo": {{ 'titular-simbolo.svg' | asset_url | prepend: "https:" | json }}
   }
 </script>

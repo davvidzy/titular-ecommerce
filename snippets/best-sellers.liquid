@@ -1,0 +1,30 @@
+{%- comment -%}
+  ============================================================
+  best-sellers — grade "Mais vendidos" de reserva
+  ============================================================
+
+  O QUE FAZ:
+  Mostra a coleção definida em Configurações do tema > Comercial >
+  "Mais vendidos". Usado onde a página não pode ficar vazia: busca
+  sem resultado (overlay e página) e carrinho vazio.
+
+  COMO USAR:
+  {% render 'best-sellers', limit: 4 %}
+
+  PARÂMETROS:
+  - limit: quantos produtos (padrão 4).
+{%- endcomment -%}
+{%- liquid
+  assign limit = limit | default: 4
+  assign best = settings.collection_best_sellers
+-%}
+{%- if best != blank and best.products_count > 0 -%}
+  <div class="best-sellers stack">
+    <h2 class="text-h3">{{ 'titular.best_sellers' | t }}</h2>
+    <ul class="product-grid" role="list">
+      {%- for product in best.products limit: limit -%}
+        <li>{% render 'card-product', card_product: product %}</li>
+      {%- endfor -%}
+    </ul>
+  </div>
+{%- endif -%}

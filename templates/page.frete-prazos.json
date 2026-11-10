@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "nav": { "type": "help-nav" },
+    "main": { "type": "main-page" },
+    "table": {
+      "type": "shipping-table",
+      "blocks": {
+        "se": { "type": "region", "settings": { "region": "Sudeste", "days": "3 a 5 dias úteis" } },
+        "s": { "type": "region", "settings": { "region": "Sul", "days": "4 a 6 dias úteis" } },
+        "co": { "type": "region", "settings": { "region": "Centro-Oeste", "days": "5 a 8 dias úteis" } },
+        "ne": { "type": "region", "settings": { "region": "Nordeste", "days": "6 a 9 dias úteis" } },
+        "n": { "type": "region", "settings": { "region": "Norte", "days": "8 a 12 dias úteis" } }
+      },
+      "block_order": ["se", "s", "co", "ne", "n"]
+    }
+  },
+  "order": ["nav", "main", "table"]
+}

@@ -1,0 +1,22 @@
+{
+  "sections": {
+    "nav": { "type": "help-nav" },
+    "main": { "type": "main-page" },
+    "steps": {
+      "type": "steps",
+      "settings": { "heading": "Como trocar" },
+      "blocks": {
+        "s1": { "type": "step", "settings": { "title": "Informe o pedido", "text": "Número do pedido e o e-mail usado na compra." } },
+        "s2": { "type": "step", "settings": { "title": "Escolha o item e o tamanho", "text": "Camisas personalizadas não têm troca e aparecem bloqueadas." } },
+        "s3": { "type": "step", "settings": { "title": "Envie a camisa", "text": "Você recebe as instruções de envio por e-mail." } },
+        "s4": { "type": "step", "settings": { "title": "Acompanhe", "text": "O status da troca aparece na sua conta." } }
+      },
+      "block_order": ["s1", "s2", "s3", "s4"]
+    },
+    "form": {
+      "type": "help-form",
+      "settings": { "mode": "exchange", "heading": "Pedir troca", "button": "Pedir troca" }
+    }
+  },
+  "order": ["nav", "main", "steps", "form"]
+}

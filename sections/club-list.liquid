@@ -1,0 +1,58 @@
+{%- comment -%}
+  ============================================================
+  CLUB LIST — escolha seu clube (Home #5)
+  ============================================================
+
+  TRABALHO (docs/arquitetura-informacao.md §3.2 #5):
+  Lista de clubes EM TEXTO (sem escudos), cada um leva à coleção do
+  clube (§5.2 "Uma por clube"). Regra de marca: nunca escudo de clube
+  ao lado do logo de forma que sugira parceria oficial.
+
+  ORIGEM: um block por clube (coleção). Ordem = ordem dos blocks.
+{%- endcomment -%}
+<section class="section page-width">
+  <div class="section__header">
+    <h2 class="text-h2">{{ section.settings.heading | escape }}</h2>
+  </div>
+  <ul class="club-list" role="list">
+    {%- for block in section.blocks -%}
+      {%- assign target = block.settings.collection -%}
+      <li {{ block.shopify_attributes }}>
+        <a href="{{ target.url | default: '#' }}" class="club-list__link text-body">{{ target.title | default: 'Clube' | escape }}</a>
+      </li>
+    {%- endfor -%}
+  </ul>
+</section>
+
+{% stylesheet %}
+  .club-list { display: grid; grid-template-columns: repeat(2, 1fr); column-gap: var(--space-4); border-top: 1px solid var(--line); }
+  .club-list li { border-bottom: 1px solid var(--line); }
+  .club-list__link { display: flex; align-items: center; min-height: var(--space-12); text-decoration: none; }
+  @media (min-width: 990px) { .club-list { grid-template-columns: repeat(4, 1fr); column-gap: var(--space-6); } }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Escolha seu clube",
+  "tag": "section",
+  "class": "section-club-list",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Título", "default": "Escolha seu clube" }
+  ],
+  "blocks": [
+    {
+      "type": "club",
+      "name": "Clube",
+      "settings": [
+        { "type": "collection", "id": "collection", "label": "Coleção do clube" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Escolha seu clube",
+      "blocks": [{ "type": "club" }, { "type": "club" }, { "type": "club" }, { "type": "club" }, { "type": "club" }, { "type": "club" }, { "type": "club" }, { "type": "club" }]
+    }
+  ]
+}
+{% endschema %}

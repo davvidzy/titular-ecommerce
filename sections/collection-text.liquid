@@ -1,0 +1,23 @@
+{%- comment -%}
+  ============================================================
+  COLLECTION TEXT — texto da coleção no fim da página (Coleção #6)
+  ============================================================
+
+  TRABALHO (docs/arquitetura-informacao.md §3.3 #6):
+  Descrição completa da coleção, no fim da página, por SEO. O topo
+  só mostra a primeira frase (sections/collection-banner.liquid).
+{%- endcomment -%}
+{%- if collection.description != blank -%}
+  <section class="section page-width">
+    <div class="rte text-body collection-text">{{ collection.description }}</div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Texto da coleção (SEO)",
+  "tag": "section",
+  "class": "section-collection-text",
+  "settings": []
+}
+{% endschema %}

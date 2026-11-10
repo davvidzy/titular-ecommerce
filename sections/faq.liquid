@@ -1,0 +1,52 @@
+{%- comment -%}
+  ============================================================
+  FAQ — perguntas restantes + WhatsApp
+  ============================================================
+
+  TRABALHO (docs/arquitetura-informacao.md §3.6 "FAQ e contato"):
+  Perguntas que sobraram depois das outras páginas de ajuda, em
+  acordeão, e o atalho para o WhatsApp (settings.whatsapp_number).
+{%- endcomment -%}
+<section class="section page-width faq">
+  <h2 class="text-h2">{{ section.settings.heading | escape }}</h2>
+  <div class="accordion">
+    {%- for block in section.blocks -%}
+      <details class="accordion__item" {{ block.shopify_attributes }}>
+        <summary class="accordion__summary text-body">{{ block.settings.question | escape }} {% render 'icon', name: 'chevron' %}</summary>
+        <div class="accordion__content rte text-body">{{ block.settings.answer }}</div>
+      </details>
+    {%- endfor -%}
+  </div>
+  {%- if settings.whatsapp_number != blank -%}
+    <a href="https://wa.me/{{ settings.whatsapp_number }}" class="button text-label" target="_blank" rel="noopener">
+      {% render 'icon', name: 'whatsapp' %}{{ 'titular.help.whatsapp' | t }}
+    </a>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+  .faq > * + * { margin-top: var(--space-6); }
+  .faq .accordion { max-width: 70ch; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Perguntas frequentes",
+  "tag": "section",
+  "class": "section-faq",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Título", "default": "Perguntas frequentes" }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Pergunta",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Pergunta", "default": "A camisa é original?" },
+        { "type": "richtext", "id": "answer", "label": "Resposta", "default": "<p>Resposta de exemplo. Loja fictícia: substitua pelo texto real.</p>" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Perguntas frequentes", "blocks": [{ "type": "question" }] }]
+}
+{% endschema %}

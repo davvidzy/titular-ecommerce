@@ -1,97 +1,65 @@
 {%- comment -%}
   ============================================================
-  css-variables — variáveis CSS globais do tema
+  css-variables — aliases legados apontando para os tokens
   ============================================================
 
   O QUE FAZ:
-  Gera as CSS custom properties (:root) a partir das settings do tema:
-  cores, tipografia (com @font-face), escala de fonte fluida (--f0..--f8)
-  e tokens de layout (largura da página, radius, espaçamento).
-  Também define estilos base de body e headings.
+  A identidade visual da Titular vem de assets/tokens.css (cópia de
+  brand/tokens.css), não das settings do editor. Este snippet só
+  mantém os nomes antigos do tema base (--color-*, --cor-*, --f0..--f8,
+  --*-radius) apontando para os tokens, para que seções ainda não
+  reescritas (blog, artigo, 404, senha, gift card, contato, carrinho
+  em página) continuem coerentes com a marca.
 
   COMO USAR:
-  {% render 'css-variables' %}
-  Renderize uma única vez, dentro do <head> em theme.liquid.
-
-  PARÂMETROS:
-  Nenhum — lê tudo de settings (settings.color_*, settings.type_*, etc).
+  {% render 'css-variables' %} uma vez no <head>, depois de tokens.css.
 
   OBSERVAÇÕES:
-  Mantém aliases retrocompatíveis (--cor-marca, --cor-verde, --bold...)
-  usados por seções antigas. Se remover, quebra o CSS dessas seções.
+  Código novo usa os tokens diretamente (--ink, --surface, --space-*,
+  .text-*). Quando todas as seções antigas forem reescritas, este
+  snippet pode ser apagado.
 {%- endcomment -%}
-{%- liquid
-  assign header_font = settings.type_header_font
-  assign body_font = settings.type_body_font
-  assign header_font_bold = header_font | font_modify: 'weight', 'bold'
-  assign body_font_bold = body_font | font_modify: 'weight', 'bold'
--%}
 <style>
-  {{ header_font | font_face: font_display: 'swap' }}
-  {{ header_font_bold | font_face: font_display: 'swap' }}
-  {{ body_font | font_face: font_display: 'swap' }}
-  {{ body_font_bold | font_face: font_display: 'swap' }}
-
   :root {
-    /* Colors */
-    --cor-branco: #ffffff;
-    --cor-preto: #000000;
-    --color-background: {{ settings.color_background }};
-    --color-text: {{ settings.color_text }};
-    --color-background-contrast: {{ settings.color_background_contrast }};
-    --color-text-contrast: {{ settings.color_text_contrast }};
-    --color-accent: {{ settings.color_accent }};
-    --color-accent-text: {{ settings.color_accent_text }};
-    --color-sale: {{ settings.color_sale }};
-    --color-border: {{ settings.color_border }};
+    --color-background: var(--surface);
+    --color-text: var(--ink);
+    --color-background-contrast: var(--surface-alt);
+    --color-text-contrast: var(--ink);
+    --color-accent: var(--ink);
+    --color-accent-text: var(--ink-inverse);
+    --color-sale: var(--ink);
+    --color-border: var(--line-strong);
 
-    /* Backwards-compatible aliases used by existing sections */
-    --cor-gelo: {{ settings.color_background_contrast }};
-    --cor-cinza: {{ settings.color_border }};
-    --cor-marca: {{ settings.color_accent }};
-    --cor-verde: {{ settings.color_sale }};
+    --cor-branco: var(--surface);
+    --cor-preto: var(--ink);
+    --cor-gelo: var(--surface-alt);
+    --cor-cinza: var(--line-strong);
+    --cor-marca: var(--danger);
+    --cor-verde: var(--success);
 
-    /* Typography */
-    --font-heading-family: {{ header_font.family }}, {{ header_font.fallback_families }};
-    --font-heading-weight: {{ header_font.weight }};
-    --font-body-family: {{ body_font.family }}, {{ body_font.fallback_families }};
-    --font-body-weight: {{ body_font.weight }};
-    --font-heading-scale: {{ settings.heading_scale | divided_by: 100.0 }};
-    --font-body-scale: {{ settings.body_scale | divided_by: 100.0 }};
+    --font-heading-family: var(--font-sans);
+    --font-heading-weight: 800;
+    --font-body-family: var(--font-sans);
+    --font-body-weight: 400;
+    --estilo: var(--font-sans);
+    --bold: var(--font-sans);
+    --light: var(--font-sans);
 
-    /* Backwards-compatible font aliases */
-    --estilo: var(--font-heading-family);
-    --bold: var(--font-body-family);
-    --light: var(--font-body-family);
+    /* Escala legada: mapeada para os tamanhos dos tokens .text-* */
+    --f0: 12px;
+    --f1: 14px;
+    --f2: 16px;
+    --f3: 18px;
+    --f4: 20px;
+    --f5: 20px;
+    --f6: 28px;
+    --f7: 40px;
+    --f8: 56px;
 
-    /* Fluid type scale */
-    --f0: clamp(0.5rem, 1vw, 0.7rem);
-    --f1: clamp(0.7rem, 1vw, 0.9rem);
-    --f2: clamp(0.9rem, 1vw, 1.1rem);
-    --f3: clamp(1.1rem, 1vw, 1.3rem);
-    --f4: clamp(1.3rem, 1vw, 1.5rem);
-    --f5: clamp(1.5rem, 1vw, 1.8rem);
-    --f6: clamp(1.8rem, 1vw, 2.2rem);
-    --f7: clamp(2.2rem, 1vw, 2.5rem);
-    --f8: clamp(3rem, 1vw, 4rem);
-
-    /* Layout */
-    --page-width: {{ settings.page_width }}px;
-    --spacing-sections: {{ settings.spacing_sections }}px;
-    --buttons-radius: {{ settings.buttons_radius }}px;
-    --inputs-radius: {{ settings.inputs_radius }}px;
-    --media-radius: {{ settings.media_radius }}px;
-  }
-
-  body {
-    font-family: var(--font-body-family);
-    font-weight: var(--font-body-weight);
-    color: var(--color-text);
-    background-color: var(--color-background);
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading-family);
-    font-weight: var(--font-heading-weight);
+    --page-width: var(--page-max);
+    --spacing-sections: var(--section-gap);
+    --buttons-radius: var(--radius-sm);
+    --inputs-radius: var(--radius-sm);
+    --media-radius: var(--radius-none);
   }
 </style>

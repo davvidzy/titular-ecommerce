@@ -1,0 +1,32 @@
+{
+  "sections": {
+    "nav": { "type": "help-nav" },
+    "main": { "type": "main-page" },
+    "compare": {
+      "type": "version-comparison",
+      "blocks": {
+        "fan": { "type": "version", "settings": { "version": "Torcedor" } },
+        "player": {
+          "type": "version",
+          "settings": {
+            "version": "Jogador",
+            "fabric": "Tecido leve com furos de ventilação, escudo termocolado.",
+            "fit": "Justo. Na dúvida, um número acima.",
+            "price": "Faixa de exemplo: R$ 349 a R$ 449."
+          }
+        },
+        "retro": {
+          "type": "version",
+          "settings": {
+            "version": "Retrô",
+            "fabric": "Tecido encorpado, como o da época.",
+            "fit": "Largo. Se prefere justo, um número abaixo.",
+            "price": "Faixa de exemplo: R$ 229 a R$ 279."
+          }
+        }
+      },
+      "block_order": ["fan", "player", "retro"]
+    }
+  },
+  "order": ["nav", "main", "compare"]
+}

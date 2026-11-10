@@ -1,0 +1,40 @@
+{%- comment -%}
+  MAIN ORDER — detalhe do pedido (Conta, Fase 3). Contas clássicas.
+  Itens (com personalização), status, rastreio e total.
+{%- endcomment -%}
+<section class="page-width account stack--lg">
+  <a href="{{ routes.account_url }}" class="text-label">← {{ 'customer.account.return' | t }}</a>
+  <h1 class="text-h1">{{ order.name }}</h1>
+  <p class="text-small muted">{{ order.created_at | date: '%d/%m/%Y' }} · {{ order.financial_status_label }} · {{ order.fulfillment_status_label }}</p>
+
+  <ul class="stack" role="list">
+    {%- for line_item in order.line_items -%}
+      <li class="order-line">
+        <div class="stack--sm">
+          <p class="text-body">{{ line_item.title | escape }}</p>
+          {%- for property in line_item.properties -%}
+            {%- assign first_char = property.first | slice: 0 -%}
+            {%- if property.last != blank and first_char != '_' -%}<p class="text-small">{{ property.first }}: {{ property.last }}</p>{%- endif -%}
+          {%- endfor -%}
+          {%- if line_item.fulfillment.tracking_url -%}
+            <a href="{{ line_item.fulfillment.tracking_url }}" class="text-small" target="_blank" rel="noopener">{{ 'titular.account.track' | t }} {{ line_item.fulfillment.tracking_number }}</a>
+          {%- endif -%}
+        </div>
+        <span class="text-price">{{ line_item.final_line_price | money }}</span>
+      </li>
+    {%- endfor -%}
+  </ul>
+
+  <div class="order-line">
+    <span class="text-body">{{ 'customer.orders.total' | t }}</span>
+    <span class="text-price">{{ order.total_price | money }}</span>
+  </div>
+</section>
+
+{% stylesheet %}
+  .order-line { display: flex; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-4); border-bottom: 1px solid var(--line); }
+{% endstylesheet %}
+
+{% schema %}
+{ "name": "Pedido", "settings": [] }
+{% endschema %}

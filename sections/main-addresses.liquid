@@ -1,0 +1,29 @@
+{%- comment -%}
+  MAIN ADDRESSES — endereços (Conta, Fase 3). Contas clássicas.
+  Esqueleto: lista os endereços e permite adicionar um novo.
+  Editar/apagar endereço fica para o refinamento da Fase 3.
+{%- endcomment -%}
+<section class="page-width account stack--lg">
+  <a href="{{ routes.account_url }}" class="text-label">← {{ 'customer.account.return' | t }}</a>
+  <h1 class="text-h1">{{ 'titular.account.addresses' | t }}</h1>
+
+  <ul class="stack" role="list">
+    {%- for address in customer.addresses -%}
+      <li class="text-body">{{ address | format_address }}</li>
+    {%- endfor -%}
+  </ul>
+
+  {%- form 'customer_address', customer.new_address, class: 'stack account-page' -%}
+    <h2 class="text-h3">{{ 'titular.account.new_address' | t }}</h2>
+    <div class="field"><label class="text-small" for="AddrName">{{ 'titular.account.first_name' | t }}</label><input class="field__input" id="AddrName" name="address[first_name]" autocomplete="given-name"></div>
+    <div class="field"><label class="text-small" for="AddrZip">CEP</label><input class="field__input" id="AddrZip" name="address[zip]" inputmode="numeric" autocomplete="postal-code"></div>
+    <div class="field"><label class="text-small" for="AddrAddress1">{{ 'titular.account.address1' | t }}</label><input class="field__input" id="AddrAddress1" name="address[address1]" autocomplete="address-line1"></div>
+    <div class="field"><label class="text-small" for="AddrCity">{{ 'titular.account.city' | t }}</label><input class="field__input" id="AddrCity" name="address[city]" autocomplete="address-level2"></div>
+    <input type="hidden" name="address[country]" value="Brazil">
+    <button class="button text-label">{{ 'titular.account.save' | t }}</button>
+  {%- endform -%}
+</section>
+
+{% schema %}
+{ "name": "Endereços", "settings": [] }
+{% endschema %}

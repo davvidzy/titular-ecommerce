@@ -1,0 +1,49 @@
+{%- comment -%}
+  ============================================================
+  price-extras — desconto no Pix e parcelas sem juros
+  ============================================================
+
+  O QUE FAZ:
+  Responde "quanto custa" por completo (§3.1 #3): preço no Pix e
+  parcelamento. Regras em Configurações do tema > Comercial:
+  - settings.pix_discount (%)
+  - settings.installments_max (nº máximo de parcelas)
+  - settings.installment_min (valor mínimo da parcela, em R$)
+
+  COMO USAR:
+  {% render 'price-extras', amount: variant.price %}
+  {% render 'price-extras', amount: product.price, pix: false %}
+
+  PARÂMETROS:
+  - amount: valor em centavos.
+  - pix (bool, padrão true): mostra a linha do Pix.
+
+  OBSERVAÇÕES:
+  É cálculo de vitrine. O valor cobrado de verdade vem do checkout
+  (desconto do Pix precisa existir como desconto/forma de pagamento).
+{%- endcomment -%}
+{%- liquid
+  assign show_pix = true
+  if pix == false
+    assign show_pix = false
+  endif
+
+  assign min_cents = settings.installment_min | times: 100
+  assign count = settings.installments_max
+  if min_cents > 0
+    assign by_min = amount | divided_by: min_cents
+    if by_min < count
+      assign count = by_min
+    endif
+  endif
+-%}
+<div class="price-extras" data-price-extras>
+  {%- if show_pix and settings.pix_discount > 0 -%}
+    {%- assign pix_money = 100 | minus: settings.pix_discount | times: amount | divided_by: 100 | money -%}
+    <p class="text-small">{{ 'titular.price.pix' | t: price: pix_money, discount: settings.pix_discount }}</p>
+  {%- endif -%}
+  {%- if count > 1 -%}
+    {%- assign per_money = amount | divided_by: count | money -%}
+    <p class="text-small muted">{{ 'titular.price.installments' | t: count: count, price: per_money }}</p>
+  {%- endif -%}
+</div>

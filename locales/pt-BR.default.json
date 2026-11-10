@@ -1,0 +1,346 @@
+{
+  "general": {
+    "meta": {
+      "tags": "Marcado com \"{{ tags }}\"",
+      "page": "Página {{ page }}"
+    },
+    "404": {
+      "title": "Página não encontrada",
+      "subtext": "A página que você procura não existe."
+    },
+    "password_page": {
+      "password_label": "Senha",
+      "password_placeholder": "Sua senha",
+      "submit": "Entrar"
+    },
+    "search": {
+      "search": "Buscar",
+      "placeholder": "Buscar",
+      "submit": "Buscar",
+      "results_with_count": "{{ count }} resultado para \"{{ terms }}\"",
+      "results_with_count_plural": "{{ count }} resultados para \"{{ terms }}\"",
+      "no_results": "Não achamos \"{{ terms }}\".",
+      "reset": "Limpar busca"
+    },
+    "pagination": {
+      "label": "Paginação",
+      "previous": "Página anterior",
+      "next": "Próxima página",
+      "page": "Página {{ number }}"
+    },
+    "breadcrumbs": {
+      "home": "Início"
+    },
+    "continue_shopping": "Ver camisas",
+    "newsletter_form": {
+      "newsletter_email": "E-mail",
+      "email_placeholder": "E-mail",
+      "confirmation": "Inscrição feita.",
+      "button_label": "Inscrever"
+    }
+  },
+  "accessibility": {
+    "skip_to_text": "Pular para o conteúdo",
+    "close": "Fechar",
+    "unit_price_separator": "por",
+    "vendor": "Marca:",
+    "error": "Erro",
+    "refresh_page": "Escolher uma opção recarrega a página.",
+    "link_messages": {
+      "new_window": "Abre em uma nova janela.",
+      "external": "Abre um site externo."
+    },
+    "loading": "Carregando...",
+    "next_slide": "Próxima imagem",
+    "previous_slide": "Imagem anterior",
+    "of": "de",
+    "star_reviews_info": "{{ rating_value }} de {{ rating_max }} estrelas",
+    "total_reviews": "{{ count }} avaliações"
+  },
+  "localization": {
+    "country_label": "País/região",
+    "language_label": "Idioma",
+    "update_language": "Mudar idioma",
+    "update_country": "Mudar país/região"
+  },
+  "newsletter": {
+    "label": "E-mail",
+    "success": "Inscrição feita.",
+    "button_label": "Inscrever"
+  },
+  "products": {
+    "product": {
+      "add_to_cart": "Adicionar ao carrinho",
+      "sold_out": "Esgotado",
+      "unavailable": "Indisponível",
+      "on_sale": "Promoção",
+      "quantity": {
+        "label": "Quantidade",
+        "input_label": "Quantidade de {{ product }}",
+        "increase": "Aumentar quantidade de {{ product }}",
+        "decrease": "Diminuir quantidade de {{ product }}"
+      },
+      "price": {
+        "from_price_html": "A partir de {{ price }}",
+        "regular_price": "Preço normal",
+        "sale_price": "Preço promocional",
+        "unit_price": "Preço unitário"
+      },
+      "vendor": "Marca",
+      "view_full_details": "Ver detalhes",
+      "description": "Descrição",
+      "share": "Compartilhar",
+      "include_taxes": "Impostos inclusos.",
+      "shipping_policy_html": "<a href=\"{{ link }}\">Frete</a> calculado no checkout.",
+      "media": {
+        "gallery_viewer": "Fotos do produto",
+        "load_image": "Abrir imagem {{ index }}",
+        "load_model": "Abrir modelo 3D {{ index }}",
+        "load_video": "Tocar vídeo {{ index }}",
+        "image_available": "Imagem {{ index }} disponível",
+        "open_media": "Abrir mídia {{ index }}",
+        "play_model": "Abrir visualizador 3D",
+        "play_video": "Tocar vídeo"
+      },
+      "choose_options": "Escolher tamanho",
+      "choose_product_options": "Escolher tamanho de {{ product_name }}"
+    },
+    "facets": {
+      "sort_by_label": "Ordenar por",
+      "filter_by_label": "Filtrar:",
+      "filter_button": "Filtrar",
+      "clear": "Limpar",
+      "clear_all": "Limpar tudo",
+      "apply": "Aplicar",
+      "reset": "Limpar",
+      "from": "De (R$)",
+      "to": "Até (R$)",
+      "product_count": "{{ product_count }} de {{ count }} camisas",
+      "product_count_simple": "{{ count }} camisas"
+    }
+  },
+  "templates": {
+    "search": {
+      "no_results": "Não achamos \"{{ terms }}\".",
+      "results_with_count": "{{ count }} resultado para \"{{ terms }}\"",
+      "results_with_count_plural": "{{ count }} resultados para \"{{ terms }}\"",
+      "title": "Buscar",
+      "page": "Página",
+      "products": "Camisas",
+      "search_for": "Resultados para \"{{ terms }}\"",
+      "results_pages_with_count": {
+        "one": "{{ count }} página",
+        "other": "{{ count }} páginas"
+      }
+    },
+    "cart": {
+      "cart": "Carrinho"
+    },
+    "contact": {
+      "form": {
+        "name": "Nome",
+        "email": "E-mail",
+        "phone": "Telefone",
+        "comment": "Mensagem",
+        "send": "Enviar",
+        "post_success": "Recebemos sua mensagem. Você recebe a resposta por e-mail em até 1 dia útil.",
+        "error_heading": "Confira os campos:"
+      }
+    },
+    "404": {
+      "title": "Página não encontrada",
+      "subtext": "404"
+    }
+  },
+  "sections": {
+    "main_collection": {
+      "empty": "Nenhuma camisa com esses filtros.",
+      "use_fewer_filters": "Limpar filtros"
+    },
+    "header": {
+      "announcement": "Aviso",
+      "menu": "Menu",
+      "cart_items": "itens",
+      "cart_count": {
+        "one": "{{ count }} item",
+        "other": "{{ count }} itens"
+      }
+    },
+    "cart": {
+      "title": "Carrinho",
+      "caption": "Itens do carrinho",
+      "remove_title": "Remover {{ title }}",
+      "note": "Observação do pedido",
+      "checkout": "Finalizar compra",
+      "empty": "Seu carrinho está vazio.",
+      "cart_error": "Não deu para atualizar o carrinho. Tente de novo.",
+      "cart_quantity_error_html": "Só dá para adicionar {{ quantity }} deste item.",
+      "taxes_and_shipping_policy_at_checkout_html": "Frete calculado no checkout. <a href=\"{{ link }}\">Ver prazos</a>.",
+      "taxes_included_but_shipping_at_checkout": "Impostos inclusos. Frete calculado no checkout.",
+      "taxes_included_and_shipping_policy_html": "Impostos inclusos. <a href=\"{{ link }}\">Frete</a> calculado no checkout.",
+      "taxes_and_shipping_at_checkout": "Frete calculado no checkout.",
+      "headings": {
+        "product": "Produto",
+        "price": "Preço",
+        "total": "Total",
+        "quantity": "Quantidade"
+      },
+      "subtotal": "Subtotal",
+      "new_subtotal": "Novo subtotal",
+      "update": "Atualizar",
+      "remove": "Remover"
+    },
+    "footer": {
+      "payment": "Formas de pagamento",
+      "rights": "Todos os direitos reservados.",
+      "base_by_html": "Base por <a href=\"{{ link }}\" target=\"_blank\" rel=\"noopener\">Team Lecdt</a>"
+    },
+    "collection_list": {
+      "view_all": "Ver todas"
+    },
+    "featured_collection": {
+      "view_all": "Ver todas",
+      "view_all_label": "Ver todas as camisas da coleção {{ collection_name }}"
+    }
+  },
+  "customer": {
+    "account": {
+      "title": "Conta",
+      "details": "Dados da conta",
+      "view_addresses": "Ver endereços",
+      "return": "Voltar para meus pedidos"
+    },
+    "login_page": {
+      "title": "Entrar",
+      "email": "E-mail",
+      "password": "Senha",
+      "sign_in": "Entrar",
+      "create_account": "Criar conta"
+    },
+    "orders": {
+      "title": "Meus pedidos",
+      "order_number": "Pedido",
+      "date": "Data",
+      "total": "Total"
+    }
+  },
+  "gift_cards": {
+    "issued": {
+      "title": "Seu vale-presente de {{ value }} da {{ shop }}",
+      "subtext": "Seu vale-presente",
+      "gift_card_code": "Código do vale-presente",
+      "shop_link": "Ver camisas",
+      "add_to_apple_wallet": "Adicionar à Apple Wallet",
+      "qr_image_alt": "QR code para usar o vale-presente",
+      "copy_code": "Copiar código",
+      "expired": "Expirado",
+      "copy_code_success": "Código copiado",
+      "print_gift_card": "Imprimir"
+    }
+  },
+  "blogs": {
+    "article": {
+      "read_more": "Ler mais",
+      "comment_meta_html": "{{ author }} em {{ date }}",
+      "comments": {
+        "one": "{{ count }} comentário",
+        "other": "{{ count }} comentários"
+      },
+      "moderated": "Comentários passam por aprovação antes de aparecer.",
+      "comment_form_title": "Deixe um comentário",
+      "name": "Nome",
+      "email": "E-mail",
+      "message": "Comentário",
+      "post": "Publicar",
+      "back_to_blog": "Voltar para o blog",
+      "share": "Compartilhar",
+      "success": "Comentário publicado.",
+      "success_moderated": "Comentário enviado. Ele aparece depois da aprovação."
+    }
+  },
+  "onboarding": {
+    "product_title": "Camisa de exemplo",
+    "collection_title": "Nome da coleção"
+  },
+  "titular": {
+    "best_sellers": "Mais vendidos",
+    "price": {
+      "pix": "{{ price }} no Pix ({{ discount }}% de desconto)",
+      "installments": "ou {{ count }}x de {{ price }} sem juros"
+    },
+    "product": {
+      "size_guide": "Guia de tamanhos",
+      "same_club": "Mais do {{ club }}",
+      "new": "Novo"
+    },
+    "personalization": {
+      "toggle": "Personalizar com nome e número",
+      "name": "Nome (até 12 letras)",
+      "number": "Número (0 a 99)",
+      "terms": "Personalizada soma {{ days }} dias úteis ao prazo e não tem troca.",
+      "no_exchange": "Camisa personalizada não tem troca."
+    },
+    "shipping": {
+      "label": "Prazo de entrega",
+      "submit": "Calcular",
+      "cep_invalid": "Digite um CEP com 8 números.",
+      "cep_result": "Chega em {{ min }} a {{ max }} dias úteis. Você recebe o rastreio por e-mail.",
+      "region": "Região",
+      "days": "Prazo"
+    },
+    "cart": {
+      "free_shipping_remaining": "Faltam {{ amount }} para o frete grátis.",
+      "free_shipping_reached": "Frete grátis garantido.",
+      "discount_label": "Cupom de desconto",
+      "shipping_at_checkout": "Frete e prazo final calculados no checkout."
+    },
+    "collection": {
+      "count": {
+        "one": "{{ count }} camisa",
+        "other": "{{ count }} camisas"
+      },
+      "remove_filter": "Remover filtro",
+      "show_results": "Ver camisas",
+      "load_more": "Carregar mais",
+      "showing": "Mostrando {{ shown }} de {{ total }}"
+    },
+    "search": {
+      "placeholder": "Clube, seleção ou temporada",
+      "clubs": "Clubes",
+      "not_found": "Não achamos \"{{ terms }}\"."
+    },
+    "help": {
+      "nav_label": "Ajuda",
+      "whatsapp": "Chamar no WhatsApp",
+      "order_number": "Número do pedido",
+      "item": "Camisa que quer trocar",
+      "new_size": "Novo tamanho"
+    },
+    "versions": {
+      "fabric": "Tecido",
+      "fit": "Corte",
+      "price": "Preço"
+    },
+    "account": {
+      "forgot": "Esqueci a senha",
+      "recover_title": "Recuperar senha",
+      "recover_sent": "Enviamos um link para o seu e-mail.",
+      "first_name": "Nome",
+      "logout": "Sair",
+      "status": "Status",
+      "no_orders": "Você ainda não fez nenhum pedido.",
+      "track": "Rastrear",
+      "addresses": "Endereços",
+      "new_address": "Novo endereço",
+      "address1": "Endereço",
+      "city": "Cidade",
+      "save": "Salvar",
+      "new_password": "Nova senha",
+      "confirm_password": "Confirmar senha"
+    },
+    "placeholder": {
+      "reviews": "Exemplo: avaliações fictícias para o esqueleto. Troque por avaliações reais (app) antes de publicar.",
+      "personalization": "Exemplo: este produto não é personalizável (metafield titular.personalizavel). O bloco só aparece aqui no editor."
+    }
+  }
+}

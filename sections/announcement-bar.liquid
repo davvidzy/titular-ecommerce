@@ -1,0 +1,50 @@
+{%- comment -%}
+  ============================================================
+  ANNOUNCEMENT BAR — faixa de aviso (Home #1, todas as páginas)
+  ============================================================
+
+  TRABALHO (docs/arquitetura-informacao.md §3.2):
+  Uma frase com a principal objeção resolvida (prazo, frete ou troca).
+  Fundo --ink, texto --ink-inverse.
+
+  SETTINGS: text (uma frase), link (opcional).
+{%- endcomment -%}
+{%- if section.settings.text != blank -%}
+  <div class="announcement" role="region" aria-label="{{ 'sections.header.announcement' | t }}">
+    <p class="announcement__text text-small page-width">
+      {%- if section.settings.link != blank -%}
+        <a href="{{ section.settings.link }}">{{ section.settings.text | escape }}</a>
+      {%- else -%}
+        {{ section.settings.text | escape }}
+      {%- endif -%}
+    </p>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .announcement { color: var(--ink-inverse); background: var(--ink); }
+  .announcement__text { padding-block: var(--space-2); text-align: center; }
+  .announcement a { color: inherit; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Faixa de aviso",
+  "class": "section-announcement",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Frase",
+      "default": "Troca grátis do tamanho em até 7 dias. Rastreio em todo pedido.",
+      "info": "Uma frase só, resolvendo a principal dúvida (prazo, frete ou troca)."
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link (opcional)"
+    }
+  ],
+  "presets": [{ "name": "Faixa de aviso" }]
+}
+{% endschema %}

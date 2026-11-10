@@ -1,0 +1,26 @@
+{%- comment -%}
+  MAIN REGISTER — criar conta (Conta, Fase 3). Contas clássicas.
+{%- endcomment -%}
+<section class="page-width account-page stack">
+  <h1 class="text-h1">{{ 'customer.login_page.create_account' | t }}</h1>
+  {%- form 'create_customer', class: 'stack' -%}
+    {%- if form.errors -%}<div class="notice notice--danger text-small" role="alert">{% render 'icon', name: 'alert' %}{{ form.errors | default_errors }}</div>{%- endif -%}
+    <div class="field">
+      <label class="text-small" for="RegisterFirstName">{{ 'titular.account.first_name' | t }}</label>
+      <input class="field__input" type="text" name="customer[first_name]" id="RegisterFirstName" autocomplete="given-name">
+    </div>
+    <div class="field">
+      <label class="text-small" for="RegisterEmail">{{ 'customer.login_page.email' | t }}</label>
+      <input class="field__input" type="email" name="customer[email]" id="RegisterEmail" autocomplete="email" required>
+    </div>
+    <div class="field">
+      <label class="text-small" for="RegisterPassword">{{ 'customer.login_page.password' | t }}</label>
+      <input class="field__input" type="password" name="customer[password]" id="RegisterPassword" autocomplete="new-password" required>
+    </div>
+    <button class="button button--full text-label">{{ 'customer.login_page.create_account' | t }}</button>
+  {%- endform -%}
+</section>
+
+{% schema %}
+{ "name": "Criar conta", "settings": [] }
+{% endschema %}
