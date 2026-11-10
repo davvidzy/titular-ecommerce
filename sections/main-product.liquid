@@ -3,43 +3,47 @@
   MAIN PRODUCT — página de produto  ← PRIORIDADE MÁXIMA
   ============================================================
 
-  TRABALHO (docs/arquitetura-informacao.md §3.1). Ordem na página:
-   1. Galeria (frente, costas, tecido, etiqueta)  → fixa, fora dos blocks
-   2. Nome, clube, temporada e versão             → block "title"
-   3. Preço, desconto no Pix e parcelas           → block "price"
-   4. Seletor de tamanho + "Guia de tamanhos"     → block "size" (modal)
-   5. Recomendação de caimento                    → block "fit"
-   6. Personalização (opcional)                   → block "personalization"
-   7. Adicionar ao carrinho (fixo no mobile)      → block "buy_buttons"
-   8. Prazo por CEP                               → block "shipping"
-   9. Garantias                                   → block "guarantees"
-  10. Detalhes em acordeão                        → blocks "accordion"
-  11. Avaliações com foto                         → sections/reviews.liquid
-  12. Mesmo clube / outras versões                → sections/related-products.liquid
+  HIERARQUIA DA COLUNA DE INFORMAÇÕES (o que importa para comprar, em ordem):
+    1. Versão + nome + clube/temporada            → block "title"
+    2. Preço, Pix e parcelas                       → block "price"
+    3. Tamanho + guia de tamanhos (modal)          → block "size"
+    4. Personalização: caixa de seleção; os campos
+       Número e Nome só aparecem ao marcar        → block "personalization"
+    5. Adicionar ao carrinho (principal) +
+       Comprar agora (secundário) + formas de
+       pagamento                                   → block "buy_buttons"
+    6. Prazo por CEP (separado, com título)        → block "shipping"
+    7. Garantias                                   → block "guarantees"
+    8. Detalhes em acordeão                        → blocks "accordion"
+  Depois da section: Recomendações (por tags) e FAQ (inclui caimento).
 
-  DADOS (§5.1): só o tamanho é variante. O resto vem de metafields
-  product.metafields.titular.* (clube, liga, temporada, uniforme,
-  versao, modelagem, manga, personalizavel, prazo_dias).
-  Personalização = line item properties (Nome, Número, _personalizada).
+  GALERIA:
+  - Celular: carrossel deslizável com contador.
+  - Desktop: miniaturas centralizadas à esquerda + foto principal com
+    setas. Sem posição fixa.
+  - Clique em qualquer foto abre a galeria em tela cheia (<dialog>
+    .lightbox) com fade, setas, arrastar para os lados, Esc e clique
+    fora para fechar.
 
-  JS: assets/produto.js (variante, preço, personalização, CEP, galeria).
-  Sem JS: o form envia para /cart/add com a variante pré-selecionada.
+  DADOS: tamanho é variante; opções com um valor só (ex.: "Customization
+  type") ficam escondidas e marcadas. Metafields titular.* opcionais.
+  Personalização = line item properties (Número, Nome, _personalizada).
+
+  JS: assets/produto.js. "Comprar agora": assets/carrinho.js.
 {%- endcomment -%}
 {%- liquid
   assign product_form_id = 'product-form-' | append: section.id
   assign current_variant = product.selected_or_first_available_variant
   assign mf = product.metafields.titular
   assign versao = mf.versao.value
+  assign active_media_id = current_variant.featured_media.id | default: product.featured_media.id
+  assign media_count = product.media.size
 -%}
 
 <section class="product page-width" data-section-id="{{ section.id }}" data-product-section>
-  {%- comment -%} 1. Galeria {%- endcomment -%}
-  {%- liquid
-    assign active_media_id = current_variant.featured_media.id | default: product.featured_media.id
-  -%}
-  <div class="product__gallery" aria-label="{{ 'products.product.media.gallery_viewer' | t }}">
-    {%- comment -%} Miniaturas: só no desktop, à esquerda da foto principal. {%- endcomment -%}
-    {%- if product.media.size > 1 -%}
+  {%- comment -%} ========== GALERIA ========== {%- endcomment -%}
+  <div class="product__gallery{% if media_count > 1 %} product__gallery--thumbs{% endif %}" aria-label="{{ 'products.product.media.gallery_viewer' | t }}">
+    {%- if media_count > 1 -%}
       <ul class="product__thumbs" role="list">
         {%- for media in product.media -%}
           <li>
@@ -57,50 +61,56 @@
         {%- endfor -%}
       </ul>
     {%- endif -%}
-    <ul class="product__media-list" role="list" id="ProductMedia-{{ section.id }}" data-gallery>
-      {%- for media in product.media -%}
-        <li class="product__media-item media{% if media.id == active_media_id %} is-active{% endif %}" style="--ratio: 3 / 4;" data-media-id="{{ media.id }}">
-          {%- case media.media_type -%}
-            {%- when 'image' -%}
-              {%- liquid
-                assign loading = 'lazy'
-                if forloop.first
-                  assign loading = 'eager'
-                endif
-              -%}
-              {{
-                media
-                | image_url: width: 1440
-                | image_tag:
-                  loading: loading,
-                  sizes: '(min-width: 990px) 45vw, 100vw',
-                  widths: '390, 600, 780, 1080, 1440',
-                  alt: media.alt | default: product.title | escape
-              }}
-            {%- when 'external_video' -%}
-              {{ media | external_video_tag }}
-            {%- when 'video' -%}
+
+    <div class="product__stage">
+      <ul class="product__media-list" role="list" data-gallery>
+        {%- for media in product.media -%}
+          <li class="product__media-item media{% if media.id == active_media_id %} is-active{% endif %}" style="--ratio: 3 / 4;" data-media-id="{{ media.id }}" data-index="{{ forloop.index0 }}">
+            {%- if media.media_type == 'image' -%}
+              <button type="button" class="product__zoom" data-lightbox-open="{{ forloop.index0 }}" aria-label="{{ 'titular.product.open_gallery' | t: index: forloop.index }}">
+                {%- liquid
+                  assign loading = 'lazy'
+                  if forloop.first
+                    assign loading = 'eager'
+                  endif
+                -%}
+                {{
+                  media
+                  | image_url: width: 1440
+                  | image_tag:
+                    loading: loading,
+                    sizes: '(min-width: 990px) 45vw, 100vw',
+                    widths: '390, 600, 780, 1080, 1440',
+                    alt: media.alt | default: product.title | escape
+                }}
+              </button>
+            {%- elsif media.media_type == 'video' -%}
               {{ media | video_tag: controls: true, image_size: '1080x' }}
+            {%- elsif media.media_type == 'external_video' -%}
+              {{ media | external_video_tag }}
             {%- else -%}
               {{ media | media_tag }}
-          {%- endcase -%}
-        </li>
-      {%- else -%}
-        <li class="product__media-item media" style="--ratio: 3 / 4;">
-          {{ 'product-1' | placeholder_svg_tag }}
-        </li>
-      {%- endfor -%}
-    </ul>
-    {%- if product.media.size > 1 -%}
-      <p class="product__media-counter text-label muted" aria-hidden="true" data-gallery-counter>1 / {{ product.media.size }}</p>
-    {%- endif -%}
+            {%- endif -%}
+          </li>
+        {%- else -%}
+          <li class="product__media-item media is-active" style="--ratio: 3 / 4;">{{ 'product-1' | placeholder_svg_tag }}</li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if media_count > 1 -%}
+        <button type="button" class="product__arrow product__arrow--prev icon-button" data-gallery-prev aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon', name: 'chevron' %}</button>
+        <button type="button" class="product__arrow product__arrow--next icon-button" data-gallery-next aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon', name: 'chevron' %}</button>
+        <p class="product__media-counter text-label" aria-hidden="true" data-gallery-counter>1 / {{ media_count }}</p>
+      {%- endif -%}
+    </div>
   </div>
 
+  {%- comment -%} ========== INFORMAÇÕES ========== {%- endcomment -%}
   <div class="product__info">
     {%- form 'product',
       product,
       id: product_form_id,
-      class: 'product__form stack--lg',
+      class: 'product__form',
       novalidate: 'novalidate',
       data-type: 'add-to-cart-form'
     -%}
@@ -109,11 +119,10 @@
       {%- for block in section.blocks -%}
         {%- case block.type -%}
           {%- when '@app' -%}
-            {% render block %}
+            <div class="product__block">{% render block %}</div>
 
-          {%- comment -%} 2. Nome, clube, temporada e versão {%- endcomment -%}
           {%- when 'title' -%}
-            <div class="product__title stack--sm" {{ block.shopify_attributes }}>
+            <div class="product__block product__title" {{ block.shopify_attributes }}>
               {%- if versao != blank -%}
                 <span class="tag text-label">{{ versao | escape }}</span>
               {%- endif -%}
@@ -128,20 +137,18 @@
               {%- endif -%}
             </div>
 
-          {%- comment -%} 3. Preço, Pix e parcelas {%- endcomment -%}
           {%- when 'price' -%}
-            <div class="product__price stack--sm" {{ block.shopify_attributes }} data-product-price>
+            <div class="product__block product__price" {{ block.shopify_attributes }} data-product-price>
               {% render 'price', product: current_variant, use_variant: false, show_compare: true %}
               {% render 'price-extras', amount: current_variant.price %}
             </div>
 
-          {%- comment -%} 4. Tamanho + guia (modal) {%- endcomment -%}
           {%- when 'size' -%}
             {%- unless product.has_only_default_variant -%}
-              <div class="product__options stack" {{ block.shopify_attributes }}>
+              <div class="product__block product__options" {{ block.shopify_attributes }}>
                 {%- for option in product.options_with_values -%}
                   {%- assign opt_index = forloop.index0 -%}
-                  {%- comment -%} Opção com um valor só (ex.: "Customization type"): escondida e já marcada. {%- endcomment -%}
+                  {%- comment -%} Opção com um valor só: escondida e já marcada. {%- endcomment -%}
                   {%- if option.values.size == 1 -%}
                     <fieldset class="product__option" data-option-index="{{ opt_index }}" hidden>
                       <input type="radio" name="option-{{ opt_index }}" value="{{ option.values.first | escape }}" checked>
@@ -152,7 +159,7 @@
                     <div class="product__option-head">
                       <legend class="text-label">{{ option.name }}</legend>
                       {%- if opt_index == 0 and settings.page_size_guide != blank -%}
-                        <button type="button" class="button--link text-small" aria-haspopup="dialog" data-dialog-open="SizeGuide-{{ section.id }}">
+                        <button type="button" class="button--link text-small product__guide" aria-haspopup="dialog" data-dialog-open="SizeGuide-{{ section.id }}">
                           {% render 'icon', name: 'ruler' %}{{ 'titular.product.size_guide' | t }}
                         </button>
                       {%- endif -%}
@@ -180,7 +187,7 @@
                         <label for="{{ input_id }}" class="size-picker__label {% unless value_available %}is-sold-out{% endunless %}">
                           <span class="text-label">{{ value }}</span>
                           {%- unless value_available -%}
-                            <span class="text-small">{{ 'products.product.sold_out' | t }}</span>
+                            <span class="visually-hidden">{{ 'products.product.sold_out' | t }}</span>
                           {%- endunless -%}
                         </label>
                       {%- endfor -%}
@@ -190,31 +197,6 @@
               </div>
             {%- endunless -%}
 
-          {%- comment -%} 5. Recomendação de caimento (1 frase, pela versão) {%- endcomment -%}
-          {%- when 'fit' -%}
-            {%- liquid
-              case versao
-                when 'Jogador'
-                  assign fit_text = block.settings.fit_player
-                when 'Retrô'
-                  assign fit_text = block.settings.fit_retro
-                else
-                  assign fit_text = block.settings.fit_fan
-              endcase
-            -%}
-            {%- if fit_text != blank -%}
-              <p class="product__fit notice text-small" {{ block.shopify_attributes }}>
-                {% render 'icon', name: 'info' %}<span>{{ fit_text | escape }}</span>
-              </p>
-            {%- endif -%}
-
-          {%- comment -%}
-            6. Personalização: dois campos, Número e Nome (line item properties).
-            Aparece se o metafield titular.personalizavel for verdadeiro OU se o
-            produto tiver uma opção de personalização (ex.: "Customization type").
-            Opcional: vazio = camisa sem personalização. Preenchido = envia
-            _personalizada e mostra o aviso de prazo extra e sem troca.
-          {%- endcomment -%}
           {%- when 'personalization' -%}
             {%- liquid
               assign has_custom = false
@@ -228,57 +210,69 @@
                 endif
               endfor
             -%}
-            {%- if has_custom or request.design_mode -%}
-              <fieldset class="product__personalization stack" {{ block.shopify_attributes }} data-personalization data-extra-days="{{ block.settings.extra_days }}">
-                <legend class="text-label">
-                  {{- 'titular.personalization.toggle' | t -}}
-                  {%- if block.settings.price_label != blank %} <span class="muted">({{ block.settings.price_label | escape }})</span>{% endif -%}
-                </legend>
-                {%- unless has_custom -%}
-                  <p class="placeholder-note text-small">{{ 'titular.placeholder.personalization' | t }}</p>
-                {%- endunless -%}
-                <input type="hidden" name="properties[_personalizada]" value="sim" disabled data-personalization-flag>
-                <div class="product__personalization-fields">
-                  <div class="field">
-                    <label class="text-small" for="PersonalNumber-{{ section.id }}">{{ 'titular.personalization.number' | t }}</label>
-                    <input class="field__input" id="PersonalNumber-{{ section.id }}" type="text" name="properties[Número]" inputmode="numeric" pattern="[0-9]{1,2}" maxlength="2" autocomplete="off" placeholder="10" data-personalization-input>
+            {%- if has_custom -%}
+              <div class="product__block product__personalization" {{ block.shopify_attributes }} data-personalization data-extra-days="{{ block.settings.extra_days }}">
+                <label class="personalization__toggle">
+                  <input type="checkbox" class="personalization__checkbox" data-personalization-toggle aria-controls="Personalization-{{ section.id }}" aria-expanded="false">
+                  <span class="personalization__text">
+                    <span class="text-body">{{ 'titular.personalization.toggle' | t }}</span>
+                    <span class="text-small muted">{{ 'titular.personalization.hint' | t }}</span>
+                  </span>
+                  {%- if block.settings.price_label != blank -%}
+                    <span class="text-label">{{ block.settings.price_label | escape }}</span>
+                  {%- endif -%}
+                </label>
+                <fieldset id="Personalization-{{ section.id }}" class="personalization__fields" data-personalization-fields disabled hidden>
+                  <legend class="visually-hidden">{{ 'titular.personalization.toggle' | t }}</legend>
+                  <input type="hidden" name="properties[_personalizada]" value="sim">
+                  <div class="personalization__grid">
+                    <div class="field">
+                      <label class="text-small" for="PersonalNumber-{{ section.id }}">{{ 'titular.personalization.number' | t }}</label>
+                      <input class="field__input" id="PersonalNumber-{{ section.id }}" type="text" name="properties[Número]" inputmode="numeric" pattern="[0-9]{1,2}" maxlength="2" autocomplete="off" placeholder="10" data-personalization-number>
+                    </div>
+                    <div class="field">
+                      <label class="text-small" for="PersonalName-{{ section.id }}">{{ 'titular.personalization.name' | t }}</label>
+                      <input class="field__input" id="PersonalName-{{ section.id }}" type="text" name="properties[Nome]" maxlength="{{ block.settings.max_name }}" autocomplete="off" autocapitalize="characters" placeholder="TITULAR">
+                    </div>
                   </div>
-                  <div class="field">
-                    <label class="text-small" for="PersonalName-{{ section.id }}">{{ 'titular.personalization.name' | t }}</label>
-                    <input class="field__input" id="PersonalName-{{ section.id }}" type="text" name="properties[Nome]" maxlength="{{ block.settings.max_name }}" autocomplete="off" autocapitalize="characters" placeholder="TITULAR" data-personalization-input>
-                  </div>
-                </div>
-                <p class="notice text-small" data-personalization-notice hidden>{% render 'icon', name: 'info' %}<span>{{ 'titular.personalization.terms' | t: days: block.settings.extra_days }}</span></p>
-                <p class="text-small muted">{{ 'titular.personalization.optional' | t }}</p>
-              </fieldset>
+                  <p class="notice text-small">{% render 'icon', name: 'info' %}<span>{{ 'titular.personalization.terms' | t: days: block.settings.extra_days }}</span></p>
+                </fieldset>
+              </div>
             {%- endif -%}
 
-          {%- comment -%} 7. Comprar (fixo no rodapé no mobile) {%- endcomment -%}
           {%- when 'buy_buttons' -%}
-            <div class="product__buy" {{ block.shopify_attributes }}>
+            <div class="product__block product__buy" {{ block.shopify_attributes }}>
+              <div class="product__atc">
+                <button
+                  type="submit"
+                  name="add"
+                  class="button button--full button--large text-label product__add-to-cart"
+                  {% unless current_variant.available %}disabled{% endunless %}
+                >
+                  <span>
+                    {%- if current_variant.available -%}
+                      {{ 'products.product.add_to_cart' | t }}
+                    {%- else -%}
+                      {{ 'products.product.sold_out' | t }}
+                    {%- endif -%}
+                  </span>
+                </button>
+              </div>
               <button
                 type="submit"
                 name="add"
-                class="button button--full text-label product__add-to-cart"
+                class="button button--secondary button--full text-label product__buy-now"
+                data-buy-now
                 {% unless current_variant.available %}disabled{% endunless %}
               >
-                <span>
-                  {%- if current_variant.available -%}
-                    {{ 'products.product.add_to_cart' | t }}
-                  {%- else -%}
-                    {{ 'products.product.sold_out' | t }}
-                  {%- endif -%}
-                </span>
+                {{- 'titular.product.buy_now' | t -}}
               </button>
-              {%- if block.settings.show_dynamic_checkout -%}
-                {{ form | payment_button }}
-              {%- endif -%}
+              {% render 'payment-icons' %}
             </div>
 
-          {%- comment -%} 8. Prazo por CEP {%- endcomment -%}
           {%- when 'shipping' -%}
             <div
-              class="product__shipping stack--sm"
+              class="product__block product__shipping"
               {{ block.shopify_attributes }}
               data-shipping-estimate
               data-handling-days="{{ mf.prazo_dias.value | default: 0 }}"
@@ -286,23 +280,24 @@
               data-text-invalid="{{ 'titular.shipping.cep_invalid' | t | escape }}"
               data-text-result="{{ 'titular.shipping.cep_result' | t: min: '__MIN__', max: '__MAX__' | escape }}"
             >
-              <label class="text-label" for="Cep-{{ section.id }}">{{ 'titular.shipping.label' | t }}</label>
+              <div class="product__shipping-head">
+                {% render 'icon', name: 'truck' %}
+                <label class="text-label" for="Cep-{{ section.id }}">{{ 'titular.shipping.label' | t }}</label>
+              </div>
               <div class="inline-form">
-                <input class="field__input" id="Cep-{{ section.id }}" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" maxlength="9" data-cep-input>
+                <input class="field__input" id="Cep-{{ section.id }}" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="{{ 'titular.shipping.placeholder' | t }}" maxlength="9" data-cep-input>
                 <button type="button" class="button button--secondary" data-cep-submit>{{ 'titular.shipping.submit' | t }}</button>
               </div>
               <p class="text-small" aria-live="polite" data-cep-result></p>
             </div>
 
-          {%- comment -%} 9. Garantias {%- endcomment -%}
           {%- when 'guarantees' -%}
-            <ul class="product__guarantees" role="list" {{ block.shopify_attributes }}>
+            <ul class="product__block product__guarantees" role="list" {{ block.shopify_attributes }}>
               {%- if block.settings.text_1 != blank -%}<li class="notice text-small">{% render 'icon', name: 'exchange' %}<span>{{ block.settings.text_1 | escape }}</span></li>{%- endif -%}
-              {%- if block.settings.text_2 != blank -%}<li class="notice text-small">{% render 'icon', name: 'truck' %}<span>{{ block.settings.text_2 | escape }}</span></li>{%- endif -%}
+              {%- if block.settings.text_2 != blank -%}<li class="notice text-small">{% render 'icon', name: 'check' %}<span>{{ block.settings.text_2 | escape }}</span></li>{%- endif -%}
               {%- if block.settings.text_3 != blank -%}<li class="notice text-small">{% render 'icon', name: 'shield' %}<span>{{ block.settings.text_3 | escape }}</span></li>{%- endif -%}
             </ul>
 
-          {%- comment -%} 10. Detalhes em acordeão (fechados por padrão) {%- endcomment -%}
           {%- when 'accordion' -%}
             {%- liquid
               assign accordion_content = blank
@@ -319,7 +314,7 @@
               endcase
             -%}
             {%- if accordion_content != blank -%}
-              <details class="accordion__item" {{ block.shopify_attributes }}>
+              <details class="accordion__item product__accordion" {{ block.shopify_attributes }}>
                 <summary class="accordion__summary text-label">
                   {{ block.settings.heading | escape }}
                   {% render 'icon', name: 'chevron' %}
@@ -329,7 +324,7 @@
             {%- endif -%}
 
           {%- when 'custom_liquid' -%}
-            <div {{ block.shopify_attributes }}>{{ block.settings.custom_liquid }}</div>
+            <div class="product__block" {{ block.shopify_attributes }}>{{ block.settings.custom_liquid }}</div>
         {%- endcase -%}
       {%- endfor -%}
     {%- endform -%}
@@ -352,6 +347,25 @@
       {%- endfor -%}
     ]
   </script>
+
+  {%- comment -%} ========== GALERIA EM TELA CHEIA ========== {%- endcomment -%}
+  {%- if product.media.size > 0 -%}
+    <dialog class="lightbox" aria-label="{{ 'products.product.media.gallery_viewer' | t }}" data-lightbox>
+      <div class="lightbox__track" data-lightbox-track>
+        {%- for media in product.media -%}
+          {%- if media.media_type == 'image' -%}
+            <figure class="lightbox__slide" data-lightbox-slide>
+              {{ media | image_url: width: 2000 | image_tag: loading: 'lazy', widths: '780, 1200, 1600, 2000', sizes: '90vw', alt: media.alt | default: product.title | escape }}
+            </figure>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+      <button type="button" class="lightbox__close icon-button" data-dialog-close aria-label="{{ 'accessibility.close' | t }}">{% render 'icon', name: 'close' %}</button>
+      <button type="button" class="lightbox__arrow lightbox__arrow--prev icon-button" data-lightbox-prev aria-label="{{ 'accessibility.previous_slide' | t }}">{% render 'icon', name: 'chevron' %}</button>
+      <button type="button" class="lightbox__arrow lightbox__arrow--next icon-button" data-lightbox-next aria-label="{{ 'accessibility.next_slide' | t }}">{% render 'icon', name: 'chevron' %}</button>
+      <p class="lightbox__counter text-label" aria-live="polite" data-lightbox-counter></p>
+    </dialog>
+  {%- endif -%}
 </section>
 
 {%- comment -%} Modal do guia de tamanhos: mesmo conteúdo da página de ajuda {%- endcomment -%}
@@ -370,10 +384,12 @@
 <script src="{{ 'produto.js' | asset_url }}" defer="defer"></script>
 
 {% stylesheet %}
-  .product { display: grid; gap: var(--space-6); padding-top: var(--space-4); }
+  .product { display: grid; gap: var(--space-6); padding-bottom: var(--space-12); }
 
-  /* Galeria: carrossel deslizável no mobile, grade no desktop. */
-  .product__gallery { position: relative; margin-inline: calc(var(--page-gutter) * -1); }
+  /* ---------- Galeria ---------- */
+  .product__gallery { margin-inline: calc(var(--page-gutter) * -1); }
+  .product__thumbs { display: none; }
+  .product__stage { position: relative; }
   .product__media-list {
     display: grid;
     grid-auto-flow: column;
@@ -384,92 +400,145 @@
   }
   .product__media-list::-webkit-scrollbar { display: none; }
   .product__media-item { scroll-snap-align: start; }
+  .product__zoom { position: absolute; inset: 0; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  .product__zoom img { width: 100%; height: 100%; object-fit: cover; }
+  .product__arrow { display: none; }
   .product__media-counter {
     position: absolute;
     right: var(--page-gutter);
     bottom: var(--space-4);
     padding: var(--space-1) var(--space-2);
     background: var(--surface);
+    border-radius: var(--radius-pill);
   }
 
+  /* ---------- Informações: ritmo vertical ---------- */
+  .product__form > .product__block + .product__block { margin-top: var(--space-6); }
+  .product__title > * + * { margin-top: var(--space-2); }
+  .product__price { padding-bottom: var(--space-6); border-bottom: 1px solid var(--line); }
+  .product__price .price-extras { margin-top: var(--space-2); }
+  .product__price .price-extras > * + * { margin-top: var(--space-1); }
+
   .product__option { border: 0; margin: 0; padding: 0; }
+  .product__option + .product__option { margin-top: var(--space-6); }
   .product__option-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-2); }
-  .product__option-head .button--link { display: inline-flex; align-items: center; gap: var(--space-1); }
-  .size-picker { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .product__guide { display: inline-flex; align-items: center; gap: var(--space-1); }
+  .size-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--tap) + var(--space-6)), 1fr)); gap: var(--space-2); }
   .size-picker__label {
-    display: inline-flex;
-    flex-direction: column;
+    display: flex;
     align-items: center;
     justify-content: center;
-    min-width: calc(var(--tap) + var(--space-2));
     min-height: calc(var(--tap) + var(--space-2));
-    padding: var(--space-1) var(--space-2);
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-sm);
     cursor: pointer;
   }
   .size-picker__input:checked + .size-picker__label { color: var(--ink-inverse); background: var(--ink); border-color: var(--ink); }
   .size-picker__input:focus-visible + .size-picker__label { outline: 2px solid var(--focus); outline-offset: 2px; }
-  .size-picker__label.is-sold-out { color: var(--ink-disabled); border-style: dashed; }
+  .size-picker__label.is-sold-out { color: var(--ink-disabled); border-style: dashed; text-decoration: line-through; }
 
-  .product__thumbs { display: none; }
+  /* Personalização: cartão com caixa de seleção; campos só ao marcar. */
+  .product__personalization { border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
+  .personalization__toggle {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-4);
+    min-height: calc(var(--tap) + var(--space-4));
+    padding: var(--space-2) var(--space-4);
+    cursor: pointer;
+  }
+  .personalization__checkbox { width: var(--space-6); height: var(--space-6); margin: 0; accent-color: var(--ink); }
+  .personalization__text { display: flex; flex-direction: column; }
+  .personalization__fields { margin: 0; padding: 0 var(--space-4) var(--space-4); border: 0; }
+  .personalization__grid { display: grid; grid-template-columns: calc(var(--space-24) - var(--space-4)) 1fr; gap: var(--space-2); margin-bottom: var(--space-4); }
 
-  .product__personalization { border: 0; margin: 0; padding: var(--space-4) 0 0; border-top: 1px solid var(--line); }
-  .product__personalization.stack { margin-top: var(--space-6); }
-  .product__personalization > legend { margin-bottom: var(--space-2); padding: 0; }
-  /* Dois níveis: número (curto) e nome (largo) lado a lado. */
-  .product__personalization-fields { display: grid; grid-template-columns: calc(var(--space-24) - var(--space-4)) 1fr; gap: var(--space-2); }
-
-  /* 7. Botão fixo no rodapé da tela no mobile. */
-  .product__buy {
+  /* Compra: botão principal maior, secundário logo abaixo. */
+  .product__buy > * + * { margin-top: var(--space-2); }
+  .button--large { min-height: calc(var(--tap) + var(--space-4)); }
+  .product__atc {
     position: sticky;
     bottom: 0;
     z-index: 5;
     margin-inline: calc(var(--page-gutter) * -1);
     padding: var(--space-2) var(--page-gutter);
     background: var(--surface);
-    border-top: 1px solid var(--line);
   }
-  .product__buy > * + * { margin-top: var(--space-2); }
+  .product__buy .payment-icons { margin-top: var(--space-4); }
+
+  /* Entrega: bloco próprio, separado do resto. */
+  .product__form > .product__shipping { margin-top: var(--space-12); padding-top: var(--space-6); border-top: 1px solid var(--line); }
+  .product__shipping > * + * { margin-top: var(--space-2); }
+  .product__shipping-head { display: flex; align-items: center; gap: var(--space-2); }
 
   .product__guarantees > * + * { margin-top: var(--space-2); }
-  .product__form > .accordion__item { border-bottom: 1px solid var(--line); }
-  .product__form > :not(.accordion__item) + .accordion__item { border-top: 1px solid var(--line); }
-  .product__form > .accordion__item + .accordion__item { margin-top: 0; }
+  .product__form > .product__accordion { margin-top: 0; border-bottom: 1px solid var(--line); }
+  .product__form > :not(.product__accordion) + .product__accordion { margin-top: var(--space-6); border-top: 1px solid var(--line); }
+
+  /* ---------- Galeria em tela cheia ---------- */
+  .lightbox {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    color: var(--ink-inverse);
+    background: var(--ink);
+  }
+  .lightbox[open] { animation: lightbox-fade 200ms ease-out; }
+  .lightbox::backdrop { background: var(--ink); opacity: 1; }
+  @keyframes lightbox-fade { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .lightbox[open] { animation: none; } }
+  .lightbox__track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    height: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .lightbox__track::-webkit-scrollbar { display: none; }
+  .lightbox__slide { display: flex; align-items: center; justify-content: center; padding: var(--space-12) var(--space-4); scroll-snap-align: center; }
+  .lightbox__slide img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+  .lightbox .icon-button { color: var(--ink-inverse); --focus: var(--ink-inverse); }
+  .lightbox__close { position: absolute; top: var(--space-2); right: var(--space-2); }
+  .lightbox__arrow { position: absolute; top: 50%; transform: translateY(-50%); }
+  .lightbox__arrow--prev { left: var(--space-2); }
+  .lightbox__arrow--next { right: var(--space-2); }
+  .lightbox__arrow--prev svg { transform: rotate(90deg); }
+  .lightbox__arrow--next svg { transform: rotate(-90deg); }
+  .lightbox__counter { position: absolute; bottom: var(--space-4); left: 50%; transform: translateX(-50%); }
 
   @media (min-width: 990px) {
-    .product { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-12); padding-top: var(--space-6); align-items: start; }
+    .product { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--space-12); padding-top: var(--space-6); align-items: start; }
 
-    /* Galeria fixa: miniaturas à esquerda + foto principal; acompanha a rolagem
-       enquanto a coluna de informações passa, até o fim da section. */
-    .product__gallery {
-      position: sticky;
-      top: var(--space-6);
-      display: grid;
-      grid-template-columns: var(--space-24) minmax(0, 1fr);
-      gap: var(--space-4);
-      align-items: start;
-      margin-inline: 0;
-    }
-    .product__gallery:not(:has(.product__thumbs)) { grid-template-columns: minmax(0, 1fr); }
-    .product__thumbs {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-      max-height: calc(100vh - var(--space-12));
-      overflow-y: auto;
-      scrollbar-width: none;
-    }
+    /* Desktop: miniaturas centralizadas na lateral + foto com setas. Sem posição fixa. */
+    .product__gallery { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-items: center; margin-inline: 0; }
+    .product__gallery--thumbs { grid-template-columns: var(--space-24) minmax(0, 1fr); }
+    .product__thumbs { display: flex; flex-direction: column; gap: var(--space-2); }
     .product__thumb { width: 100%; padding: 0; border: 1px solid transparent; cursor: pointer; }
     .product__thumb[aria-current="true"] { border-color: var(--ink); }
     .product__media-list { display: block; overflow: visible; }
-    /* A foto principal cabe na altura da tela sem cortar (largura limitada pela proporção 3:4). */
-    .product__media-item { display: none; width: min(100%, calc((100vh - var(--space-12)) * 3 / 4)); }
+    .product__media-item { display: none; }
     .product__media-item.is-active { display: block; }
     .product__media-list:not(:has(.is-active)) > .product__media-item:first-child { display: block; }
-    .product__media-counter { display: none; }
-    .product__info { padding-bottom: var(--space-12); }
-    .product__buy { position: static; margin-inline: 0; padding: 0; border: 0; }
+    .product__arrow {
+      display: inline-flex;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--surface);
+      border-radius: var(--radius-pill);
+    }
+    .product__arrow--prev { left: var(--space-4); }
+    .product__arrow--next { right: var(--space-4); }
+    .product__arrow--prev svg { transform: rotate(90deg); }
+    .product__arrow--next svg { transform: rotate(-90deg); }
+    .product__atc { position: static; margin-inline: 0; padding: 0; }
+    .lightbox__slide { padding: var(--space-12) var(--space-24); }
+    .lightbox__arrow--prev { left: var(--space-6); }
+    .lightbox__arrow--next { right: var(--space-6); }
   }
 {% endstylesheet %}
 
@@ -480,51 +549,27 @@
   "class": "section-main-product",
   "blocks": [
     { "type": "@app" },
-    { "type": "title", "name": "2. Nome, clube e versão", "limit": 1 },
-    { "type": "price", "name": "3. Preço, Pix e parcelas", "limit": 1 },
-    { "type": "size", "name": "4. Tamanho + guia", "limit": 1 },
-    {
-      "type": "fit",
-      "name": "5. Caimento",
-      "limit": 1,
-      "settings": [
-        { "type": "paragraph", "content": "Uma frase. Escolhida pela versão do produto (metafield titular.versao)." },
-        { "type": "text", "id": "fit_fan", "label": "Torcedor", "default": "Corte reto: se você usa M no dia a dia, leve M." },
-        { "type": "text", "id": "fit_player", "label": "Jogador", "default": "Corte justo: se está entre dois tamanhos, leve o maior." },
-        { "type": "text", "id": "fit_retro", "label": "Retrô", "default": "Corte largo, como nos anos 90: se prefere justo, leve um número menor." }
-      ]
-    },
+    { "type": "title", "name": "Nome e versão", "limit": 1 },
+    { "type": "price", "name": "Preço, Pix e parcelas", "limit": 1 },
+    { "type": "size", "name": "Tamanho + guia", "limit": 1 },
     {
       "type": "personalization",
-      "name": "6. Personalização",
+      "name": "Personalização",
       "limit": 1,
       "settings": [
-        { "type": "paragraph", "content": "Só aparece se o metafield titular.personalizavel for verdadeiro. Fase 4 da arquitetura: a cobrança do valor extra ainda não está ligada." },
+        { "type": "paragraph", "content": "Aparece se o produto tiver uma opção de personalização (ex.: Customization type) ou o metafield titular.personalizavel. Os campos só abrem ao marcar a caixa." },
         { "type": "text", "id": "price_label", "label": "Preço exibido", "default": "+ R$ 30" },
         { "type": "number", "id": "extra_days", "label": "Dias úteis a mais no prazo", "default": 5 },
         { "type": "number", "id": "max_name", "label": "Máximo de letras no nome", "default": 12 }
       ]
     },
-    {
-      "type": "buy_buttons",
-      "name": "7. Adicionar ao carrinho",
-      "limit": 1,
-      "settings": [
-        {
-          "type": "checkbox",
-          "id": "show_dynamic_checkout",
-          "default": false,
-          "label": "t:sections.main_product.blocks.buy_buttons.settings.show_dynamic_checkout.label",
-          "info": "t:sections.main_product.blocks.buy_buttons.settings.show_dynamic_checkout.info"
-        }
-      ]
-    },
+    { "type": "buy_buttons", "name": "Comprar", "limit": 1 },
     {
       "type": "shipping",
-      "name": "8. Prazo por CEP",
+      "name": "Prazo por CEP",
       "limit": 1,
       "settings": [
-        { "type": "paragraph", "content": "Loja fictícia: o prazo vem desta tabela pela região do CEP, não de transportadora. Soma o metafield titular.prazo_dias (preparo)." },
+        { "type": "paragraph", "content": "Loja fictícia: o prazo vem desta tabela pela região do CEP. Soma o metafield titular.prazo_dias (preparo)." },
         {
           "type": "textarea",
           "id": "regions",
@@ -536,7 +581,7 @@
     },
     {
       "type": "guarantees",
-      "name": "9. Garantias",
+      "name": "Garantias",
       "limit": 1,
       "settings": [
         { "type": "text", "id": "text_1", "label": "Troca", "default": "Primeira troca de tamanho grátis." },
@@ -546,7 +591,7 @@
     },
     {
       "type": "accordion",
-      "name": "10. Detalhe (acordeão)",
+      "name": "Detalhe (acordeão)",
       "settings": [
         { "type": "text", "id": "heading", "label": "Título", "default": "Detalhes" },
         {

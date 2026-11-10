@@ -274,7 +274,10 @@
     "product": {
       "size_guide": "Guia de tamanhos",
       "same_club": "Mais do {{ club }}",
-      "new": "Novo"
+      "new": "Novo",
+      "buy_now": "Comprar agora",
+      "open_gallery": "Ampliar foto {{ index }}",
+      "payment_methods": "Formas de pagamento"
     },
     "personalization": {
       "toggle": "Personalizar com número e nome",
@@ -282,15 +285,17 @@
       "name": "Nome",
       "number": "Número",
       "terms": "Personalizada soma {{ days }} dias úteis ao prazo e não tem troca.",
-      "no_exchange": "Camisa personalizada não tem troca."
+      "no_exchange": "Camisa personalizada não tem troca.",
+      "hint": "Estampado nas costas da camisa"
     },
     "shipping": {
-      "label": "Prazo de entrega",
+      "label": "Calcule o prazo de entrega",
       "submit": "Calcular",
       "cep_invalid": "Digite um CEP com 8 números.",
       "cep_result": "Chega em {{ min }} a {{ max }} dias úteis. Você recebe o rastreio por e-mail.",
       "region": "Região",
-      "days": "Prazo"
+      "days": "Prazo",
+      "placeholder": "Seu CEP"
     },
     "cart": {
       "free_shipping_remaining": "Faltam {{ amount }} para o frete grátis.",

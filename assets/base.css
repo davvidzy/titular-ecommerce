@@ -366,6 +366,12 @@ dialog::backdrop { background: var(--ink); opacity: 0.4; }
 .data-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .data-table th, .data-table td { padding: var(--space-2) var(--space-4) var(--space-2) 0; text-align: left; border-bottom: 1px solid var(--line); }
 
+/* ---------- Formas de pagamento (snippets/payment-icons) ---------- */
+
+.payment-icons > * + * { margin-top: var(--space-2); }
+.payment-icons__list { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.payment-icons__list svg { display: block; }
+
 /* ---------- Conta (templates/customers/*) ---------- */
 
 .account { padding-block: var(--space-12); }

@@ -69,6 +69,23 @@
     true
   );
 
+  /* ---------- Cabeçalho fixo ---------- */
+
+  // --header-height: usado por barras que grudam abaixo do cabeçalho
+  // (ex.: Filtrar/Ordenar da coleção). .is-scrolled deixa o cabeçalho
+  // transparente da home sólido depois que a página rola.
+  var header = document.querySelector('.header');
+  function onScroll() {
+    if (header) header.classList.toggle('is-scrolled', window.scrollY > 8);
+  }
+  function measureHeader() {
+    if (header) document.documentElement.style.setProperty('--header-height', header.offsetHeight + 'px');
+  }
+  measureHeader();
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', measureHeader);
+
   /* ---------- Hero: altura e vídeo ---------- */
 
   // --hero-offset = altura do que está acima do hero no fluxo (faixa de

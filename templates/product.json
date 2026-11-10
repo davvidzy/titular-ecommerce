@@ -12,17 +12,11 @@
         "size": {
           "type": "size"
         },
-        "fit": {
-          "type": "fit"
-        },
         "personalization": {
           "type": "personalization"
         },
         "buy": {
-          "type": "buy_buttons",
-          "settings": {
-            "show_dynamic_checkout": false
-          }
+          "type": "buy_buttons"
         },
         "shipping": {
           "type": "shipping"
@@ -49,7 +43,6 @@
         "title",
         "price",
         "size",
-        "fit",
         "personalization",
         "buy",
         "shipping",
@@ -60,10 +53,62 @@
     },
     "related": {
       "type": "related-products"
+    },
+    "faq": {
+      "type": "faq",
+      "settings": {
+        "eyebrow": "Antes de comprar",
+        "heading": "Perguntas frequentes"
+      },
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "Qual tamanho escolher?",
+            "answer": "<p><strong>Torcedor:</strong> corte reto. Se você usa M no dia a dia, leve M.</p><p><strong>Jogador:</strong> corte justo, igual ao do campo. Se está entre dois tamanhos, leve o maior.</p><p><strong>Retrô:</strong> corte largo, como nos anos 90. Se prefere justo, leve um número menor.</p>"
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "Qual a diferença entre Torcedor e Jogador?",
+            "answer": "<p>A Torcedor tem tecido mais grosso e corte reto. A Jogador tem tecido leve com ventilação e corte justo, igual à usada em campo.</p>"
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "Quanto tempo leva para chegar?",
+            "answer": "<p>Depende da região: de 3 a 12 dias úteis. Calcule o prazo exato com o seu CEP na página do produto. Você recebe o rastreio por e-mail.</p>"
+          }
+        },
+        "q4": {
+          "type": "question",
+          "settings": {
+            "question": "Posso trocar o tamanho?",
+            "answer": "<p>Sim. A primeira troca de tamanho é grátis, em até 7 dias após a entrega.</p>"
+          }
+        },
+        "q5": {
+          "type": "question",
+          "settings": {
+            "question": "Camisa personalizada tem troca?",
+            "answer": "<p>Não. Com número e nome, a camisa é feita para você, por isso não tem troca e leva alguns dias úteis a mais.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5"
+      ]
     }
   },
   "order": [
     "main",
-    "related"
+    "related",
+    "faq"
   ]
 }

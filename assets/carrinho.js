@@ -102,11 +102,17 @@
     if (!drawer()) return;
 
     event.preventDefault();
-    var button = form.querySelector('[type="submit"]');
+    var button = event.submitter || form.querySelector('[type="submit"]');
+    // "Comprar agora": adiciona e vai direto para o checkout.
+    var buyNow = button && button.hasAttribute('data-buy-now');
     if (button) button.setAttribute('aria-busy', 'true');
 
     post(routes.cartAdd || '/cart/add', new FormData(form))
       .then(function (data) {
+        if (buyNow) {
+          window.location.href = (routes.root || '/') + 'checkout';
+          return;
+        }
         render(data);
         if (titular.openDialog) titular.openDialog('CartDrawer', button);
       })

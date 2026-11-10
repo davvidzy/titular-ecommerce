@@ -37,11 +37,11 @@
     </button>
 
     <a href="{{ routes.root_url }}" class="header__logo">
+      {%- comment -%} No modo sobreposto os dois logos existem: o CSS mostra o reverso sobre o hero e o normal depois de rolar. {%- endcomment -%}
       {%- if overlay -%}
         <img src="{{ 'titular-horizontal-reverso.svg' | asset_url }}" alt="{{ shop.name | escape }}" width="160" height="44" class="header__logo--reverse">
-      {%- else -%}
-        <img src="{{ 'titular-horizontal.svg' | asset_url }}" alt="{{ shop.name | escape }}" width="146" height="30">
       {%- endif -%}
+      <img src="{{ 'titular-horizontal.svg' | asset_url }}" alt="{% unless overlay %}{{ shop.name | escape }}{% endunless %}" width="146" height="30" class="header__logo--default">
     </a>
 
     <nav class="header__nav" aria-label="{{ 'sections.header.menu' | t }}">
@@ -160,18 +160,30 @@
 
   /* Sobreposto ao hero (home): fora do fluxo, transparente, tudo em --ink-inverse.
      --focus é redefinido aqui para o anel de foco continuar visível no fundo escuro. */
+  /* Cabeçalho SEMPRE fixo: o wrapper da section gruda no topo ao rolar.
+     A faixa de aviso fica acima e sai da tela normalmente. */
+  .section-header { position: sticky; top: 0; z-index: 30; }
+
+  /* Home: wrapper com altura 0 para o cabeçalho flutuar sobre o hero.
+     Transparente sobre o hero; ao rolar (.is-scrolled, global.js) vira
+     sólido (--surface) com logo e ícones em --ink. */
+  .section-header:has(.header--overlay) { height: 0; }
   .header--overlay {
     position: absolute;
     left: 0;
     right: 0;
-    z-index: 10;
     color: var(--ink-inverse);
     background: transparent;
-    border-bottom: 0;
+    border-bottom-color: transparent;
     --focus: var(--ink-inverse);
   }
-  .header--overlay .icon-button { color: var(--ink-inverse); }
+  .header--overlay .icon-button { color: inherit; }
   .header--overlay .header__cart-count { color: var(--ink); background: var(--ink-inverse); }
+  .header--overlay .header__logo--default { display: none; }
+  .header--overlay.is-scrolled { color: var(--ink); background: var(--surface); border-bottom-color: var(--line); --focus: var(--ink); }
+  .header--overlay.is-scrolled .header__cart-count { color: var(--ink-inverse); background: var(--ink); }
+  .header--overlay.is-scrolled .header__logo--reverse { display: none; }
+  .header--overlay.is-scrolled .header__logo--default { display: block; }
   /* O reverso tem 24px de respiro embutido: mesmo tamanho visual do logo normal. */
   .header__logo .header__logo--reverse { width: 132px; }
 

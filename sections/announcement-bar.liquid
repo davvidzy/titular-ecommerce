@@ -5,26 +5,36 @@
 
   TRABALHO (docs/arquitetura-informacao.md §3.2):
   Uma frase com a principal objeção resolvida (prazo, frete ou troca).
-  Fundo --ink, texto --ink-inverse.
-
-  SETTINGS: text (uma frase), link (opcional).
+  Fundo --ink, texto --ink-inverse. SEMPRE uma linha: no celular usa a
+  versão curta ("text_mobile") e corta com reticências se precisar.
 {%- endcomment -%}
 {%- if section.settings.text != blank -%}
+  {%- assign text_mobile = section.settings.text_mobile | default: section.settings.text -%}
   <div class="announcement" role="region" aria-label="{{ 'sections.header.announcement' | t }}">
     <p class="announcement__text text-small page-width">
-      {%- if section.settings.link != blank -%}
-        <a href="{{ section.settings.link }}">{{ section.settings.text | escape }}</a>
-      {%- else -%}
-        {{ section.settings.text | escape }}
-      {%- endif -%}
+      {%- if section.settings.link != blank -%}<a href="{{ section.settings.link }}">{%- endif -%}
+      <span class="announcement__desktop">{{ section.settings.text | escape }}</span>
+      <span class="announcement__mobile">{{ text_mobile | escape }}</span>
+      {%- if section.settings.link != blank -%}</a>{%- endif -%}
     </p>
   </div>
 {%- endif -%}
 
 {% stylesheet %}
   .announcement { color: var(--ink-inverse); background: var(--ink); }
-  .announcement__text { padding-block: var(--space-2); text-align: center; }
+  .announcement__text {
+    padding-block: var(--space-2);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .announcement a { color: inherit; }
+  .announcement__desktop { display: none; }
+  @media (min-width: 750px) {
+    .announcement__desktop { display: inline; }
+    .announcement__mobile { display: none; }
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -38,6 +48,13 @@
       "label": "Frase",
       "default": "Troca grátis do tamanho em até 7 dias. Rastreio em todo pedido.",
       "info": "Uma frase só, resolvendo a principal dúvida (prazo, frete ou troca)."
+    },
+    {
+      "type": "text",
+      "id": "text_mobile",
+      "label": "Frase curta (celular)",
+      "default": "Troca grátis do tamanho em 7 dias",
+      "info": "Até uns 35 caracteres para caber numa linha. Vazio usa a frase acima."
     },
     {
       "type": "url",
