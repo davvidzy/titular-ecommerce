@@ -114,6 +114,16 @@
         "exchange",
         "shipping"
       ]
+    },
+    "retro": {
+      "type": "tag-showcase",
+      "settings": {
+        "tag": "retro",
+        "eyebrow": "Clássicos",
+        "heading": "Camisas retrô",
+        "link_label": "Ver todas",
+        "products_to_show": 4
+      }
     }
   },
   "order": [
@@ -121,6 +131,7 @@
     "clubs",
     "models",
     "best-sellers",
+    "retro",
     "versions",
     "guarantees"
   ]

@@ -356,7 +356,14 @@
       "club": "Clube",
       "club_short": "FC",
       "reviews": "Exemplo: avaliações fictícias para o esqueleto. Troque por avaliações reais (app) antes de publicar.",
-      "personalization": "Exemplo: este produto não é personalizável (metafield titular.personalizavel). O bloco só aparece aqui no editor."
+      "personalization": "Exemplo: este produto não é personalizável (metafield titular.personalizavel). O bloco só aparece aqui no editor.",
+      "tag_empty": "Nenhum produto com a tag \"{{ tag }}\" ainda. Esta section só aparece na loja quando houver produtos com a tag."
+    },
+    "menu": {
+      "clubs": "Times",
+      "help": "Ajuda",
+      "my_account": "Minha conta",
+      "login": "Entrar ou criar conta"
     }
   }
 }

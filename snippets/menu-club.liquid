@@ -1,0 +1,17 @@
+{%- comment -%}
+  menu-club — clube no menu mobile (sections/nav.liquid).
+  {% render 'menu-club', club: collection %}
+  Brasão = imagem da coleção; sem imagem, iniciais.
+{%- endcomment -%}
+<li>
+  <a href="{{ club.url }}" class="menu-club">
+    <span class="menu-club__crest">
+      {%- if club.image != blank -%}
+        {{ club.image | image_url: width: 120 | image_tag: loading: 'lazy', alt: '' }}
+      {%- else -%}
+        <span class="text-label" aria-hidden="true">{{ club.title | slice: 0, 3 | upcase }}</span>
+      {%- endif -%}
+    </span>
+    <span class="text-small">{{ club.title | escape }}</span>
+  </a>
+</li>

@@ -78,28 +78,89 @@
 </header>
 
 {%- comment -%} Menu mobile em gaveta {%- endcomment -%}
-<dialog id="MenuDrawer" class="drawer drawer--left" aria-labelledby="MenuDrawer-title">
+{%- comment -%}
+  Menu mobile em gaveta. Ordem: busca > links principais > clubes
+  (brasões) > ajuda > conta (fixa no rodapé da gaveta).
+  Clubes: setting "menu_clubs"; vazio = coleções com imagem (mesma regra
+  da home, sections/club-list).
+{%- endcomment -%}
+{%- liquid
+  assign menu_clubs = section.settings.menu_clubs
+  assign help_menu = section.settings.menu_secondary | default: linklists['ajuda']
+-%}
+<dialog id="MenuDrawer" class="drawer drawer--left menu-drawer" aria-labelledby="MenuDrawer-title">
   <div class="drawer__inner">
-    <div class="drawer__header">
-      <h2 id="MenuDrawer-title" class="text-label">{{ 'sections.header.menu' | t }}</h2>
+    <div class="drawer__header menu-drawer__header">
+      <h2 id="MenuDrawer-title" class="visually-hidden">{{ 'sections.header.menu' | t }}</h2>
+      <img src="{{ 'titular-horizontal.svg' | asset_url }}" alt="" width="117" height="24" class="menu-drawer__logo">
       <button type="button" class="icon-button" data-dialog-close aria-label="{{ 'accessibility.close' | t }}">
         {% render 'icon', name: 'close' %}
       </button>
     </div>
-    <nav class="drawer__body" aria-label="{{ 'sections.header.menu' | t }}">
-      <ul class="menu-drawer__list" role="list">
-        {%- for link in section.settings.menu.links -%}
-          <li><a href="{{ link.url }}" class="menu-drawer__link text-h3">{{ link.title | escape }}</a></li>
-        {%- endfor -%}
-      </ul>
-      {%- if section.settings.menu_secondary != blank -%}
-        <ul class="menu-drawer__list menu-drawer__list--secondary" role="list">
-          {%- for link in section.settings.menu_secondary.links -%}
-            <li><a href="{{ link.url }}" class="menu-drawer__link text-body">{{ link.title | escape }}</a></li>
+
+    <div class="drawer__body menu-drawer__body">
+      <form action="{{ routes.search_url }}" method="get" role="search" class="menu-drawer__search">
+        <label class="visually-hidden" for="MenuDrawer-search">{{ 'general.search.search' | t }}</label>
+        {% render 'icon', name: 'search' %}
+        <input id="MenuDrawer-search" class="field__input" type="search" name="q" placeholder="{{ 'titular.search.placeholder' | t }}" autocomplete="off">
+      </form>
+
+      <nav aria-label="{{ 'sections.header.menu' | t }}">
+        <ul class="menu-drawer__main" role="list">
+          {%- for link in section.settings.menu.links -%}
+            <li>
+              <a href="{{ link.url }}" class="menu-drawer__link text-h3" {% if link.current %}aria-current="page"{% endif %}>
+                {{- link.title | escape -}}
+                <span class="menu-drawer__arrow" aria-hidden="true">{% render 'icon', name: 'chevron' %}</span>
+              </a>
+            </li>
           {%- endfor -%}
         </ul>
+      </nav>
+
+      {%- capture club_links -%}
+        {%- if menu_clubs.size > 0 -%}
+          {%- for club in menu_clubs -%}{%- render 'menu-club', club: club -%}{%- endfor -%}
+        {%- else -%}
+          {%- for club in collections -%}
+            {%- if club.image != blank and club.products_count > 0 and club.handle != 'frontpage' and club.handle != 'all' -%}
+              {%- render 'menu-club', club: club -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endcapture -%}
+      {%- if club_links != blank -%}
+        <div class="menu-drawer__group">
+          <p class="text-label muted">{{ 'titular.menu.clubs' | t }}</p>
+          <ul class="menu-drawer__clubs" role="list">{{ club_links }}</ul>
+        </div>
       {%- endif -%}
-    </nav>
+
+      {%- if help_menu != blank and help_menu.links.size > 0 -%}
+        <div class="menu-drawer__group">
+          <p class="text-label muted">{{ 'titular.menu.help' | t }}</p>
+          <ul class="menu-drawer__secondary" role="list">
+            {%- for link in help_menu.links -%}
+              <li><a href="{{ link.url }}" class="menu-drawer__small text-body">{{ link.title | escape }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="drawer__footer menu-drawer__footer">
+      {%- if shop.customer_accounts_enabled -%}
+        <a href="{{ routes.account_url }}" class="button button--full text-label">
+          {% render 'icon', name: 'account' %}
+          {%- if customer -%}{{ 'titular.menu.my_account' | t }}{%- else -%}{{ 'titular.menu.login' | t }}{%- endif -%}
+        </a>
+      {%- endif -%}
+      {%- if settings.whatsapp_number != blank -%}
+        <a href="https://wa.me/{{ settings.whatsapp_number }}" class="button button--secondary button--full text-label" target="_blank" rel="noopener">
+          {% render 'icon', name: 'whatsapp' %}{{ 'titular.help.whatsapp' | t }}
+        </a>
+      {%- endif -%}
+    </div>
   </div>
 </dialog>
 
@@ -187,8 +248,41 @@
   /* O reverso tem 24px de respiro embutido: mesmo tamanho visual do logo normal. */
   .header__logo .header__logo--reverse { width: 132px; }
 
-  .menu-drawer__link { display: flex; align-items: center; min-height: var(--tap); text-decoration: none; }
-  .menu-drawer__list--secondary { margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--line); }
+  /* ---------- Menu mobile (gaveta) ---------- */
+  .menu-drawer { max-width: min(100%, var(--drawer-max)); }
+  .menu-drawer__logo { width: 117px; height: auto; }
+  .menu-drawer__body { display: flex; flex-direction: column; gap: var(--space-12); padding-top: var(--space-4); }
+  .menu-drawer__search { position: relative; }
+  .menu-drawer__search svg { position: absolute; left: var(--space-4); top: 50%; transform: translateY(-50%); pointer-events: none; }
+  .menu-drawer__search .field__input { padding-left: var(--space-12); }
+  .menu-drawer__main { border-top: 1px solid var(--line); }
+  .menu-drawer__main li { border-bottom: 1px solid var(--line); }
+  .menu-drawer__link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: calc(var(--tap) + var(--space-4));
+    text-decoration: none;
+  }
+  .menu-drawer__link[aria-current="page"] { text-decoration: underline; text-underline-offset: 6px; }
+  .menu-drawer__arrow svg { transform: rotate(-90deg); }
+  .menu-drawer__group > * + * { margin-top: var(--space-4); }
+  .menu-drawer__clubs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4) var(--space-2); }
+  .menu-club { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); text-decoration: none; text-align: center; }
+  .menu-club__crest {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-12);
+    height: var(--space-12);
+    padding: var(--space-1);
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+  }
+  .menu-club__crest img { width: 100%; height: 100%; object-fit: contain; }
+  .menu-drawer__small { display: flex; align-items: center; min-height: var(--tap); text-decoration: none; }
+  .menu-drawer__footer { display: grid; gap: var(--space-2); }
 
   .search-overlay__form { display: flex; align-items: center; gap: var(--space-2); padding-block: var(--space-4); border-bottom: 1px solid var(--line); }
 
@@ -222,10 +316,21 @@
       "info": "Só o primeiro nível é usado: Lançamentos, Brasileirão, Internacionais, Seleções, Retrô."
     },
     {
+      "type": "header",
+      "content": "Menu mobile"
+    },
+    {
+      "type": "collection_list",
+      "id": "menu_clubs",
+      "label": "Clubes no menu",
+      "limit": 12,
+      "info": "Vazio usa as coleções com imagem (brasão)."
+    },
+    {
       "type": "link_list",
       "id": "menu_secondary",
-      "label": "Links extras na gaveta (mobile)",
-      "info": "Ex.: menu de ajuda."
+      "label": "Links de ajuda",
+      "info": "Vazio usa o menu \"ajuda\", se existir."
     }
   ]
 }

@@ -1,0 +1,74 @@
+{%- comment -%}
+  ============================================================
+  TAG SHOWCASE — vitrine de produtos por tag (sem coleção)
+  ============================================================
+
+  TRABALHO:
+  Separar um grupo de camisas na home (ex.: Retrô) só pela TAG do
+  produto, sem criar coleção. Assim o grupo não aparece misturado com
+  os times na section de clubes (que lista coleções com imagem).
+
+  COMO USAR:
+  1. No admin, marque os produtos com a tag (ex.: "retro").
+  2. No editor da home, adicione "Vitrine por tag" e digite a tag.
+  Pode adicionar várias vitrines (uma por tag).
+
+  "Ver todas" leva para /collections/all/<tag>: a listagem do catálogo
+  filtrada pela tag, nativa do Shopify, sem precisar de coleção.
+
+  LIMITE: o Liquid percorre até 50 produtos do catálogo por vez. Com
+  catálogo maior, prefira uma coleção automática (condição: tag = retro).
+{%- endcomment -%}
+{%- liquid
+  assign tag = section.settings.tag | strip | downcase
+  assign limit = section.settings.products_to_show
+  assign found = 0
+-%}
+{%- if tag != blank -%}
+  {%- capture cards -%}
+    {%- for item in collections.all.products -%}
+      {%- assign item_tags = item.tags | join: '|' | downcase | split: '|' -%}
+      {%- if item_tags contains tag and found < limit -%}
+        <li>{% render 'card-product', card_product: item %}</li>
+        {%- assign found = found | plus: 1 -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  {%- if found > 0 -%}
+    {%- assign tag_url = routes.all_products_collection_url | append: '/' | append: tag -%}
+    <section class="section page-width tag-showcase">
+      {% render 'section-header',
+        eyebrow: section.settings.eyebrow,
+        heading: section.settings.heading,
+        link_url: tag_url,
+        link_label: section.settings.link_label
+      %}
+      <ul class="product-grid tag-showcase__grid" role="list">{{ cards }}</ul>
+    </section>
+  {%- elsif request.design_mode -%}
+    <section class="section page-width">
+      <p class="placeholder-note text-small">{{ 'titular.placeholder.tag_empty' | t: tag: tag }}</p>
+    </section>
+  {%- endif -%}
+{%- endif -%}
+
+{% stylesheet %}
+  .tag-showcase__grid { --grid-columns: 4; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Vitrine por tag",
+  "tag": "section",
+  "class": "section-tag-showcase",
+  "settings": [
+    { "type": "text", "id": "tag", "label": "Tag dos produtos", "default": "retro", "info": "Exatamente como no admin (maiúsculas não importam)." },
+    { "type": "text", "id": "eyebrow", "label": "Rótulo", "default": "Clássicos" },
+    { "type": "text", "id": "heading", "label": "Título", "default": "Camisas retrô" },
+    { "type": "text", "id": "link_label", "label": "Texto do link", "default": "Ver todas" },
+    { "type": "range", "id": "products_to_show", "label": "Quantidade", "min": 2, "max": 12, "step": 1, "default": 4 }
+  ],
+  "presets": [{ "name": "Vitrine por tag" }]
+}
+{% endschema %}
