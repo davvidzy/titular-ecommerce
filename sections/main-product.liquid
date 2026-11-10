@@ -414,7 +414,8 @@
 
   .product__thumbs { display: none; }
 
-  .product__personalization { border: 0; margin: 0; padding: 0; }
+  .product__personalization { border: 0; margin: 0; padding: var(--space-4) 0 0; border-top: 1px solid var(--line); }
+  .product__personalization.stack { margin-top: var(--space-6); }
   .product__personalization > legend { margin-bottom: var(--space-2); padding: 0; }
   /* Dois níveis: número (curto) e nome (largo) lado a lado. */
   .product__personalization-fields { display: grid; grid-template-columns: calc(var(--space-24) - var(--space-4)) 1fr; gap: var(--space-2); }
