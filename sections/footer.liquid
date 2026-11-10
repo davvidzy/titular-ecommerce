@@ -27,6 +27,7 @@
           </div>
 
         {%- when 'menu' -%}
+          {%- if block.settings.menu == blank or block.settings.menu.links.size == 0 -%}{%- continue -%}{%- endif -%}
           <nav class="footer__block stack--sm" aria-label="{{ block.settings.heading | escape }}" {{ block.shopify_attributes }}>
             {%- if block.settings.heading != blank -%}
               <h2 class="text-label">{{ block.settings.heading | escape }}</h2>
