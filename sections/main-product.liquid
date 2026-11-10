@@ -448,7 +448,24 @@
     padding: var(--space-2) var(--space-4);
     cursor: pointer;
   }
-  .personalization__checkbox { width: var(--space-6); height: var(--space-6); margin: 0; accent-color: var(--ink); }
+  /* normalizar.css zera a aparência nativa: caixa desenhada aqui. */
+  .personalization__checkbox {
+    flex: none;
+    width: var(--space-6);
+    height: var(--space-6);
+    margin: 0;
+    background: var(--surface) center / var(--space-4) no-repeat;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .personalization__checkbox:checked {
+    background-color: var(--ink);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 8.5 3 3 7-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    border-color: var(--ink);
+  }
+  .personalization__checkbox:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .product__personalization:has(.personalization__checkbox:checked) { border-color: var(--ink); }
   .personalization__text { display: flex; flex-direction: column; }
   .personalization__fields { margin: 0; padding: 0 var(--space-4) var(--space-4); border: 0; }
   .personalization__grid { display: grid; grid-template-columns: calc(var(--space-24) - var(--space-4)) 1fr; gap: var(--space-2); margin-bottom: var(--space-4); }
