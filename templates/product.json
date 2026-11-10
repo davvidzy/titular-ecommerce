@@ -3,29 +3,46 @@
     "main": {
       "type": "main-product",
       "blocks": {
-        "title": { "type": "title" },
-        "price": { "type": "price" },
-        "size": { "type": "size" },
-        "fit": { "type": "fit" },
-        "personalization": { "type": "personalization" },
-        "buy": { "type": "buy_buttons", "settings": { "show_dynamic_checkout": false } },
-        "shipping": { "type": "shipping" },
-        "guarantees": { "type": "guarantees" },
+        "title": {
+          "type": "title"
+        },
+        "price": {
+          "type": "price"
+        },
+        "size": {
+          "type": "size"
+        },
+        "fit": {
+          "type": "fit"
+        },
+        "personalization": {
+          "type": "personalization"
+        },
+        "buy": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false
+          }
+        },
+        "shipping": {
+          "type": "shipping"
+        },
+        "guarantees": {
+          "type": "guarantees"
+        },
         "details": {
           "type": "accordion",
-          "settings": { "heading": "Detalhes", "source": "description" }
-        },
-        "fabric": {
-          "type": "accordion",
           "settings": {
-            "heading": "Tecido e caimento",
-            "source": "text",
-            "text": "<p>Conteúdo de exemplo: tecido, composição e caimento desta versão. Troque pelo texto real ou por um metafield.</p>"
+            "heading": "Detalhes",
+            "source": "description"
           }
         },
         "versions": {
           "type": "accordion",
-          "settings": { "heading": "Torcedor x Jogador", "source": "page" }
+          "settings": {
+            "heading": "Torcedor x Jogador",
+            "source": "page"
+          }
         }
       },
       "block_order": [
@@ -38,23 +55,15 @@
         "shipping",
         "guarantees",
         "details",
-        "fabric",
         "versions"
       ]
-    },
-    "reviews": {
-      "type": "reviews",
-      "blocks": {
-        "r1": { "type": "review" },
-        "r2": { "type": "review" },
-        "r3": { "type": "review" },
-        "r4": { "type": "review" }
-      },
-      "block_order": ["r1", "r2", "r3", "r4"]
     },
     "related": {
       "type": "related-products"
     }
   },
-  "order": ["main", "reviews", "related"]
+  "order": [
+    "main",
+    "related"
+  ]
 }

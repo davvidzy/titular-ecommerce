@@ -51,8 +51,10 @@
 
     {% render 'meta-tags' %}
 
+    {%- comment -%} Cada CSS com asset_url (URL versionada). Não usar @import: o CDN serve cópia velha sem ?v=. {%- endcomment -%}
     {{ 'tokens.css' | asset_url | stylesheet_tag }}
-    {{ 'index.css' | asset_url | stylesheet_tag }}
+    {{ 'normalizar.css' | asset_url | stylesheet_tag }}
+    {{ 'base.css' | asset_url | stylesheet_tag }}
     {% render 'css-variables' %}
 
     <script>

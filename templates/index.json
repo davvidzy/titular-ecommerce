@@ -44,36 +44,84 @@
         "heading": "Torcedor ou Jogador?"
       },
       "blocks": {
-        "fan": { "type": "version", "settings": { "version": "Torcedor", "text": "Tecido mais grosso, corte reto. Leve o tamanho que você usa." } },
-        "player": { "type": "version", "settings": { "version": "Jogador", "text": "Tecido leve e corte justo, igual ao do campo. Na dúvida, um número acima." } },
-        "retro": { "type": "version", "settings": { "version": "Retrô", "text": "Modelos clássicos refeitos, com corte largo dos anos 90." } }
+        "fan": {
+          "type": "version",
+          "settings": {
+            "version": "Torcedor",
+            "text": "Tecido mais grosso, corte reto. Leve o tamanho que você usa."
+          }
+        },
+        "player": {
+          "type": "version",
+          "settings": {
+            "version": "Jogador",
+            "text": "Tecido leve e corte justo, igual ao do campo. Na dúvida, um número acima."
+          }
+        },
+        "retro": {
+          "type": "version",
+          "settings": {
+            "version": "Retrô",
+            "text": "Modelos clássicos refeitos, com corte largo dos anos 90."
+          }
+        }
       },
-      "block_order": ["fan", "player", "retro"]
-    },
-    "reviews": {
-      "type": "reviews",
-      "settings": {
-        "eyebrow": "Avaliações",
-        "heading": "Quem já vestiu"
-      },
-      "blocks": {
-        "r1": { "type": "review" },
-        "r2": { "type": "review" },
-        "r3": { "type": "review" },
-        "r4": { "type": "review" }
-      },
-      "block_order": ["r1", "r2", "r3", "r4"]
+      "block_order": [
+        "fan",
+        "player",
+        "retro"
+      ]
     },
     "guarantees": {
       "type": "guarantees",
       "blocks": {
-        "pix": { "type": "item", "settings": { "icon": "pix", "title": "Pix", "text": "5% de desconto pagando no Pix." } },
-        "card": { "type": "item", "settings": { "icon": "card", "title": "Cartão", "text": "Até 6x sem juros." } },
-        "exchange": { "type": "item", "settings": { "icon": "exchange", "title": "Troca", "text": "Primeira troca de tamanho grátis." } },
-        "shipping": { "type": "item", "settings": { "icon": "truck", "title": "Prazo", "text": "Prazo calculado pelo CEP na página do produto." } }
+        "pix": {
+          "type": "item",
+          "settings": {
+            "icon": "pix",
+            "title": "Pix",
+            "text": "5% de desconto pagando no Pix."
+          }
+        },
+        "card": {
+          "type": "item",
+          "settings": {
+            "icon": "card",
+            "title": "Cartão",
+            "text": "Até 6x sem juros."
+          }
+        },
+        "exchange": {
+          "type": "item",
+          "settings": {
+            "icon": "exchange",
+            "title": "Troca",
+            "text": "Primeira troca de tamanho grátis."
+          }
+        },
+        "shipping": {
+          "type": "item",
+          "settings": {
+            "icon": "truck",
+            "title": "Prazo",
+            "text": "Prazo calculado pelo CEP na página do produto."
+          }
+        }
       },
-      "block_order": ["pix", "card", "exchange", "shipping"]
+      "block_order": [
+        "pix",
+        "card",
+        "exchange",
+        "shipping"
+      ]
     }
   },
-  "order": ["hero", "clubs", "models", "best-sellers", "versions", "reviews", "guarantees"]
+  "order": [
+    "hero",
+    "clubs",
+    "models",
+    "best-sellers",
+    "versions",
+    "guarantees"
+  ]
 }

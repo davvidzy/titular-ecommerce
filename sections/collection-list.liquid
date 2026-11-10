@@ -10,16 +10,16 @@
 
   DADOS:
   Setting "collections" (lista de coleções). Foto = imagem da coleção
-  no admin. Nome = título da coleção. Sem coleções escolhidas, mostra
-  4 cards de exemplo com os nomes previstos.
+  no admin. Nome = título da coleção. Sem coleções escolhidas no editor,
+  a section não aparece.
 
   LAYOUT: 2 colunas no celular, 4 no desktop (a partir de 5 coleções,
   a linha rola na horizontal no desktop também).
 {%- endcomment -%}
 {%- liquid
   assign models = section.settings.collections
-  assign placeholder_names = 'Camisa torcedor,Camisa jogador,Camisa retrô,Meia' | split: ','
 -%}
+{%- if models.size > 0 -%}
 <section class="section page-width models">
   {% render 'section-header',
     eyebrow: section.settings.eyebrow,
@@ -29,7 +29,6 @@
   %}
 
   <ul class="models__grid{% if models.size > 4 %} models__grid--scroll{% endif %}" role="list">
-    {%- if models.size > 0 -%}
       {%- for model in models -%}
         <li>
           <a href="{{ model.url }}" class="models__card">
@@ -47,18 +46,9 @@
           </a>
         </li>
       {%- endfor -%}
-    {%- else -%}
-      {%- for name in placeholder_names -%}
-        <li>
-          <span class="models__card">
-            <span class="media" style="--ratio: 3 / 4;">{{ 'collection-1' | placeholder_svg_tag }}</span>
-            <span class="models__info"><span class="text-h3">{{ name }}</span></span>
-          </span>
-        </li>
-      {%- endfor -%}
-    {%- endif -%}
   </ul>
 </section>
+{%- endif -%}
 
 {% stylesheet %}
   .models__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-4); }

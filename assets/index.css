@@ -1,17 +1,6 @@
 /*
-  ============================================================
-  index.css — ponto de entrada do CSS do tema
-  ============================================================
-
-  Ordem de carga no layout (theme.liquid):
-  1. tokens.css     — tokens da marca (cópia de brand/tokens.css; não editar)
-  2. index.css      — este arquivo:
-     a. normalizar.css — reset entre navegadores
-     b. base.css       — layout e componentes compartilhados
-  3. css-variables  — aliases legados (snippet)
-
-  CSS específico de cada section fica no {% stylesheet %} da própria
-  section. Fonte: Archivo, carregada pelo @import de tokens.css.
+  index.css — NÃO USADO. Mantido vazio.
+  O layout carrega tokens.css, normalizar.css e base.css direto com
+  asset_url. @import entre assets não leva ?v= e o CDN da Shopify
+  servia a versão antiga dos arquivos importados.
 */
-@import url('./normalizar.css');
-@import url('./base.css');

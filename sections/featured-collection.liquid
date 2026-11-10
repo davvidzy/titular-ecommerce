@@ -5,31 +5,27 @@
 
   TRABALHO:
   Grade 3x3 (9 camisas) e, abaixo, o botão para o catálogo completo.
-  Coleção vazia = usa a coleção "Mais vendidos" das configurações do
-  tema (Comercial).
+  Coleção vazia = "Mais vendidos" das configurações do tema; se também
+  vazia, todas as camisas (collections.all). Sem produtos, não aparece.
 
   LAYOUT: 3 colunas a partir de 750px. No celular (390px) 3 colunas
   esmagam nome, preço e parcela, então são 2 colunas e a 9ª camisa
   fica escondida (grade 2x4 fechada, sem buraco).
 {%- endcomment -%}
-{%- assign target = section.settings.collection | default: settings.collection_best_sellers -%}
+{%- liquid
+  assign target = section.settings.collection | default: settings.collection_best_sellers
+  if target == blank or target.products_count == 0
+    assign target = collections.all
+  endif
+-%}
+{%- if target.products_count > 0 -%}
 <section class="section page-width best">
   {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
 
   <ul class="product-grid best__grid" role="list">
-    {%- if target != blank and target.products_count > 0 -%}
       {%- for product in target.products limit: 9 -%}
         <li>{% render 'card-product', card_product: product %}</li>
       {%- endfor -%}
-    {%- else -%}
-      {%- for i in (1..9) -%}
-        <li class="stack--sm">
-          <div class="media" style="--ratio: 3 / 4;">{{ 'product-1' | placeholder_svg_tag }}</div>
-          <p class="text-h3">{{ 'onboarding.product_title' | t }}</p>
-          <p class="text-price muted">{{ 0 | money }}</p>
-        </li>
-      {%- endfor -%}
-    {%- endif -%}
   </ul>
 
   {%- if section.settings.button_label != blank -%}
@@ -40,6 +36,7 @@
     </div>
   {%- endif -%}
 </section>
+{%- endif -%}
 
 {% stylesheet %}
   .best__grid { --grid-columns: 3; }

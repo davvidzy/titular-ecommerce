@@ -1,0 +1,17 @@
+{%- comment -%}
+  club-item — um círculo de clube (sections/club-list).
+  {% render 'club-item', club: collection %}
+  Brasão = imagem da coleção; sem imagem, iniciais.
+{%- endcomment -%}
+<li class="clubs__item">
+  <a href="{{ club.url }}" class="clubs__link">
+    <span class="clubs__crest">
+      {%- if club.image != blank -%}
+        {{ club.image | image_url: width: 240 | image_tag: loading: 'lazy', widths: '120, 180, 240', sizes: '96px', alt: '' }}
+      {%- else -%}
+        <span class="text-label" aria-hidden="true">{{ club.title | slice: 0, 3 | upcase }}</span>
+      {%- endif -%}
+    </span>
+    <span class="clubs__name text-small">{{ club.title | escape }}</span>
+  </a>
+</li>

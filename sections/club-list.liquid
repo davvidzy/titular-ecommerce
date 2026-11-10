@@ -17,7 +17,30 @@
   LAYOUT: uma linha que rola na horizontal no celular (com scroll-snap);
   no desktop, cabe numa linha e quebra se houver muitos clubes.
 {%- endcomment -%}
-{%- assign clubs = section.settings.collections -%}
+{%- liquid
+  # Sem seleção no editor: usa automaticamente toda coleção com imagem
+  # (brasão), exceto as de sistema e as escolhidas como "modelo" no tema.
+  assign clubs = section.settings.collections
+  assign auto = false
+  if clubs.size == 0
+    assign auto = true
+  endif
+  assign skip = 'frontpage,all'
+-%}
+{%- capture club_items -%}
+  {%- if auto -%}
+    {%- for club in collections -%}
+      {%- if club.image != blank and club.products_count > 0 -%}
+        {%- unless skip contains club.handle -%}
+          {%- render 'club-item', club: club -%}
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- else -%}
+    {%- for club in clubs -%}{%- render 'club-item', club: club -%}{%- endfor -%}
+  {%- endif -%}
+{%- endcapture -%}
+{%- if club_items != blank -%}
 <section class="section clubs">
   <div class="page-width">
     {% render 'section-header',
@@ -28,34 +51,9 @@
     %}
   </div>
 
-  <ul class="clubs__list" role="list">
-    {%- if clubs.size > 0 -%}
-      {%- for club in clubs -%}
-        <li class="clubs__item">
-          <a href="{{ club.url }}" class="clubs__link">
-            <span class="clubs__crest">
-              {%- if club.image != blank -%}
-                {{ club.image | image_url: width: 240 | image_tag: loading: 'lazy', widths: '120, 180, 240', sizes: '96px', alt: '' }}
-              {%- else -%}
-                <span class="text-label" aria-hidden="true">{{ club.title | slice: 0, 3 | upcase }}</span>
-              {%- endif -%}
-            </span>
-            <span class="clubs__name text-small">{{ club.title | escape }}</span>
-          </a>
-        </li>
-      {%- endfor -%}
-    {%- else -%}
-      {%- for i in (1..8) -%}
-        <li class="clubs__item">
-          <span class="clubs__link">
-            <span class="clubs__crest"><span class="text-label muted" aria-hidden="true">{{ 'titular.placeholder.club_short' | t }}</span></span>
-            <span class="clubs__name text-small muted">{{ 'titular.placeholder.club' | t }} {{ i }}</span>
-          </span>
-        </li>
-      {%- endfor -%}
-    {%- endif -%}
-  </ul>
+  <ul class="clubs__list" role="list">{{ club_items }}</ul>
 </section>
+{%- endif -%}
 
 {% stylesheet %}
   .clubs__list {
