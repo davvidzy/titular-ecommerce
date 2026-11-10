@@ -162,14 +162,14 @@
       var range = digits.length === 8 ? regions[REGION_BY_DIGIT[digits.charAt(0)]] : null;
       if (!range) {
         input.setAttribute('aria-invalid', 'true');
-        result.textContent = strings.cepInvalid;
+        result.textContent = box.getAttribute('data-text-invalid');
         return;
       }
       input.removeAttribute('aria-invalid');
       var add = handling + extraDays;
-      result.textContent = strings.cepResult
-        .replace('{min}', range[0] + add)
-        .replace('{max}', range[1] + add);
+      result.textContent = box.getAttribute('data-text-result')
+        .replace('__MIN__', range[0] + add)
+        .replace('__MAX__', range[1] + add);
     }
   }
 })();

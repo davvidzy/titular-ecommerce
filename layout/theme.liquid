@@ -16,16 +16,16 @@
   NO <body>:
   - Skip link, alerta global, header-group (faixa de aviso + cabeçalho).
   - <main>: conteúdo do template.
-  - footer-group e a gaveta do carrinho (sections/cart-drawer.liquid),
+  - footer-group: rodapé e a gaveta do carrinho (sections/cart-drawer),
     que abre por evento sem trocar de página.
 
   HOME: o cabeçalho (nav) fica sobreposto e transparente em cima do
   hero (image-banner, 100svh). global.js mede a faixa de aviso e grava
   --hero-offset no <html> para o hero ocupar exatamente a tela.
 
-  SINCRONIZAÇÃO: este arquivo usa chaves titular.* do locale padrão.
-  Se a Shopify recusar o pt-BR.default.json, o layout também não sobe
-  (ver docs/esqueleto.md, "Sincronização com a Shopify").
+  SINCRONIZAÇÃO: mantenha este arquivo simples. Sem {% section %},
+  sem t com argumentos, sem atributos HTML sem valor. A Shopify recusou
+  versões com essas construções sem aviso (docs/esqueleto.md).
 {%- endcomment -%}
 <!doctype html>
 <html class="no-js" lang="{{ request.locale.iso_code }}">
@@ -51,8 +51,6 @@
 
     {% render 'meta-tags' %}
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     {{ 'tokens.css' | asset_url | stylesheet_tag }}
     {{ 'index.css' | asset_url | stylesheet_tag }}
     {% render 'css-variables' %}
@@ -72,9 +70,7 @@
           addToCart: {{ 'products.product.add_to_cart' | t | json }},
           soldOut: {{ 'products.product.sold_out' | t | json }},
           unavailable: {{ 'products.product.unavailable' | t | json }},
-          cartError: {{ 'sections.cart.cart_error' | t | json }},
-          cepInvalid: {{ 'titular.shipping.cep_invalid' | t | json }},
-          cepResult: {{ 'titular.shipping.cep_result' | t: min: '{min}', max: '{max}' | json }}
+          cartError: {{ 'sections.cart.cart_error' | t | json }}
         }
       };
     </script>
@@ -98,7 +94,5 @@
     </main>
 
     {% sections 'footer-group' %}
-
-    {% section 'cart-drawer' %}
   </body>
 </html>

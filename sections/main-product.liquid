@@ -236,6 +236,8 @@
               data-shipping-estimate
               data-handling-days="{{ mf.prazo_dias.value | default: 0 }}"
               data-regions='{{ block.settings.regions | escape }}'
+              data-text-invalid="{{ 'titular.shipping.cep_invalid' | t | escape }}"
+              data-text-result="{{ 'titular.shipping.cep_result' | t: min: '__MIN__', max: '__MAX__' | escape }}"
             >
               <label class="text-label" for="Cep-{{ section.id }}">{{ 'titular.shipping.label' | t }}</label>
               <div class="inline-form">

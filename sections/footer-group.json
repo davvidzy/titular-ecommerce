@@ -11,7 +11,10 @@
         "contact": { "type": "contact" }
       },
       "block_order": ["brand", "help", "about", "contact"]
+    },
+    "cart-drawer": {
+      "type": "cart-drawer"
     }
   },
-  "order": ["footer"]
+  "order": ["footer", "cart-drawer"]
 }
