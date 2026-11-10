@@ -108,7 +108,17 @@ Tudo funciona sem JS com fallback: form → `/cart/add`, ícone → `/cart`, lup
 - **Modelos**: card padrão 3:4, cantos retos, nome `.text-h3` + quantidade.
 - **Mais vendidos**: 3x3 a partir de 750px; no celular 2x4 (a 9ª some). Botão "Ver catálogo completo" embaixo.
 
-## 8. Para o refinamento de design
+## 8. Sincronização com a Shopify (GitHub → tema publicado)
+
+`master` está ligado ao tema **publicado**. A Shopify recusa alguns arquivos sem aviso no Git (o arquivo fica na versão antiga) por regras que o `shopify theme check` não verifica. Já aconteceu:
+
+- Nome de section, bloco ou preset no schema com **mais de 25 caracteres** → section recusada.
+- `layout/theme.liquid` recusado até tirar `{% section %}`, `t` com argumentos e `<link ... crossorigin>` (atributo sem valor). A causa exata entre os três não foi isolada. Mantenha o layout simples; a gaveta do carrinho fica no `footer-group`.
+- Locale padrão sem a forma de plural `many` (português exige one/many/other) e idioma padrão do editor diferente do da loja: corrigidos junto com a mudança do idioma da loja para pt-BR.
+
+Depois de cada push, conferir o site no ar (o HTML tem `tokens.css`? Há "Liquid error" ou "Translation missing"?) e cada section via `/?section_id=<nome>`.
+
+## 9. Para o refinamento de design
 
 - A hierarquia já segue os tokens (`.text-*`, cores, raios). Refinar = ajustar o layout nos `{% stylesheet %}` de cada section e os componentes em `base.css`.
 - Verificar cada fase em 390px e 1440px, contraste e foco por teclado (`docs/arquitetura-informacao.md` §6).
