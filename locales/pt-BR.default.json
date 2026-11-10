@@ -277,7 +277,8 @@
       "new": "Novo"
     },
     "personalization": {
-      "toggle": "Personalizar com nome e número",
+      "toggle": "Personalizar com número e nome",
+      "optional": "Opcional. Deixe em branco para receber a camisa sem personalização.",
       "name": "Nome (até 12 letras)",
       "number": "Número (0 a 99)",
       "terms": "Personalizada soma {{ days }} dias úteis ao prazo e não tem troca.",

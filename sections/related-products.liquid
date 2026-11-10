@@ -1,40 +1,47 @@
 {%- comment -%}
   ============================================================
-  RELATED PRODUCTS — mesmo clube / outras versões (Produto #12)
+  RELATED PRODUCTS — recomendações por tags (Produto #12)
   ============================================================
 
-  TRABALHO (docs/arquitetura-informacao.md §3.1 #12):
-  Segunda chance: grade de 4 produtos.
+  TRABALHO:
+  Segunda chance no fim da página de produto: camisas que dividem tags
+  com a atual (ex.: "laliga", "torcedor", "barcelona"). Ordem: quem
+  divide mais tags vem primeiro. Tira o produto atual.
 
-  ORIGEM DOS PRODUTOS:
-  1. Coleção do clube: collections[handle do metafield titular.clube]
-     (ex.: clube "Santos" -> coleção /collections/santos, §5.2 "Uma por
-     clube"). Tira o produto atual da lista.
-  2. Sem coleção do clube: recomendações do Shopify, buscadas por JS
-     (product_recommendations_url com section_id desta section).
+  COMO FUNCIONA:
+  Percorre collections.all (até 50 produtos, limite do Liquid sem
+  paginação) e conta as tags em comum. Sem nenhuma em comum, usa as
+  recomendações automáticas do Shopify (busca por JS).
 {%- endcomment -%}
 {%- liquid
   assign limit = section.settings.products_to_show
-  assign club_collection = blank
-  if product.metafields.titular.clube != blank
-    assign club_handle = product.metafields.titular.clube.value | handleize
-    assign club_collection = collections[club_handle]
-  endif
+  assign strong = ''
+  assign weak = ''
+  for item in collections.all.products
+    if item.id == product.id
+      continue
+    endif
+    assign shared = 0
+    for tag in item.tags
+      if product.tags contains tag
+        assign shared = shared | plus: 1
+      endif
+    endfor
+    if shared >= 2
+      assign strong = strong | append: item.handle | append: ','
+    elsif shared == 1
+      assign weak = weak | append: item.handle | append: ','
+    endif
+  endfor
+  assign handles = strong | append: weak | split: ','
 -%}
 
-{%- if club_collection != blank and club_collection.products_count > 1 -%}
+{%- if handles.size > 0 -%}
   <section class="section page-width related-products">
-    <div class="section__header">
-      <h2 class="text-h2">{{ 'titular.product.same_club' | t: club: club_collection.title }}</h2>
-      <a href="{{ club_collection.url }}" class="text-label">{{ 'sections.collection_list.view_all' | t }}</a>
-    </div>
+    {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
     <ul class="product-grid" role="list">
-      {%- assign shown = 0 -%}
-      {%- for item in club_collection.products -%}
-        {%- if item.id != product.id and shown < limit -%}
-          <li>{% render 'card-product', card_product: item %}</li>
-          {%- assign shown = shown | plus: 1 -%}
-        {%- endif -%}
+      {%- for handle in handles limit: limit -%}
+        <li>{% render 'card-product', card_product: all_products[handle] %}</li>
       {%- endfor -%}
     </ul>
   </section>
@@ -44,9 +51,7 @@
     data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ limit }}"
   >
     {%- if recommendations.performed and recommendations.products_count > 0 -%}
-      <div class="section__header">
-        <h2 class="text-h2">{{ section.settings.heading | escape }}</h2>
-      </div>
+      {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
       <ul class="product-grid" role="list">
         {%- for item in recommendations.products -%}
           <li>{% render 'card-product', card_product: item %}</li>
@@ -77,16 +82,12 @@
 
 {% schema %}
 {
-  "name": "Mesmo clube",
+  "name": "Recomendações",
   "tag": "section",
   "class": "section-related-products",
   "settings": [
-    {
-      "type": "text",
-      "id": "heading",
-      "default": "Outras versões",
-      "label": "Título (quando não há coleção do clube)"
-    },
+    { "type": "text", "id": "eyebrow", "label": "Rótulo", "default": "Para completar" },
+    { "type": "text", "id": "heading", "label": "Título", "default": "Você também pode gostar" },
     {
       "type": "range",
       "id": "products_to_show",

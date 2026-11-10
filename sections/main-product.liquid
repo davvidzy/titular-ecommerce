@@ -34,10 +34,32 @@
 
 <section class="product page-width" data-section-id="{{ section.id }}" data-product-section>
   {%- comment -%} 1. Galeria {%- endcomment -%}
+  {%- liquid
+    assign active_media_id = current_variant.featured_media.id | default: product.featured_media.id
+  -%}
   <div class="product__gallery" aria-label="{{ 'products.product.media.gallery_viewer' | t }}">
+    {%- comment -%} Miniaturas: só no desktop, à esquerda da foto principal. {%- endcomment -%}
+    {%- if product.media.size > 1 -%}
+      <ul class="product__thumbs" role="list">
+        {%- for media in product.media -%}
+          <li>
+            <button
+              type="button"
+              class="product__thumb media"
+              style="--ratio: 3 / 4;"
+              data-thumb="{{ media.id }}"
+              aria-label="{{ 'products.product.media.load_image' | t: index: forloop.index }}"
+              {% if media.id == active_media_id %}aria-current="true"{% endif %}
+            >
+              {{ media.preview_image | image_url: width: 200 | image_tag: loading: 'lazy', alt: '' }}
+            </button>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
     <ul class="product__media-list" role="list" id="ProductMedia-{{ section.id }}" data-gallery>
       {%- for media in product.media -%}
-        <li class="product__media-item media" style="--ratio: 3 / 4;" data-media-id="{{ media.id }}">
+        <li class="product__media-item media{% if media.id == active_media_id %} is-active{% endif %}" style="--ratio: 3 / 4;" data-media-id="{{ media.id }}">
           {%- case media.media_type -%}
             {%- when 'image' -%}
               {%- liquid
@@ -51,7 +73,7 @@
                 | image_url: width: 1440
                 | image_tag:
                   loading: loading,
-                  sizes: '(min-width: 990px) 30vw, 100vw',
+                  sizes: '(min-width: 990px) 45vw, 100vw',
                   widths: '390, 600, 780, 1080, 1440',
                   alt: media.alt | default: product.title | escape
               }}
@@ -118,10 +140,18 @@
             {%- unless product.has_only_default_variant -%}
               <div class="product__options stack" {{ block.shopify_attributes }}>
                 {%- for option in product.options_with_values -%}
-                  <fieldset class="product__option" data-option-index="{{ forloop.index0 }}">
+                  {%- assign opt_index = forloop.index0 -%}
+                  {%- comment -%} Opção com um valor só (ex.: "Customization type"): escondida e já marcada. {%- endcomment -%}
+                  {%- if option.values.size == 1 -%}
+                    <fieldset class="product__option" data-option-index="{{ opt_index }}" hidden>
+                      <input type="radio" name="option-{{ opt_index }}" value="{{ option.values.first | escape }}" checked>
+                    </fieldset>
+                    {%- continue -%}
+                  {%- endif -%}
+                  <fieldset class="product__option" data-option-index="{{ opt_index }}">
                     <div class="product__option-head">
                       <legend class="text-label">{{ option.name }}</legend>
-                      {%- if forloop.first and settings.page_size_guide != blank -%}
+                      {%- if opt_index == 0 and settings.page_size_guide != blank -%}
                         <button type="button" class="button--link text-small" aria-haspopup="dialog" data-dialog-open="SizeGuide-{{ section.id }}">
                           {% render 'icon', name: 'ruler' %}{{ 'titular.product.size_guide' | t }}
                         </button>
@@ -132,18 +162,18 @@
                         {%- liquid
                           assign value_available = false
                           for variant in product.variants
-                            if variant.available and variant.options[forloop.parentloop.index0] == value
+                            if variant.available and variant.options[opt_index] == value
                               assign value_available = true
                               break
                             endif
                           endfor
-                          assign input_id = 'Option-' | append: section.id | append: '-' | append: forloop.parentloop.index0 | append: '-' | append: forloop.index0
+                          assign input_id = 'Option-' | append: section.id | append: '-' | append: opt_index | append: '-' | append: forloop.index0
                         -%}
                         <input
                           type="radio"
                           class="visually-hidden size-picker__input"
                           id="{{ input_id }}"
-                          name="option-{{ forloop.parentloop.index0 }}"
+                          name="option-{{ opt_index }}"
                           value="{{ value | escape }}"
                           {% if option.selected_value == value %}checked{% endif %}
                         >
@@ -178,32 +208,49 @@
               </p>
             {%- endif -%}
 
-          {%- comment -%} 6. Personalização: só se titular.personalizavel = true {%- endcomment -%}
+          {%- comment -%}
+            6. Personalização: dois campos, Número e Nome (line item properties).
+            Aparece se o metafield titular.personalizavel for verdadeiro OU se o
+            produto tiver uma opção de personalização (ex.: "Customization type").
+            Opcional: vazio = camisa sem personalização. Preenchido = envia
+            _personalizada e mostra o aviso de prazo extra e sem troca.
+          {%- endcomment -%}
           {%- when 'personalization' -%}
-            {%- if mf.personalizavel.value == true or request.design_mode -%}
-              <div class="product__personalization stack" {{ block.shopify_attributes }} data-personalization data-extra-days="{{ block.settings.extra_days }}">
-                {%- if mf.personalizavel.value != true -%}
-                  <p class="placeholder-note text-small">{{ 'titular.placeholder.personalization' | t }}</p>
-                {%- endif -%}
-                <label class="product__personalization-toggle text-body">
-                  <input type="checkbox" data-personalization-toggle>
-                  {{ 'titular.personalization.toggle' | t }}
+            {%- liquid
+              assign has_custom = false
+              if mf.personalizavel.value == true
+                assign has_custom = true
+              endif
+              for option in product.options
+                assign option_down = option | downcase
+                if option_down contains 'custom' or option_down contains 'personaliz'
+                  assign has_custom = true
+                endif
+              endfor
+            -%}
+            {%- if has_custom or request.design_mode -%}
+              <fieldset class="product__personalization stack" {{ block.shopify_attributes }} data-personalization data-extra-days="{{ block.settings.extra_days }}">
+                <legend class="text-label">
+                  {{- 'titular.personalization.toggle' | t -}}
                   {%- if block.settings.price_label != blank %} <span class="muted">({{ block.settings.price_label | escape }})</span>{% endif -%}
-                </label>
-                <fieldset class="stack" data-personalization-fields disabled hidden>
-                  <legend class="visually-hidden">{{ 'titular.personalization.toggle' | t }}</legend>
-                  <input type="hidden" name="properties[_personalizada]" value="sim">
-                  <div class="field">
-                    <label class="text-small" for="PersonalName-{{ section.id }}">{{ 'titular.personalization.name' | t }}</label>
-                    <input class="field__input" id="PersonalName-{{ section.id }}" type="text" name="properties[Nome]" maxlength="{{ block.settings.max_name }}" autocomplete="off" autocapitalize="characters">
-                  </div>
+                </legend>
+                {%- unless has_custom -%}
+                  <p class="placeholder-note text-small">{{ 'titular.placeholder.personalization' | t }}</p>
+                {%- endunless -%}
+                <input type="hidden" name="properties[_personalizada]" value="sim" disabled data-personalization-flag>
+                <div class="product__personalization-fields">
                   <div class="field">
                     <label class="text-small" for="PersonalNumber-{{ section.id }}">{{ 'titular.personalization.number' | t }}</label>
-                    <input class="field__input" id="PersonalNumber-{{ section.id }}" type="text" name="properties[Número]" inputmode="numeric" pattern="[0-9]{1,2}" maxlength="2" autocomplete="off">
+                    <input class="field__input" id="PersonalNumber-{{ section.id }}" type="text" name="properties[Número]" inputmode="numeric" pattern="[0-9]{1,2}" maxlength="2" autocomplete="off" placeholder="10" data-personalization-input>
                   </div>
-                  <p class="notice text-small">{% render 'icon', name: 'info' %}<span>{{ 'titular.personalization.terms' | t: days: block.settings.extra_days }}</span></p>
-                </fieldset>
-              </div>
+                  <div class="field">
+                    <label class="text-small" for="PersonalName-{{ section.id }}">{{ 'titular.personalization.name' | t }}</label>
+                    <input class="field__input" id="PersonalName-{{ section.id }}" type="text" name="properties[Nome]" maxlength="{{ block.settings.max_name }}" autocomplete="off" autocapitalize="characters" placeholder="TITULAR" data-personalization-input>
+                  </div>
+                </div>
+                <p class="notice text-small" data-personalization-notice hidden>{% render 'icon', name: 'info' %}<span>{{ 'titular.personalization.terms' | t: days: block.settings.extra_days }}</span></p>
+                <p class="text-small muted">{{ 'titular.personalization.optional' | t }}</p>
+              </fieldset>
             {%- endif -%}
 
           {%- comment -%} 7. Comprar (fixo no rodapé no mobile) {%- endcomment -%}
@@ -365,8 +412,12 @@
   .size-picker__input:focus-visible + .size-picker__label { outline: 2px solid var(--focus); outline-offset: 2px; }
   .size-picker__label.is-sold-out { color: var(--ink-disabled); border-style: dashed; }
 
-  .product__personalization-toggle { display: flex; align-items: center; gap: var(--space-2); min-height: var(--tap); }
-  .product__personalization fieldset { border: 0; margin: 0; padding: 0; }
+  .product__thumbs { display: none; }
+
+  .product__personalization { border: 0; margin: 0; padding: 0; }
+  .product__personalization > legend { margin-bottom: var(--space-2); padding: 0; }
+  /* Dois níveis: número (curto) e nome (largo) lado a lado. */
+  .product__personalization-fields { display: grid; grid-template-columns: calc(var(--space-24) - var(--space-4)) 1fr; gap: var(--space-2); }
 
   /* 7. Botão fixo no rodapé da tela no mobile. */
   .product__buy {
@@ -386,11 +437,37 @@
   .product__form > .accordion__item + .accordion__item { margin-top: 0; }
 
   @media (min-width: 990px) {
-    .product { grid-template-columns: 3fr 2fr; gap: var(--space-12); padding-top: var(--space-6); align-items: start; }
-    .product__gallery { margin-inline: 0; }
-    .product__media-list { grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); gap: var(--space-2); overflow: visible; }
+    .product { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-12); padding-top: var(--space-6); align-items: start; }
+
+    /* Galeria fixa: miniaturas à esquerda + foto principal; acompanha a rolagem
+       enquanto a coluna de informações passa, até o fim da section. */
+    .product__gallery {
+      position: sticky;
+      top: var(--space-6);
+      display: grid;
+      grid-template-columns: var(--space-24) minmax(0, 1fr);
+      gap: var(--space-4);
+      align-items: start;
+      margin-inline: 0;
+    }
+    .product__gallery:not(:has(.product__thumbs)) { grid-template-columns: minmax(0, 1fr); }
+    .product__thumbs {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      max-height: calc(100vh - var(--space-12));
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .product__thumb { width: 100%; padding: 0; border: 1px solid transparent; cursor: pointer; }
+    .product__thumb[aria-current="true"] { border-color: var(--ink); }
+    .product__media-list { display: block; overflow: visible; }
+    /* A foto principal cabe na altura da tela sem cortar (largura limitada pela proporção 3:4). */
+    .product__media-item { display: none; width: min(100%, calc((100vh - var(--space-12)) * 3 / 4)); }
+    .product__media-item.is-active { display: block; }
+    .product__media-list:not(:has(.is-active)) > .product__media-item:first-child { display: block; }
     .product__media-counter { display: none; }
-    .product__info { position: sticky; top: var(--space-6); }
+    .product__info { padding-bottom: var(--space-12); }
     .product__buy { position: static; margin-inline: 0; padding: 0; border: 0; }
   }
 {% endstylesheet %}

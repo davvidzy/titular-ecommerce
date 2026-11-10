@@ -67,10 +67,7 @@
 
       if (price && variant.price_html) price.innerHTML = variant.price_html;
 
-      if (gallery && variant.featured_media_id) {
-        var media = gallery.querySelector('[data-media-id="' + variant.featured_media_id + '"]');
-        if (media) gallery.scrollTo({ left: media.offsetLeft, behavior: 'smooth' });
-      }
+      if (variant.featured_media_id) showMedia(section, variant.featured_media_id);
 
       var url = new URL(window.location.href);
       url.searchParams.set('variant', variant.id);
@@ -88,9 +85,30 @@
     });
   }
 
-  /* ---------- Galeria: contador "1 / N" no carrossel mobile ---------- */
+  /* ---------- Galeria ----------
+     Celular: carrossel (scroll-snap) com contador "1 / N".
+     Desktop: foto principal (.is-active) + miniaturas [data-thumb]. */
+
+  function showMedia(section, mediaId) {
+    var gallery = section.querySelector('[data-gallery]');
+    if (!gallery) return;
+    var target = gallery.querySelector('[data-media-id="' + mediaId + '"]');
+    if (!target) return;
+    gallery.querySelectorAll('.is-active').forEach(function (el) { el.classList.remove('is-active'); });
+    target.classList.add('is-active');
+    section.querySelectorAll('[data-thumb]').forEach(function (thumb) {
+      if (thumb.getAttribute('data-thumb') === String(mediaId)) thumb.setAttribute('aria-current', 'true');
+      else thumb.removeAttribute('aria-current');
+    });
+    // No carrossel do celular, rola até a foto.
+    if (gallery.scrollWidth > gallery.clientWidth) gallery.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+  }
 
   function initGallery(section) {
+    section.querySelectorAll('[data-thumb]').forEach(function (thumb) {
+      thumb.addEventListener('click', function () { showMedia(section, thumb.getAttribute('data-thumb')); });
+    });
+
     var gallery = section.querySelector('[data-gallery]');
     var counter = section.querySelector('[data-gallery-counter]');
     if (!gallery || !counter) return;
@@ -112,13 +130,24 @@
   function initPersonalization(section) {
     var wrapper = section.querySelector('[data-personalization]');
     if (!wrapper) return;
-    var toggle = wrapper.querySelector('[data-personalization-toggle]');
-    var fields = wrapper.querySelector('[data-personalization-fields]');
-    toggle.addEventListener('change', function () {
-      // fieldset desabilitado = propriedades não vão para o carrinho.
-      fields.disabled = !toggle.checked;
-      fields.hidden = !toggle.checked;
-      section.dispatchEvent(new CustomEvent('titular:personalization', { detail: { on: toggle.checked } }));
+    var inputs = wrapper.querySelectorAll('[data-personalization-input]');
+    var flag = wrapper.querySelector('[data-personalization-flag]');
+    var notice = wrapper.querySelector('[data-personalization-notice]');
+    var number = wrapper.querySelector('input[inputmode="numeric"]');
+    var on = false;
+
+    if (number) number.addEventListener('input', function () { number.value = number.value.replace(/\D/g, '').slice(0, 2); });
+
+    inputs.forEach(function (input) {
+      input.addEventListener('input', function () {
+        var filled = Array.prototype.some.call(inputs, function (i) { return i.value.trim() !== ''; });
+        if (filled === on) return;
+        on = filled;
+        // Só marca _personalizada (e o aviso de sem troca) quando algo foi preenchido.
+        flag.disabled = !on;
+        notice.hidden = !on;
+        section.dispatchEvent(new CustomEvent('titular:personalization', { detail: { on: on } }));
+      });
     });
   }
 
