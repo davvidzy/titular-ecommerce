@@ -1,12 +1,12 @@
 {
   "general": {
-    "meta": {
-      "tags": "Marcado com \"{{ tags }}\"",
-      "page": "Página {{ page }}"
-    },
     "404": {
       "title": "Página não encontrada",
       "subtext": "A página que você procura não existe."
+    },
+    "meta": {
+      "tags": "Marcado com \"{{ tags }}\"",
+      "page": "Página {{ page }}"
     },
     "password_page": {
       "password_label": "Senha",
@@ -120,6 +120,10 @@
     }
   },
   "templates": {
+    "404": {
+      "title": "Página não encontrada",
+      "subtext": "404"
+    },
     "search": {
       "no_results": "Não achamos \"{{ terms }}\".",
       "results_with_count": "{{ count }} resultado para \"{{ terms }}\"",
@@ -130,6 +134,7 @@
       "search_for": "Resultados para \"{{ terms }}\"",
       "results_pages_with_count": {
         "one": "{{ count }} página",
+        "many": "{{ count }} páginas",
         "other": "{{ count }} páginas"
       }
     },
@@ -146,10 +151,6 @@
         "post_success": "Recebemos sua mensagem. Você recebe a resposta por e-mail em até 1 dia útil.",
         "error_heading": "Confira os campos:"
       }
-    },
-    "404": {
-      "title": "Página não encontrada",
-      "subtext": "404"
     }
   },
   "sections": {
@@ -163,6 +164,7 @@
       "cart_items": "itens",
       "cart_count": {
         "one": "{{ count }} item",
+        "many": "{{ count }} itens",
         "other": "{{ count }} itens"
       }
     },
@@ -244,6 +246,7 @@
       "comment_meta_html": "{{ author }} em {{ date }}",
       "comments": {
         "one": "{{ count }} comentário",
+        "many": "{{ count }} comentários",
         "other": "{{ count }} comentários"
       },
       "moderated": "Comentários passam por aprovação antes de aparecer.",
@@ -297,6 +300,7 @@
     "collection": {
       "count": {
         "one": "{{ count }} camisa",
+        "many": "{{ count }} camisas",
         "other": "{{ count }} camisas"
       },
       "remove_filter": "Remover filtro",
