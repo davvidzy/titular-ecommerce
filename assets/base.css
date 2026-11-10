@@ -282,6 +282,85 @@ textarea.field__input { padding-block: var(--space-2); min-height: calc(var(--ta
 .card-product__info > * + * { margin-top: var(--space-2); }
 .card-product__info .price-extras > * + * { margin-top: var(--space-1); }
 
+/* Parcelas no card: sempre uma linha. */
+.price-extras__line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- Adicionar rápido (card) ----------
+   Celular: círculo "+" preto com anel branco (contraste em foto clara ou
+   escura), canto inferior direito. Desktop com mouse: barra clara com
+   "+ Adicionar ao carrinho" que aparece no hover/foco do card. */
+.card-product__quick { position: absolute; right: var(--space-2); bottom: var(--space-2); z-index: 2; }
+.card-product__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: var(--tap);
+  height: var(--tap);
+  padding: 0;
+  color: var(--ink-inverse);
+  background: var(--ink);
+  border: 2px solid var(--ink-inverse);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.card-product__add-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.card-product__add-icon { display: inline-flex; }
+.card-product__spinner {
+  display: none;
+  width: var(--space-4);
+  height: var(--space-4);
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-pill);
+  animation: titular-spin 700ms linear infinite;
+}
+.card-product__add[aria-busy="true"] { cursor: progress; }
+.card-product__add[aria-busy="true"] .card-product__add-icon { display: none; }
+.card-product__add[aria-busy="true"] .card-product__spinner { display: inline-block; }
+@keyframes titular-spin { to { transform: rotate(360deg); } }
+
+@media (hover: hover) and (min-width: 990px) {
+  .card-product__quick { left: var(--space-2); }
+  .card-product__add {
+    width: 100%;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--surface);
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    transform: translateY(var(--space-2));
+    transition: opacity 150ms ease-out, transform 150ms ease-out;
+  }
+  .card-product__add:hover { border-color: var(--ink); }
+  .card-product__add-label { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+  .card-product:hover .card-product__add,
+  .card-product:focus-within .card-product__add,
+  .card-product__add[aria-busy="true"] { opacity: 1; transform: none; }
+}
+
+/* "+" que voa até o carrinho (assets/carrinho.js) e pulso no contador. */
+.fly-plus {
+  position: fixed;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  color: var(--ink-inverse);
+  background: var(--ink);
+  border: 2px solid var(--ink-inverse);
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+.header__cart-count.is-bumping { animation: titular-bump 400ms ease-out; }
+@keyframes titular-bump { 50% { transform: scale(1.4); } }
+@media (prefers-reduced-motion: reduce) {
+  .card-product__spinner { animation-duration: 1.5s; }
+  .header__cart-count.is-bumping { animation: none; }
+}
+
 /* ---------- Preço ---------- */
 
 .price { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); }

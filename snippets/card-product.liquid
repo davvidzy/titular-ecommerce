@@ -6,9 +6,16 @@
   CONTEÚDO (docs/arquitetura-informacao.md §3.3 "Card de produto"):
   - Foto da frente; costas no hover só no desktop
     (settings.card_show_second_image, usa a 2ª mídia).
-  - Nome, selo da versão (metafield titular.versao), preço, parcela.
-  - Selo opcional em --radius-pill: "Novo" (tag "novo") ou "-20%"
-    (calculado de compare_at_price). Esgotado com rótulo.
+  - Selo opcional em --radius-pill: "-19%" (de compare_at_price),
+    "Novo" (tag "novo") ou "Esgotado".
+  - Nome, preço (só o atual: o desconto já está no selo) e parcelas
+    numa linha.
+  - Adicionar ao carrinho rápido, sobre a foto:
+      celular: botão redondo "+" no canto inferior direito;
+      desktop: barra "+ Adicionar ao carrinho" que aparece no hover/foco.
+    Adiciona a primeira variante disponível (o tamanho pode ser trocado
+    na gaveta do carrinho). assets/carrinho.js anima o "+" até o ícone
+    do carrinho e mostra o aviso com "Ver carrinho".
   - Cantos retos (--radius-none), foto sobre --surface-alt.
 
   COMO USAR:
@@ -20,9 +27,10 @@
   if card_product.compare_at_price > card_product.price
     assign discount = card_product.compare_at_price | minus: card_product.price | times: 100 | divided_by: card_product.compare_at_price
   endif
+  assign quick_variant = card_product.selected_or_first_available_variant
 -%}
 <div class="card-product">
-  <div class="media" style="--ratio: 3 / 4;">
+  <div class="media card-product__media" style="--ratio: 3 / 4;">
     {%- if card_product.featured_media -%}
       {{
         card_product.featured_media
@@ -31,7 +39,7 @@
           loading: 'lazy',
           class: 'card-product__image',
           widths: '195, 390, 540, 720',
-          sizes: '(min-width: 990px) 25vw, 50vw',
+          sizes: '(min-width: 990px) 33vw, 50vw',
           alt: ''
       }}
       {%- if settings.card_show_second_image and card_product.media[1] -%}
@@ -42,7 +50,7 @@
             loading: 'lazy',
             class: 'card-product__image card-product__image--secondary',
             widths: '390, 540, 720',
-            sizes: '25vw',
+            sizes: '33vw',
             alt: ''
         }}
       {%- endif -%}
@@ -59,6 +67,20 @@
         <span class="badge text-label">{{ 'titular.product.new' | t }}</span>
       {%- endif -%}
     </div>
+
+    {%- if card_product.available -%}
+      <form action="{{ routes.cart_add_url }}" method="post" class="card-product__quick" data-type="add-to-cart-form" data-quick-add>
+        <input type="hidden" name="id" value="{{ quick_variant.id }}">
+        <input type="hidden" name="quantity" value="1">
+        {%- comment -%} Um botão só: círculo "+" no celular, barra com texto no desktop. {%- endcomment -%}
+        <button type="submit" class="card-product__add text-label">
+          <span class="card-product__add-icon">{% render 'icon', name: 'plus' %}</span>
+          <span class="card-product__spinner" aria-hidden="true"></span>
+          <span class="card-product__add-label">{{ 'products.product.add_to_cart' | t }}</span>
+          <span class="visually-hidden">: {{ card_product.title | escape }}</span>
+        </button>
+      </form>
+    {%- endif -%}
   </div>
 
   <div class="card-product__info">
@@ -68,7 +90,7 @@
     <h3 class="text-h3">
       <a href="{{ card_product.url }}" class="card-product__link">{{ card_product.title | escape }}</a>
     </h3>
-    {% render 'price', product: card_product, use_variant: false, show_compare: true %}
-    {% render 'price-extras', amount: card_product.price, pix: false %}
+    {% render 'price', product: card_product, use_variant: false, show_compare: false %}
+    {% render 'price-extras', amount: card_product.price, pix: false, short: true %}
   </div>
 </div>

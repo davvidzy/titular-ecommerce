@@ -44,6 +44,11 @@
   {%- endif -%}
   {%- if count > 1 -%}
     {%- assign per_money = amount | divided_by: count | money -%}
-    <p class="text-small muted">{{ 'titular.price.installments' | t: count: count, price: per_money }}</p>
+    {%- if short -%}
+      {%- comment -%} Card: versão curta, sempre numa linha. {%- endcomment -%}
+      <p class="text-small muted price-extras__line">{{ 'titular.price.installments_short' | t: count: count, price: per_money }}</p>
+    {%- else -%}
+      <p class="text-small muted">{{ 'titular.price.installments' | t: count: count, price: per_money }}</p>
+    {%- endif -%}
   {%- endif -%}
 </div>

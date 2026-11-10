@@ -20,6 +20,7 @@
     <span class="alerta-global__icone alerta-global__icone--positivo">{% render 'icon', name: 'check' %}</span>
     <span class="alerta-global__icone alerta-global__icone--negativo">{% render 'icon', name: 'alert' %}</span>
     <p class="mensagem text-small"></p>
+    <button type="button" class="alerta-global__acao button button--secondary text-label" hidden></button>
     <button type="button" class="icon-button" onclick="fecharAlerta()" aria-label="{{ 'accessibility.close' | t }}">
       {% render 'icon', name: 'close' %}
     </button>
@@ -29,7 +30,7 @@
 <style>
   .alerta-global {
     position: fixed;
-    top: var(--space-4);
+    top: calc(var(--header-height, 0px) + var(--space-2));
     right: var(--space-4);
     left: var(--space-4);
     z-index: 1000;
@@ -52,6 +53,10 @@
   .alerta-global.positivo .alerta-global__icone--positivo,
   .alerta-global.negativo .alerta-global__icone--negativo { display: inline-flex; }
   .alerta-global .icon-button { color: var(--ink); }
+  .alerta-global__acao { flex: none; min-height: calc(var(--tap) - var(--space-2)); padding-inline: var(--space-4); }
+  .alerta-global.visivel .alerta-global__conteudo { animation: alerta-entra 200ms ease-out; }
+  @keyframes alerta-entra { from { opacity: 0; transform: translateY(calc(var(--space-2) * -1)); } }
+  @media (prefers-reduced-motion: reduce) { .alerta-global.visivel .alerta-global__conteudo { animation: none; } }
 
   @media (min-width: 750px) {
     .alerta-global { left: auto; width: 100%; max-width: var(--drawer-max); }
@@ -68,17 +73,40 @@
       clearTimeout(timer);
     }
 
-    function mostrarAlerta(mensagem, tipo, duracao) {
+    // acao (opcional): { label, onClick } vira um botão no aviso (ex.: "Ver carrinho").
+    function mostrarAlerta(mensagem, tipo, duracao, acao) {
       var alerta = document.getElementById('alerta');
       if (!alerta) return;
       tipo = tipo || 'positivo';
       duracao = duracao === undefined ? 4000 : duracao;
       alerta.querySelector('.mensagem').textContent = mensagem;
-      alerta.classList.remove('positivo', 'negativo');
+      var botao = alerta.querySelector('.alerta-global__acao');
+      if (acao && acao.label) {
+        botao.textContent = acao.label;
+        botao.hidden = false;
+        botao.onclick = function () { fecharAlerta(); if (acao.onClick) acao.onClick(); };
+      } else {
+        botao.hidden = true;
+        botao.onclick = null;
+      }
+      alerta.classList.remove('positivo', 'negativo', 'visivel');
+      void alerta.offsetWidth;
       alerta.classList.add(tipo, 'visivel');
       clearTimeout(timer);
-      if (duracao > 0) timer = setTimeout(fecharAlerta, duracao);
+      if (duracao > 0) {
+        timer = setTimeout(fecharAlerta, duracao);
+        restante = duracao;
+      }
     }
+
+    // Pausa o fechamento automático enquanto o mouse ou o foco estão no aviso.
+    var restante = 0;
+    document.addEventListener('DOMContentLoaded', function () {
+      var alerta = document.getElementById('alerta');
+      if (!alerta) return;
+      ['mouseenter', 'focusin'].forEach(function (ev) { alerta.addEventListener(ev, function () { clearTimeout(timer); }); });
+      ['mouseleave', 'focusout'].forEach(function (ev) { alerta.addEventListener(ev, function () { if (alerta.classList.contains('visivel') && restante) timer = setTimeout(fecharAlerta, 2500); }); });
+    });
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') fecharAlerta();

@@ -56,11 +56,11 @@
     var fresh = doc.querySelector('[data-cart-drawer-content]');
     var current = el.querySelector('[data-cart-drawer-content]');
     if (fresh && current) current.replaceWith(fresh);
-    refreshCount();
+    return refreshCount();
   }
 
   function refreshCount() {
-    fetch((routes.cart || '/cart') + '.js', { headers: { Accept: 'application/json' } })
+    return fetch((routes.cart || '/cart') + '.js', { headers: { Accept: 'application/json' } })
       .then(function (r) { return r.json(); })
       .then(function (cart) {
         document.querySelectorAll('[data-cart-count]').forEach(function (el) {
@@ -79,6 +79,48 @@
   function fail(error) {
     var message = (error && (error.description || error.message)) || titular.strings.cartError;
     if (typeof window.mostrarAlerta === 'function') window.mostrarAlerta(message, 'negativo');
+  }
+
+  /* ---------- Animação do adicionar rápido ---------- */
+
+  // Um "+" sai do botão do card e voa até o ícone do carrinho no cabeçalho.
+  // Com "reduzir movimento" ligado no sistema, pula a animação.
+  function flyToCart(button) {
+    var target = document.querySelector('[data-cart-link]');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!button || !target || reduce || typeof document.body.animate !== 'function') return Promise.resolve();
+
+    var from = button.getBoundingClientRect();
+    var to = target.getBoundingClientRect();
+    var size = from.height;
+    var fly = document.createElement('span');
+    fly.className = 'fly-plus';
+    fly.setAttribute('aria-hidden', 'true');
+    var icon = button.querySelector('.card-product__add-icon');
+    fly.innerHTML = icon ? icon.innerHTML : '+';
+    fly.style.left = (from.left + from.width / 2 - size / 2) + 'px';
+    fly.style.top = (from.top + from.height / 2 - size / 2) + 'px';
+    document.body.appendChild(fly);
+
+    var dx = (to.left + to.width / 2) - (from.left + from.width / 2);
+    var dy = (to.top + to.height / 2) - (from.top + from.height / 2);
+    var animation = fly.animate(
+      [
+        { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+        { transform: 'translate(' + dx * 0.4 + 'px, ' + (dy * 0.4 - 60) + 'px) scale(0.9)', opacity: 1, offset: 0.4 },
+        { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(0.3)', opacity: 0.2 }
+      ],
+      { duration: 650, easing: 'cubic-bezier(0.5, 0, 0.3, 1)' }
+    );
+    return animation.finished.catch(function () {}).then(function () { fly.remove(); });
+  }
+
+  function bumpCount() {
+    document.querySelectorAll('[data-cart-count]').forEach(function (el) {
+      el.classList.remove('is-bumping');
+      void el.offsetWidth;
+      el.classList.add('is-bumping');
+    });
   }
 
   /* ---------- Adicionar ao carrinho ---------- */
@@ -107,11 +149,26 @@
     var buyNow = button && button.hasAttribute('data-buy-now');
     if (button) button.setAttribute('aria-busy', 'true');
 
+    // Adicionar rápido do card: não abre a gaveta; anima e avisa.
+    var quickAdd = form.hasAttribute('data-quick-add');
+
     post(routes.cartAdd || '/cart/add', new FormData(form))
       .then(function (data) {
         if (buyNow) {
           window.location.href = (routes.root || '/') + 'checkout';
           return;
+        }
+        if (quickAdd) {
+          return flyToCart(button).then(function () {
+            return Promise.resolve(render(data)).then(bumpCount).then(function () {
+            if (typeof window.mostrarAlerta === 'function') {
+              window.mostrarAlerta(titular.strings.addedToCart, 'positivo', 5000, {
+                label: titular.strings.viewCart,
+                onClick: function () { if (titular.openDialog) titular.openDialog('CartDrawer'); }
+              });
+            }
+            });
+          });
         }
         render(data);
         if (titular.openDialog) titular.openDialog('CartDrawer', button);
@@ -141,6 +198,53 @@
       .then(render)
       .catch(fail)
       .finally(function () { busy(false); });
+  });
+
+  /* ---------- Personalização na gaveta ----------
+     Caixa marcada abre Número e Nome; ao sair de um campo, salva as
+     propriedades do item (/cart/change com properties). Desmarcar limpa. */
+
+  function saveCustom(line, properties) {
+    busy(true);
+    post(routes.cartChange || '/cart/change', {
+      id: line.getAttribute('data-line-key'),
+      quantity: parseInt(line.getAttribute('data-quantity'), 10) || 1,
+      properties: properties
+    })
+      .then(render)
+      .catch(fail)
+      .finally(function () { busy(false); });
+  }
+
+  document.addEventListener('change', function (event) {
+    var toggle = event.target.closest('[data-cart-custom-toggle]');
+    var field = event.target.closest('[data-cart-prop]');
+    if (!toggle && !field) return;
+    var wrapper = event.target.closest('[data-cart-custom]');
+    var line = event.target.closest('[data-line-key]');
+    var fields = wrapper.querySelector('.drawer-item__custom-fields');
+
+    if (toggle) {
+      if (toggle.checked) {
+        fields.hidden = false;
+        var first = fields.querySelector('input');
+        if (first) first.focus();
+      } else {
+        fields.hidden = true;
+        saveCustom(line, {});
+      }
+      return;
+    }
+
+    var properties = {};
+    var filled = false;
+    wrapper.querySelectorAll('[data-cart-prop]').forEach(function (input) {
+      var value = input.value.trim();
+      if (input.inputMode === 'numeric') value = value.replace(/\D/g, '').slice(0, 2);
+      if (value) { properties[input.getAttribute('data-cart-prop')] = value; filled = true; }
+    });
+    if (filled) properties._personalizada = 'sim';
+    saveCustom(line, filled ? properties : {});
   });
 
   /* ---------- Troca de tamanho ---------- */

@@ -72,29 +72,66 @@
               <div class="drawer-item__info stack--sm">
                 <a href="{{ item.url }}" class="text-body drawer-item__title">{{ item.product.title | escape }}</a>
 
-                {%- comment -%} Tamanho editável: troca a variante mantendo as propriedades. {%- endcomment -%}
-                {%- unless item.product.has_only_default_variant -%}
-                  <div class="field">
-                    <label class="text-small muted" for="CartSize-{{ item.key }}">{{ item.product.options.first }}</label>
+                {%- liquid
+                  # Só a 1ª opção (tamanho) vira seletor. As demais opções da
+                  # variante (ex.: "Customization type" com um valor só) ficam
+                  # fixas: o seletor lista apenas variantes com as mesmas opções 2 e 3.
+                  assign size_option = item.product.options_with_values.first
+                  assign current = item.variant
+                  assign can_customize = false
+                  if item.product.metafields.titular.personalizavel.value == true
+                    assign can_customize = true
+                  endif
+                  for option in item.product.options
+                    assign option_down = option | downcase
+                    if option_down contains 'custom' or option_down contains 'personaliz'
+                      assign can_customize = true
+                    endif
+                  endfor
+                  assign prop_number = item.properties['Número']
+                  assign prop_name = item.properties['Nome']
+                -%}
+
+                {%- if size_option.values.size > 1 -%}
+                  <div class="field drawer-item__size">
+                    <label class="text-small muted" for="CartSize-{{ item.key }}">{{ size_option.name }}</label>
                     <select id="CartSize-{{ item.key }}" class="select__select" data-cart-variant>
                       {%- for variant in item.product.variants -%}
-                        <option value="{{ variant.id }}" {% if variant.id == item.variant_id %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
-                          {{ variant.title | escape }}{% unless variant.available %} · {{ 'products.product.sold_out' | t }}{% endunless %}
-                        </option>
+                        {%- if variant.option2 == current.option2 and variant.option3 == current.option3 -%}
+                          <option value="{{ variant.id }}" {% if variant.id == item.variant_id %}selected{% endif %} {% unless variant.available %}disabled{% endunless %}>
+                            {{- variant.option1 | escape }}{% unless variant.available %} · {{ 'products.product.sold_out' | t }}{% endunless -%}
+                          </option>
+                        {%- endif -%}
                       {%- endfor -%}
                     </select>
                   </div>
-                {%- endunless -%}
+                {%- endif -%}
 
-                {%- for property in item.properties -%}
-                  {%- assign first_char = property.first | slice: 0 -%}
-                  {%- if property.last != blank and first_char != '_' -%}
-                    <p class="text-small">{{ property.first }}: {{ property.last }}</p>
-                  {%- endif -%}
-                {%- endfor -%}
-
-                {%- if personalized -%}
-                  <p class="notice text-small">{% render 'icon', name: 'info' %}{{ 'titular.personalization.no_exchange' | t }}</p>
+                {%- comment -%}
+                  Personalização: caixa de seleção. Marcar abre Número e Nome;
+                  os valores salvam ao sair do campo (assets/carrinho.js,
+                  /cart/change com properties). Desmarcar remove a personalização.
+                {%- endcomment -%}
+                {%- if can_customize -%}
+                  <div class="drawer-item__custom" data-cart-custom>
+                    <label class="drawer-item__check text-small">
+                      <input type="checkbox" class="drawer-item__checkbox" data-cart-custom-toggle {% if personalized %}checked{% endif %}>
+                      {{ 'titular.personalization.toggle' | t }}
+                    </label>
+                    <div class="drawer-item__custom-fields" {% unless personalized %}hidden{% endunless %}>
+                      <div class="field">
+                        <label class="text-small muted" for="CartNum-{{ item.key }}">{{ 'titular.personalization.number' | t }}</label>
+                        <input class="field__input" id="CartNum-{{ item.key }}" type="text" inputmode="numeric" maxlength="2" value="{{ prop_number | escape }}" data-cart-prop="Número" autocomplete="off">
+                      </div>
+                      <div class="field">
+                        <label class="text-small muted" for="CartName-{{ item.key }}">{{ 'titular.personalization.name' | t }}</label>
+                        <input class="field__input" id="CartName-{{ item.key }}" type="text" maxlength="12" value="{{ prop_name | escape }}" data-cart-prop="Nome" autocapitalize="characters" autocomplete="off">
+                      </div>
+                    </div>
+                    {%- if personalized -%}
+                      <p class="notice text-small">{% render 'icon', name: 'info' %}<span>{{ 'titular.personalization.no_exchange' | t }}</span></p>
+                    {%- endif -%}
+                  </div>
                 {%- endif -%}
 
                 <div class="drawer-item__row">
@@ -150,6 +187,12 @@
   .cart-drawer__items > li + li { margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--line); }
   .drawer-item { display: grid; grid-template-columns: calc(var(--space-24) - var(--space-4)) 1fr; gap: var(--space-4); }
   .drawer-item__title { text-decoration: none; }
+  .drawer-item__check { display: flex; align-items: center; gap: var(--space-2); min-height: var(--tap); cursor: pointer; }
+  .drawer-item__checkbox { flex: none; width: var(--space-6); height: var(--space-6); margin: 0; background: var(--surface) center / var(--space-4) no-repeat; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); cursor: pointer; }
+  .drawer-item__checkbox:checked { background-color: var(--ink); border-color: var(--ink); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 8.5 3 3 7-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  .drawer-item__checkbox:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .drawer-item__custom-fields { display: grid; grid-template-columns: calc(var(--space-12) + var(--space-6)) 1fr; gap: var(--space-2); }
+  .drawer-item__custom > * + * { margin-top: var(--space-2); }
   .drawer-item__row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
   .quantity { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
   .quantity__value { min-width: var(--space-6); text-align: center; font-variant-numeric: tabular-nums; }

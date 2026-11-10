@@ -269,7 +269,8 @@
     "best_sellers": "Mais vendidos",
     "price": {
       "pix": "{{ price }} no Pix ({{ discount }}% de desconto)",
-      "installments": "ou {{ count }}x de {{ price }} sem juros"
+      "installments": "ou {{ count }}x de {{ price }} sem juros",
+      "installments_short": "{{ count }}x de {{ price }} sem juros"
     },
     "product": {
       "size_guide": "Guia de tamanhos",
@@ -301,7 +302,9 @@
       "free_shipping_remaining": "Faltam {{ amount }} para o frete grátis.",
       "free_shipping_reached": "Frete grátis garantido.",
       "discount_label": "Cupom de desconto",
-      "shipping_at_checkout": "Frete e prazo final calculados no checkout."
+      "shipping_at_checkout": "Frete e prazo final calculados no checkout.",
+      "added": "Adicionado ao carrinho.",
+      "view": "Ver carrinho"
     },
     "collection": {
       "count": {
