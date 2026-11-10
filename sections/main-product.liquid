@@ -38,6 +38,54 @@
   assign versao = mf.versao.value
   assign active_media_id = current_variant.featured_media.id | default: product.featured_media.id
   assign media_count = product.media.size
+
+  # ---- Personalização ligada à variante ----
+  # Opção cujo nome tem "custom"/"personaliz" (ex.: "Customization type").
+  # Com 2 valores (ex.: Sem personalização e Custom name & number), a
+  # caixa de seleção troca a variante e o preço muda de verdade.
+  # Com 1 valor só, a caixa só grava Número/Nome (preço não muda).
+  assign custom_index = -1
+  assign custom_value = ''
+  assign none_value = ''
+  for option in product.options_with_values
+    assign option_down = option.name | downcase
+    if option_down contains 'custom' or option_down contains 'personaliz'
+      assign custom_index = forloop.index0
+      if option.values.size > 1
+        for value in option.values
+          assign value_down = value | append: '' | downcase
+          if value_down contains 'sem' or value_down contains 'nenhum' or value_down contains 'none' or value_down contains 'without' or value_down contains 'no custom' or value_down contains 'padr'
+            assign none_value = value | append: ''
+          else
+            assign custom_value = value | append: ''
+          endif
+        endfor
+        if none_value == '' or custom_value == ''
+          assign none_value = option.values.first | append: ''
+          assign custom_value = option.values.last | append: ''
+        endif
+      endif
+    endif
+  endfor
+
+  assign custom_choice = false
+  assign custom_diff = 0
+  if none_value != ''
+    assign custom_choice = true
+    # Começa sem personalização: mesma variante, valor "sem".
+    for variant in product.variants
+      if variant.options[custom_index] == none_value and variant.option1 == current_variant.option1
+        assign current_variant = variant
+        break
+      endif
+    endfor
+    for variant in product.variants
+      if variant.options[custom_index] == custom_value and variant.option1 == current_variant.option1
+        assign custom_diff = variant.price | minus: current_variant.price
+        break
+      endif
+    endfor
+  endif
 -%}
 
 <section class="product page-width" data-section-id="{{ section.id }}" data-product-section>
@@ -148,6 +196,16 @@
               <div class="product__block product__options" {{ block.shopify_attributes }}>
                 {%- for option in product.options_with_values -%}
                   {%- assign opt_index = forloop.index0 -%}
+                  {%- comment -%} Personalização com 2 valores: escondida; a caixa de seleção do bloco "personalization" escolhe. {%- endcomment -%}
+                  {%- if opt_index == custom_index and custom_choice -%}
+                    <fieldset class="product__option" data-option-index="{{ opt_index }}" data-custom-option data-custom-value="{{ custom_value | escape }}" data-none-value="{{ none_value | escape }}" hidden>
+                      {%- for value in option.values -%}
+                        {%- assign value_str = value | append: '' -%}
+                        <input type="radio" name="option-{{ opt_index }}" value="{{ value_str | escape }}" {% if value_str == none_value %}checked{% endif %}>
+                      {%- endfor -%}
+                    </fieldset>
+                    {%- continue -%}
+                  {%- endif -%}
                   {%- comment -%} Opção com um valor só: escondida e já marcada. {%- endcomment -%}
                   {%- if option.values.size == 1 -%}
                     <fieldset class="product__option" data-option-index="{{ opt_index }}" hidden>
@@ -157,7 +215,7 @@
                   {%- endif -%}
                   <fieldset class="product__option" data-option-index="{{ opt_index }}">
                     <div class="product__option-head">
-                      <legend class="text-label">{{ option.name }}</legend>
+                      <legend class="text-label">{% render 'option-label', name: option.name %}</legend>
                       {%- if opt_index == 0 and settings.page_size_guide != blank -%}
                         <button type="button" class="button--link text-small product__guide" aria-haspopup="dialog" data-dialog-open="SizeGuide-{{ section.id }}">
                           {% render 'icon', name: 'ruler' %}{{ 'titular.product.size_guide' | t }}
@@ -211,15 +269,16 @@
               endfor
             -%}
             {%- if has_custom -%}
-              <div class="product__block product__personalization" {{ block.shopify_attributes }} data-personalization data-extra-days="{{ block.settings.extra_days }}">
+              <div class="product__block product__personalization" {{ block.shopify_attributes }} data-personalization data-extra-days="{{ block.settings.extra_days }}"{% if custom_choice %} data-personalization-variant{% endif %}>
                 <label class="personalization__toggle">
                   <input type="checkbox" class="personalization__checkbox" data-personalization-toggle aria-controls="Personalization-{{ section.id }}" aria-expanded="false">
                   <span class="personalization__text">
                     <span class="text-body">{{ 'titular.personalization.toggle' | t }}</span>
                     <span class="text-small muted">{{ 'titular.personalization.hint' | t }}</span>
                   </span>
-                  {%- if block.settings.price_label != blank -%}
-                    <span class="text-label">{{ block.settings.price_label | escape }}</span>
+                  {%- comment -%} Preço da personalização = diferença real entre as variantes (só quando existe). {%- endcomment -%}
+                  {%- if custom_diff > 0 -%}
+                    <span class="text-label">+ {{ custom_diff | money }}</span>
                   {%- endif -%}
                 </label>
                 <fieldset id="Personalization-{{ section.id }}" class="personalization__fields" data-personalization-fields disabled hidden>
@@ -574,8 +633,7 @@
       "name": "Personalização",
       "limit": 1,
       "settings": [
-        { "type": "paragraph", "content": "Aparece se o produto tiver uma opção de personalização (ex.: Customization type) ou o metafield titular.personalizavel. Os campos só abrem ao marcar a caixa." },
-        { "type": "text", "id": "price_label", "label": "Preço exibido", "default": "+ R$ 30" },
+        { "type": "paragraph", "content": "Aparece se o produto tiver uma opção de personalização (ex.: Customization type) ou o metafield titular.personalizavel. Os campos só abrem ao marcar a caixa. Se a opção tiver 2 valores (ex.: Sem personalização e Custom name & number), a caixa troca a variante e o preço; o valor exibido é a diferença entre elas." },
         { "type": "number", "id": "extra_days", "label": "Dias úteis a mais no prazo", "default": 5 },
         { "type": "number", "id": "max_name", "label": "Máximo de letras no nome", "default": 12 }
       ]

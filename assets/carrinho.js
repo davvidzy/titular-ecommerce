@@ -225,6 +225,15 @@
     var fields = wrapper.querySelector('.drawer-item__custom-fields');
 
     if (toggle) {
+      var customId = wrapper.getAttribute('data-variant-custom');
+      var noneId = wrapper.getAttribute('data-variant-none');
+      if (customId && noneId) {
+        // Variante com e sem personalização: o preço do item muda.
+        if (toggle.checked) swapVariant(line, customId);
+        else swapVariant(line, noneId, {});
+        return;
+      }
+      // Sem variante de personalização: só abre os campos / limpa as propriedades.
       if (toggle.checked) {
         fields.hidden = false;
         var first = fields.querySelector('input');
@@ -247,30 +256,39 @@
     saveCustom(line, filled ? properties : {});
   });
 
-  /* ---------- Troca de tamanho ---------- */
+  /* ---------- Troca de variante (tamanho ou personalização) ----------
+     O Shopify não troca a variante de uma linha: remove a linha e adiciona
+     a nova variante com a mesma quantidade. properties: undefined mantém as
+     propriedades atuais; {} limpa. */
 
-  document.addEventListener('change', function (event) {
-    var select = event.target.closest('[data-cart-variant]');
-    if (!select) return;
-    var line = select.closest('[data-line-key]');
+  function swapVariant(line, variantId, properties) {
     var key = line.getAttribute('data-line-key');
     var quantity = parseInt(line.getAttribute('data-quantity'), 10) || 1;
     busy(true);
-
-    fetch((routes.cart || '/cart') + '.js', { headers: { Accept: 'application/json' } })
+    return fetch((routes.cart || '/cart') + '.js', { headers: { Accept: 'application/json' } })
       .then(function (r) { return r.json(); })
       .then(function (cart) {
         var item = cart.items.find(function (i) { return i.key === key; });
-        var properties = (item && item.properties) || {};
+        var props = properties !== undefined ? properties : (item && item.properties) || {};
         return post(routes.cartChange || '/cart/change', { id: key, quantity: 0 }).then(function () {
           return post(routes.cartAdd || '/cart/add', {
-            items: [{ id: parseInt(select.value, 10), quantity: quantity, properties: properties }]
+            items: [{ id: parseInt(variantId, 10), quantity: quantity, properties: props }]
           });
         });
+      })
+      .then(function () {
+        // /cart/add com items não devolve a gaveta: pede o HTML de novo.
+        return post(routes.cartUpdate || '/cart/update', {});
       })
       .then(render)
       .catch(fail)
       .finally(function () { busy(false); });
+  }
+
+  document.addEventListener('change', function (event) {
+    var select = event.target.closest('[data-cart-variant]');
+    if (!select) return;
+    swapVariant(select.closest('[data-line-key]'), select.value);
   });
 
   document.addEventListener('DOMContentLoaded', refreshCount);

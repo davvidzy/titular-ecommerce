@@ -1,0 +1,17 @@
+{%- comment -%}
+  option-label — nome de opção de variante em português.
+  {% render 'option-label', name: option.name %}
+  O admin pode ter a opção em inglês ("Size"); a loja mostra "Tamanho".
+  Outros nomes saem como estão.
+{%- endcomment -%}
+{%- liquid
+  assign name_down = name | downcase | strip
+  case name_down
+    when 'size', 'tamanho', 'tam'
+      echo 'titular.product.size' | t
+    when 'color', 'colour', 'cor'
+      echo 'titular.product.color' | t
+    else
+      echo name
+  endcase
+-%}

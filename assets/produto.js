@@ -189,6 +189,18 @@
       fields.hidden = !on;
       toggle.setAttribute('aria-expanded', String(on));
       if (on && number) number.focus();
+
+      // Opção de personalização com 2 valores: marca o valor certo e dispara
+      // a troca de variante (preço, botões e ?variant= se atualizam).
+      var option = section.querySelector('[data-custom-option]');
+      if (option) {
+        var value = option.getAttribute(on ? 'data-custom-value' : 'data-none-value');
+        var radio = Array.prototype.find.call(option.querySelectorAll('input[type="radio"]'), function (r) { return r.value === value; });
+        if (radio) {
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
       section.dispatchEvent(new CustomEvent('titular:personalization', { detail: { on: on } }));
     });
 

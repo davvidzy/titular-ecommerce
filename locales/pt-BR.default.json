@@ -278,7 +278,9 @@
       "new": "Novo",
       "buy_now": "Comprar agora",
       "open_gallery": "Ampliar foto {{ index }}",
-      "payment_methods": "Formas de pagamento"
+      "payment_methods": "Formas de pagamento",
+      "size": "Tamanho",
+      "color": "Cor"
     },
     "personalization": {
       "toggle": "Personalizar com número e nome",
