@@ -98,12 +98,28 @@ summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .section--flush-top { margin-top: 0; }
 .section--alt { background: var(--surface-alt); padding-block: var(--section-gap); margin-block: 0; }
 
+/* Cabeçalho padrão de section (snippets/section-header.liquid):
+   rótulo + título à esquerda, link "ver todos" à direita. */
 .section__header {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-4);
   margin-bottom: var(--space-6);
+}
+.section__heading > * + * { margin-top: var(--space-1); }
+.section__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  flex: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.section__footer { display: flex; justify-content: center; margin-top: var(--space-6); }
+@media (min-width: 990px) {
+  .section__header { margin-bottom: var(--space-12); }
+  .section__footer { margin-top: var(--space-12); }
 }
 
 .stack > * + * { margin-top: var(--space-4); }
@@ -131,6 +147,8 @@ summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   cursor: pointer;
 }
 .button--secondary { color: var(--ink); background: var(--surface); border-color: var(--line-strong); }
+/* Sobre fundo escuro (hero): branco com texto --ink. */
+.button--inverse { color: var(--ink); background: var(--ink-inverse); border-color: var(--ink-inverse); }
 .button--full { width: 100%; }
 .button--link {
   min-height: var(--tap);

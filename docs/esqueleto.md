@@ -25,8 +25,8 @@ Configurações do tema (editor): cor, fonte e logo saíram do editor porque vê
 
 | Página (§2) | Template | Sections |
 | --- | --- | --- |
-| Home | `templates/index.json` | `image-banner` (destaque) · `collection-list` (atalhos) · `club-list` · `featured-collection` (mais vendidos) · `version-explainer` · `reviews` · `guarantees` |
-| Cabeçalho (todas) | `sections/header-group.json` | `announcement-bar` · `nav` (menu em gaveta + busca em tela cheia) |
+| Home | `templates/index.json` | `image-banner` (hero 100svh) · `club-list` (círculos com brasão) · `collection-list` (cards por modelo) · `featured-collection` (mais vendidos 3x3 + catálogo) · `version-explainer` · `reviews` · `guarantees` |
+| Cabeçalho (todas) | `sections/header-group.json` | `announcement-bar` · `nav` (menu em gaveta + busca em tela cheia; transparente sobre o hero na home) |
 | Rodapé (todas) | `sections/footer-group.json` | `footer` |
 | Coleções | `templates/collection.json` | `collection-banner` · `main-collection` · `collection-text` |
 | Produto | `templates/product.json` | `main-product` (blocks 2–10) · `reviews` · `related-products` |
@@ -99,7 +99,16 @@ Tudo funciona sem JS com fallback: form → `/cart/add`, ícone → `/cart`, lup
 | Snippets sem uso | `localization-form`, `newsletter-form`, `share-button`, `assets/fontes.css` | apagar no refino |
 | Avisos do theme check | 3 snippets órfãos + 2 `preconnect` do Google Fonts | — |
 
-## 7. Para o refinamento de design
+## 7. Home: padrão de design (2026-11-10)
+
+- **Hero**: `min-height: 100svh - --hero-offset` (faixa de aviso, medida em `global.js`). Mídia: vídeo > imagem > `--ink`. Camada `--ink` com opacidade ajustável sobre a mídia (contraste, sem gradiente). Vídeo com botão de pausar e pausado com `prefers-reduced-motion`. CTA `.button--inverse`, largura total no celular.
+- **Cabeçalho sobreposto** (`.header--overlay`): só na home, configurável em `nav` > "Transparente sobre o hero". Redefine `--focus` para `--ink-inverse` (anel de foco visível no escuro). **Pendente:** `titular-horizontal-reverso.svg` tem fundo `--ink` embutido; sobre foto/vídeo aparece como uma caixa preta. Precisa de uma versão do logo branco com fundo transparente.
+- **Cabeçalho de section padrão**: `snippets/section-header.liquid` (rótulo `.text-label` + título `.text-h2` + link opcional). Usar em toda section nova.
+- **Clubes**: círculos `--radius-pill`, brasão inteiro (`contain`) sobre `--surface-alt`; 72px no celular (linha rolável), 96px no desktop.
+- **Modelos**: card padrão 3:4, cantos retos, nome `.text-h3` + quantidade.
+- **Mais vendidos**: 3x3 a partir de 750px; no celular 2x4 (a 9ª some). Botão "Ver catálogo completo" embaixo.
+
+## 8. Para o refinamento de design
 
 - A hierarquia já segue os tokens (`.text-*`, cores, raios). Refinar = ajustar o layout nos `{% stylesheet %}` de cada section e os componentes em `base.css`.
 - Verificar cada fase em 390px e 1440px, contraste e foco por teclado (`docs/arquitetura-informacao.md` §6).

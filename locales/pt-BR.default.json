@@ -338,7 +338,13 @@
       "new_password": "Nova senha",
       "confirm_password": "Confirmar senha"
     },
+    "hero": {
+      "pause": "Pausar vídeo",
+      "play": "Tocar vídeo"
+    },
     "placeholder": {
+      "club": "Clube",
+      "club_short": "FC",
       "reviews": "Exemplo: avaliações fictícias para o esqueleto. Troque por avaliações reais (app) antes de publicar.",
       "personalization": "Exemplo: este produto não é personalizável (metafield titular.personalizavel). O bloco só aparece aqui no editor."
     }

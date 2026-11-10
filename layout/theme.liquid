@@ -18,6 +18,10 @@
   - <main>: conteúdo do template.
   - footer-group e a gaveta do carrinho (sections/cart-drawer.liquid),
     que abre por evento sem trocar de página.
+
+  HOME: o cabeçalho (nav) fica sobreposto e transparente em cima do
+  hero (image-banner, 100svh). global.js mede a faixa de aviso e grava
+  --hero-offset no <html> para o hero ocupar exatamente a tela.
 {%- endcomment -%}
 <!doctype html>
 <html class="no-js" lang="{{ request.locale.iso_code }}">

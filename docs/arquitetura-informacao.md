@@ -86,15 +86,17 @@ Cada section tem um único trabalho. Implemente na ordem listada (de cima para b
 | # | Section | Trabalho |
 | --- | --- | --- |
 | 1 | Faixa de aviso | Uma frase com a principal objeção resolvida (prazo, frete ou troca); fundo `--ink`, texto `--ink-inverse` |
-| 2 | Cabeçalho | Logo, menu, busca, conta, carrinho |
-| 3 | Destaque da temporada | Uma coleção, uma imagem, um botão |
-| 4 | Atalhos de coleção | Brasileirão, Internacionais, Seleções, Retrô em 1 toque |
-| 5 | Escolha seu clube | Lista de clubes **em texto** (sem escudos), cada um leva à coleção do clube |
-| 6 | Mais vendidos | Grade de 4 a 8 produtos |
+| 2 | Cabeçalho | Logo, menu, busca, conta, carrinho. Na home, transparente sobre o hero (logo reverso, ícones `--ink-inverse`) |
+| 3 | Hero | Tela cheia (100svh), imagem ou vídeo de fundo (sem mídia: `--ink`), rótulo, título, descrição e CTA curto |
+| 4 | Clubes | Uma linha de círculos, um por time, com o brasão (imagem da coleção do clube); leva à coleção do clube |
+| 5 | Coleções por modelo | Card padrão por tipo de peça: Camisa torcedor, Camisa jogador, Camisa retrô, Meia etc. |
+| 6 | Mais vendidos | Grade 3x3 (9 produtos) + botão "Ver catálogo completo" |
 | 7 | Torcedor x Jogador | A diferença em 3 linhas + link para a página de ajuda |
 | 8 | Avaliações | Confiança para quem não conhece a marca |
 | 9 | Garantias e pagamento | Pix, cartão parcelado, troca e prazo |
 | 10 | Rodapé | Navegação, ajuda, contato, pagamentos, redes |
+
+> Decisão de 2026-11-10: a home passou a mostrar brasões dos clubes (antes: "lista em texto, sem escudos"). Continua valendo a regra de `brand/README.md`: o logo da Titular nunca fica dentro de um escudo nem ao lado de um brasão de forma que sugira parceria oficial. Os brasões ficam só na section de clubes, longe do logo.
 
 ### 3.3 Coleção
 
@@ -202,7 +204,8 @@ Regra: os desvios (guia, personalização, recuperação) sempre devolvem a pess
 | Internacionais | `liga` em Premier League, La Liga, Serie A |
 | Seleções | `liga = Seleções` |
 | Retrô | `versao = Retrô` |
-| Uma por clube | `clube = X` |
+| Uma por clube | `clube = X`; imagem da coleção = brasão (PNG/SVG, fundo transparente) |
+| Por modelo (home #5) | Camisa torcedor (`versao = Torcedor`), Camisa jogador (`versao = Jogador`), Camisa retrô (`versao = Retrô`), Meia (tipo de produto = Meia); imagem da coleção = foto do card |
 
 ### 5.3 Filtros e ordenação
 

@@ -1,49 +1,69 @@
 {%- comment -%}
   ============================================================
-  FEATURED COLLECTION — mais vendidos (Home #6)
+  FEATURED COLLECTION — mais vendidos 3x3 (Home #6)
   ============================================================
 
-  TRABALHO (docs/arquitetura-informacao.md §3.2 #6):
-  Grade de 4 a 8 produtos. Coleção vazia = usa a coleção
-  "Mais vendidos" das configurações do tema.
+  TRABALHO:
+  Grade 3x3 (9 camisas) e, abaixo, o botão para o catálogo completo.
+  Coleção vazia = usa a coleção "Mais vendidos" das configurações do
+  tema (Comercial).
+
+  LAYOUT: 3 colunas a partir de 750px. No celular (390px) 3 colunas
+  esmagam nome, preço e parcela, então são 2 colunas e a 9ª camisa
+  fica escondida (grade 2x4 fechada, sem buraco).
 {%- endcomment -%}
 {%- assign target = section.settings.collection | default: settings.collection_best_sellers -%}
-<section class="section page-width">
-  <div class="section__header">
-    <h2 class="text-h2">{{ section.settings.heading | escape }}</h2>
-    {%- if target != blank -%}
-      <a href="{{ target.url }}" class="text-label">
-        {{ 'sections.featured_collection.view_all' | t }}<span class="visually-hidden"> {{ target.title | escape }}</span>
-      </a>
-    {%- endif -%}
-  </div>
+<section class="section page-width best">
+  {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
 
-  <ul class="product-grid" role="list">
+  <ul class="product-grid best__grid" role="list">
     {%- if target != blank and target.products_count > 0 -%}
-      {%- for product in target.products limit: section.settings.products_to_show -%}
+      {%- for product in target.products limit: 9 -%}
         <li>{% render 'card-product', card_product: product %}</li>
       {%- endfor -%}
     {%- else -%}
-      {%- for i in (1..section.settings.products_to_show) -%}
+      {%- for i in (1..9) -%}
         <li class="stack--sm">
           <div class="media" style="--ratio: 3 / 4;">{{ 'product-1' | placeholder_svg_tag }}</div>
           <p class="text-h3">{{ 'onboarding.product_title' | t }}</p>
+          <p class="text-price muted">{{ 0 | money }}</p>
         </li>
       {%- endfor -%}
     {%- endif -%}
   </ul>
+
+  {%- if section.settings.button_label != blank -%}
+    <div class="section__footer">
+      <a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="button button--secondary text-label best__cta">
+        {{- section.settings.button_label | escape -}}
+      </a>
+    </div>
+  {%- endif -%}
 </section>
+
+{% stylesheet %}
+  .best__grid { --grid-columns: 3; }
+  .best__grid > li:nth-child(n + 9) { display: none; }
+  .best__cta { width: 100%; }
+  @media (min-width: 750px) {
+    .best__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); }
+    .best__grid > li:nth-child(9) { display: block; }
+    .best__cta { width: auto; padding-inline: var(--space-12); }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
-  "name": "Mais vendidos",
+  "name": "Mais vendidos (3x3)",
   "tag": "section",
   "class": "section-featured-collection",
   "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Rótulo", "default": "Escalação da semana" },
     { "type": "text", "id": "heading", "label": "Título", "default": "Mais vendidos" },
     { "type": "collection", "id": "collection", "label": "Coleção", "info": "Vazio usa \"Mais vendidos\" das configurações do tema." },
-    { "type": "range", "id": "products_to_show", "min": 4, "max": 8, "step": 4, "default": 8, "label": "Quantidade" }
+    { "type": "text", "id": "button_label", "label": "Botão", "default": "Ver catálogo completo" },
+    { "type": "url", "id": "button_link", "label": "Link do botão", "default": "/collections/all" }
   ],
-  "presets": [{ "name": "Mais vendidos" }]
+  "presets": [{ "name": "Mais vendidos (3x3)" }]
 }
 {% endschema %}

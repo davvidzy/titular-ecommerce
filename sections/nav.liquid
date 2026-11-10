@@ -17,15 +17,31 @@
 
   LOGO: assets/titular-horizontal.svg, como está (não recolorir, não
   esticar). Largura mínima 96px.
+
+  MODO SOBREPOSTO (home): com "transparent_home" ligado, na home o
+  cabeçalho fica transparente sobre o hero (sections/image-banner),
+  texto e ícones em --ink-inverse e logo titular-horizontal-reverso.svg.
+  O reverso tem fundo --ink embutido (respiro), invisível sobre o hero
+  em cor sólida; sobre foto/vídeo vai precisar de uma versão sem fundo.
 {%- endcomment -%}
-<header class="header" data-section-id="{{ section.id }}">
+{%- liquid
+  assign overlay = false
+  if section.settings.transparent_home and template.name == 'index'
+    assign overlay = true
+  endif
+-%}
+<header class="header{% if overlay %} header--overlay{% endif %}" data-section-id="{{ section.id }}">
   <div class="header__inner page-width">
     <button type="button" class="icon-button header__menu-toggle" aria-label="{{ 'sections.header.menu' | t }}" aria-haspopup="dialog" data-dialog-open="MenuDrawer">
       {% render 'icon', name: 'menu' %}
     </button>
 
     <a href="{{ routes.root_url }}" class="header__logo">
-      <img src="{{ 'titular-horizontal.svg' | asset_url }}" alt="{{ shop.name | escape }}" width="146" height="30">
+      {%- if overlay -%}
+        <img src="{{ 'titular-horizontal-reverso.svg' | asset_url }}" alt="{{ shop.name | escape }}" width="160" height="44" class="header__logo--reverse">
+      {%- else -%}
+        <img src="{{ 'titular-horizontal.svg' | asset_url }}" alt="{{ shop.name | escape }}" width="146" height="30">
+      {%- endif -%}
     </a>
 
     <nav class="header__nav" aria-label="{{ 'sections.header.menu' | t }}">
@@ -142,6 +158,23 @@
     text-align: center;
   }
 
+  /* Sobreposto ao hero (home): fora do fluxo, transparente, tudo em --ink-inverse.
+     --focus é redefinido aqui para o anel de foco continuar visível no fundo escuro. */
+  .header--overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    color: var(--ink-inverse);
+    background: transparent;
+    border-bottom: 0;
+    --focus: var(--ink-inverse);
+  }
+  .header--overlay .icon-button { color: var(--ink-inverse); }
+  .header--overlay .header__cart-count { color: var(--ink); background: var(--ink-inverse); }
+  /* O reverso tem 24px de respiro embutido: mesmo tamanho visual do logo normal. */
+  .header__logo .header__logo--reverse { width: 132px; }
+
   .menu-drawer__link { display: flex; align-items: center; min-height: var(--tap); text-decoration: none; }
   .menu-drawer__list--secondary { margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--line); }
 
@@ -152,6 +185,7 @@
     .header__menu-toggle { display: none; }
     .header__logo { justify-self: start; }
     .header__logo img { width: 146px; }
+    .header__logo .header__logo--reverse { width: 160px; }
     .header__nav { display: block; justify-self: center; }
     .header__account { display: inline-flex; }
   }
@@ -162,6 +196,12 @@
   "name": "t:sections.header.name",
   "class": "section-header",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "transparent_home",
+      "default": true,
+      "label": "Transparente sobre o hero na home"
+    },
     {
       "type": "link_list",
       "id": "menu",

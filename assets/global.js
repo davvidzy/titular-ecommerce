@@ -69,6 +69,45 @@
     true
   );
 
+  /* ---------- Hero: altura e vídeo ---------- */
+
+  // --hero-offset = altura do que está acima do hero no fluxo (faixa de
+  // aviso). O cabeçalho sobreposto (.header--overlay) não conta.
+  function measureHeroOffset() {
+    var offset = 0;
+    document.querySelectorAll('.shopify-section-group-header-group').forEach(function (el) {
+      if (!el.querySelector('.header--overlay')) offset += el.offsetHeight;
+    });
+    document.documentElement.style.setProperty('--hero-offset', offset + 'px');
+  }
+  if (document.querySelector('[data-hero]')) {
+    measureHeroOffset();
+    window.addEventListener('resize', measureHeroOffset);
+  }
+
+  document.querySelectorAll('[data-video-toggle]').forEach(function (button) {
+    var video = button.closest('[data-hero]').querySelector('video');
+    if (!video) return;
+
+    function setState(paused) {
+      button.setAttribute('aria-pressed', String(paused));
+      button.setAttribute('aria-label', button.getAttribute(paused ? 'data-label-play' : 'data-label-pause'));
+      button.querySelector('[data-icon-pause]').hidden = paused;
+      button.querySelector('[data-icon-play]').hidden = !paused;
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      video.removeAttribute('autoplay');
+      video.pause();
+      setState(true);
+    }
+
+    button.addEventListener('click', function () {
+      if (video.paused) { video.play(); setState(false); }
+      else { video.pause(); setState(true); }
+    });
+  });
+
   /* ---------- Busca preditiva ---------- */
 
   var searchInput = document.querySelector('[data-predictive-search-input]');

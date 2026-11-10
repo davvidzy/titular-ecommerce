@@ -11,9 +11,7 @@
   app de avaliações (Fase 3), use o block "@app" e apague os exemplos.
 {%- endcomment -%}
 <section class="section page-width reviews" data-section-id="{{ section.id }}">
-  <div class="section__header">
-    <h2 class="text-h2">{{ section.settings.heading | escape }}</h2>
-  </div>
+  {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
 
   {%- assign has_examples = false -%}
   {%- for block in section.blocks -%}
@@ -70,6 +68,7 @@
   "tag": "section",
   "class": "section-reviews",
   "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Rótulo", "default": "Avaliações" },
     { "type": "text", "id": "heading", "label": "Título", "default": "Quem já vestiu" }
   ],
   "blocks": [

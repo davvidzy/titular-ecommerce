@@ -1,58 +1,136 @@
 {%- comment -%}
   ============================================================
-  CLUB LIST — escolha seu clube (Home #5)
+  CLUB LIST — clubes em círculos com brasão (Home #4)
   ============================================================
 
-  TRABALHO (docs/arquitetura-informacao.md §3.2 #5):
-  Lista de clubes EM TEXTO (sem escudos), cada um leva à coleção do
-  clube (§5.2 "Uma por clube"). Regra de marca: nunca escudo de clube
-  ao lado do logo de forma que sugira parceria oficial.
+  TRABALHO:
+  Primeira linha de navegação depois do hero: um círculo por time,
+  com o brasão, levando à coleção do clube (§5.2 "Uma por clube").
 
-  ORIGEM: um block por clube (coleção). Ordem = ordem dos blocks.
+  DADOS:
+  Setting "collections" (lista de coleções, na ordem escolhida).
+  O brasão é a IMAGEM DA COLEÇÃO no admin (Produtos > Coleções >
+  Imagem). Use PNG/SVG com fundo transparente: o círculo já tem fundo
+  --surface-alt e o brasão é exibido inteiro (contain), sem corte.
+  Sem imagem: mostra as iniciais do clube.
+
+  LAYOUT: uma linha que rola na horizontal no celular (com scroll-snap);
+  no desktop, cabe numa linha e quebra se houver muitos clubes.
 {%- endcomment -%}
-<section class="section page-width">
-  <div class="section__header">
-    <h2 class="text-h2">{{ section.settings.heading | escape }}</h2>
+{%- assign clubs = section.settings.collections -%}
+<section class="section clubs">
+  <div class="page-width">
+    {% render 'section-header',
+      eyebrow: section.settings.eyebrow,
+      heading: section.settings.heading,
+      link_url: section.settings.link,
+      link_label: section.settings.link_label
+    %}
   </div>
-  <ul class="club-list" role="list">
-    {%- for block in section.blocks -%}
-      {%- assign target = block.settings.collection -%}
-      <li {{ block.shopify_attributes }}>
-        <a href="{{ target.url | default: '#' }}" class="club-list__link text-body">{{ target.title | default: 'Clube' | escape }}</a>
-      </li>
-    {%- endfor -%}
+
+  <ul class="clubs__list" role="list">
+    {%- if clubs.size > 0 -%}
+      {%- for club in clubs -%}
+        <li class="clubs__item">
+          <a href="{{ club.url }}" class="clubs__link">
+            <span class="clubs__crest">
+              {%- if club.image != blank -%}
+                {{ club.image | image_url: width: 240 | image_tag: loading: 'lazy', widths: '120, 180, 240', sizes: '96px', alt: '' }}
+              {%- else -%}
+                <span class="text-label" aria-hidden="true">{{ club.title | slice: 0, 3 | upcase }}</span>
+              {%- endif -%}
+            </span>
+            <span class="clubs__name text-small">{{ club.title | escape }}</span>
+          </a>
+        </li>
+      {%- endfor -%}
+    {%- else -%}
+      {%- for i in (1..8) -%}
+        <li class="clubs__item">
+          <span class="clubs__link">
+            <span class="clubs__crest"><span class="text-label muted" aria-hidden="true">{{ 'titular.placeholder.club_short' | t }}</span></span>
+            <span class="clubs__name text-small muted">{{ 'titular.placeholder.club' | t }} {{ i }}</span>
+          </span>
+        </li>
+      {%- endfor -%}
+    {%- endif -%}
   </ul>
 </section>
 
 {% stylesheet %}
-  .club-list { display: grid; grid-template-columns: repeat(2, 1fr); column-gap: var(--space-4); border-top: 1px solid var(--line); }
-  .club-list li { border-bottom: 1px solid var(--line); }
-  .club-list__link { display: flex; align-items: center; min-height: var(--space-12); text-decoration: none; }
-  @media (min-width: 990px) { .club-list { grid-template-columns: repeat(4, 1fr); column-gap: var(--space-6); } }
+  .clubs__list {
+    display: flex;
+    gap: var(--space-4);
+    padding-inline: var(--page-gutter);
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--page-gutter);
+    scrollbar-width: none;
+  }
+  .clubs__list::-webkit-scrollbar { display: none; }
+  .clubs__item { flex: none; scroll-snap-align: start; }
+  .clubs__link {
+    --crest: calc(var(--space-12) + var(--space-6)); /* 72px no celular */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    width: calc(var(--crest) + var(--space-4));
+    text-decoration: none;
+  }
+  .clubs__crest {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--crest);
+    height: var(--crest);
+    padding: var(--space-2);
+    overflow: hidden;
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+  }
+  .clubs__crest img { width: 100%; height: 100%; object-fit: contain; }
+  a.clubs__link:hover .clubs__crest { border-color: var(--ink); }
+  .clubs__name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  @media (min-width: 990px) {
+    .clubs__list {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: var(--space-6);
+      max-width: var(--page-max);
+      margin-inline: auto;
+      overflow: visible;
+    }
+    .clubs__link { --crest: var(--space-24); } /* 96px */
+  }
 {% endstylesheet %}
 
 {% schema %}
 {
-  "name": "Escolha seu clube",
+  "name": "Clubes (brasões)",
   "tag": "section",
   "class": "section-club-list",
   "settings": [
-    { "type": "text", "id": "heading", "label": "Título", "default": "Escolha seu clube" }
-  ],
-  "blocks": [
+    { "type": "text", "id": "eyebrow", "label": "Rótulo", "default": "Por time" },
+    { "type": "text", "id": "heading", "label": "Título", "default": "Escolha seu clube" },
     {
-      "type": "club",
-      "name": "Clube",
-      "settings": [
-        { "type": "collection", "id": "collection", "label": "Coleção do clube" }
-      ]
-    }
+      "type": "collection_list",
+      "id": "collections",
+      "label": "Clubes",
+      "limit": 24,
+      "info": "Uma coleção por clube. O brasão é a imagem da coleção (PNG/SVG com fundo transparente)."
+    },
+    { "type": "url", "id": "link", "label": "Link \"ver todos\" (opcional)" },
+    { "type": "text", "id": "link_label", "label": "Texto do link", "default": "Ver todos" }
   ],
-  "presets": [
-    {
-      "name": "Escolha seu clube",
-      "blocks": [{ "type": "club" }, { "type": "club" }, { "type": "club" }, { "type": "club" }, { "type": "club" }, { "type": "club" }, { "type": "club" }, { "type": "club" }]
-    }
-  ]
+  "presets": [{ "name": "Clubes (brasões)" }]
 }
 {% endschema %}

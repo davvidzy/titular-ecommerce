@@ -3,40 +3,46 @@
     "hero": {
       "type": "image-banner",
       "settings": {
-        "eyebrow": "Escalação da temporada",
-        "button_label": "Ver lançamentos"
+        "eyebrow": "Temporada 2026/27",
+        "heading": "Vista como titular.",
+        "title_align": "left",
+        "text": "Clubes, seleções e retrô. Medida em centímetros e prazo pelo CEP em toda camisa.",
+        "button_label": "Ver camisas",
+        "button_link": "/collections/all",
+        "overlay": 40
       }
-    },
-    "shortcuts": {
-      "type": "collection-list",
-      "blocks": {
-        "brasileirao": { "type": "collection", "settings": { "label": "Brasileirão" } },
-        "internacionais": { "type": "collection", "settings": { "label": "Internacionais" } },
-        "selecoes": { "type": "collection", "settings": { "label": "Seleções" } },
-        "retro": { "type": "collection", "settings": { "label": "Retrô" } }
-      },
-      "block_order": ["brasileirao", "internacionais", "selecoes", "retro"]
     },
     "clubs": {
       "type": "club-list",
-      "blocks": {
-        "c1": { "type": "club" },
-        "c2": { "type": "club" },
-        "c3": { "type": "club" },
-        "c4": { "type": "club" },
-        "c5": { "type": "club" },
-        "c6": { "type": "club" },
-        "c7": { "type": "club" },
-        "c8": { "type": "club" }
-      },
-      "block_order": ["c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8"]
+      "settings": {
+        "eyebrow": "Por time",
+        "heading": "Escolha seu clube"
+      }
+    },
+    "models": {
+      "type": "collection-list",
+      "settings": {
+        "eyebrow": "Por modelo",
+        "heading": "Escolha o modelo",
+        "link": "/collections",
+        "link_label": "Ver todas"
+      }
     },
     "best-sellers": {
       "type": "featured-collection",
-      "settings": { "heading": "Mais vendidos", "products_to_show": 8 }
+      "settings": {
+        "eyebrow": "Escalação da semana",
+        "heading": "Mais vendidos",
+        "button_label": "Ver catálogo completo",
+        "button_link": "/collections/all"
+      }
     },
     "versions": {
       "type": "version-explainer",
+      "settings": {
+        "eyebrow": "Antes de escolher",
+        "heading": "Torcedor ou Jogador?"
+      },
       "blocks": {
         "fan": { "type": "version", "settings": { "version": "Torcedor", "text": "Tecido mais grosso, corte reto. Leve o tamanho que você usa." } },
         "player": { "type": "version", "settings": { "version": "Jogador", "text": "Tecido leve e corte justo, igual ao do campo. Na dúvida, um número acima." } },
@@ -46,6 +52,10 @@
     },
     "reviews": {
       "type": "reviews",
+      "settings": {
+        "eyebrow": "Avaliações",
+        "heading": "Quem já vestiu"
+      },
       "blocks": {
         "r1": { "type": "review" },
         "r2": { "type": "review" },
@@ -65,5 +75,5 @@
       "block_order": ["pix", "card", "exchange", "shipping"]
     }
   },
-  "order": ["hero", "shortcuts", "clubs", "best-sellers", "versions", "reviews", "guarantees"]
+  "order": ["hero", "clubs", "models", "best-sellers", "versions", "reviews", "guarantees"]
 }

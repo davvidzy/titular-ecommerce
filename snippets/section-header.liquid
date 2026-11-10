@@ -1,0 +1,29 @@
+{%- comment -%}
+  ============================================================
+  section-header — cabeçalho padrão das sections da home
+  ============================================================
+
+  Mesmo desenho em todas as sections: rótulo curto (.text-label,
+  --ink-muted) + título (.text-h2) à esquerda e, opcional, link
+  "ver todos" à direita.
+
+  COMO USAR:
+  {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading, link_url: c.url, link_label: 'Ver todos' %}
+
+  PARÂMETROS: eyebrow, heading, link_url, link_label (todos opcionais
+  menos heading). heading_tag: 'h2' (padrão) ou 'h1'.
+{%- endcomment -%}
+{%- assign heading_tag = heading_tag | default: 'h2' -%}
+{%- if heading != blank -%}
+  <div class="section__header">
+    <div class="section__heading">
+      {%- if eyebrow != blank -%}
+        <p class="text-label muted">{{ eyebrow | escape }}</p>
+      {%- endif -%}
+      <{{ heading_tag }} class="text-h2">{{ heading | escape }}</{{ heading_tag }}>
+    </div>
+    {%- if link_url != blank and link_label != blank -%}
+      <a href="{{ link_url }}" class="section__link text-label">{{ link_label | escape }}</a>
+    {%- endif -%}
+  </div>
+{%- endif -%}

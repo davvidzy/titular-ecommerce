@@ -1,74 +1,171 @@
 {%- comment -%}
   ============================================================
-  IMAGE BANNER — destaque da temporada (Home #3)
+  IMAGE BANNER — hero da home (Home #3)
   ============================================================
 
-  TRABALHO (docs/arquitetura-informacao.md §3.2 #3):
-  Uma coleção, uma imagem, um botão. Foto de uso (pessoas, estádio)
-  pode entrar aqui: banners são o único lugar fora das redes onde
-  fotos de uso aparecem (brand/README.md, Fotografia).
+  TRABALHO:
+  Tela cheia (100svh, menos a faixa de aviso), mídia de fundo, e por
+  cima: rótulo, título (.text-display), descrição e um CTA curto.
+  Hierarquia: título > descrição > botão. O cabeçalho fica sobreposto
+  e transparente (sections/nav.liquid, modo sobreposto).
 
-  SETTINGS: image, image_mobile, heading (.text-display), text,
-  collection (destino), button_label.
+  MÍDIA (prioridade): vídeo (hospedado na Shopify) > imagem > cor
+  sólida --ink. Sem mídia, o fundo é --ink e o texto --ink-inverse
+  (19,8:1). Com mídia, uma camada --ink com opacidade ajustável
+  ("overlay") garante contraste; sem gradiente (regra da marca).
+  Vídeo: mudo, em loop, com botão de pausar (WCAG 2.2.2) e pausado
+  quando o sistema pede menos movimento (assets/global.js).
+
+  ALTURA: --hero-offset é medido por assets/global.js (altura do que
+  fica acima do hero no fluxo: a faixa de aviso).
 {%- endcomment -%}
 {%- liquid
-  assign target = section.settings.collection
-  assign heading = section.settings.heading | default: target.title
+  assign video = section.settings.video
+  assign image = section.settings.image
+  assign has_media = false
+  if video != blank or image != blank
+    assign has_media = true
+  endif
+  assign heading_tag = 'h2'
+  if template.name == 'index'
+    assign heading_tag = 'h1'
+  endif
 -%}
-<section class="hero">
-  <div class="hero__media media" style="--ratio: 4 / 5;">
-    {%- if section.settings.image != blank -%}
-      {%- if section.settings.image_mobile != blank -%}
-        <picture>
-          <source media="(max-width: 749px)" srcset="{{ section.settings.image_mobile | image_url: width: 780 }}">
-          {{ section.settings.image | image_url: width: 2400 | image_tag: loading: 'eager', fetchpriority: 'high', widths: '780, 1200, 1800, 2400', sizes: '100vw', alt: section.settings.image.alt | escape }}
-        </picture>
+<section class="hero" data-hero>
+  {%- if has_media -%}
+    <div class="hero__media">
+      {%- if video != blank -%}
+        {{
+          video
+          | video_tag:
+            autoplay: true,
+            loop: true,
+            muted: true,
+            playsinline: true,
+            controls: false,
+            preload: 'metadata',
+            image_size: '1920x'
+        }}
       {%- else -%}
-        {{ section.settings.image | image_url: width: 2400 | image_tag: loading: 'eager', fetchpriority: 'high', widths: '390, 780, 1200, 1800, 2400', sizes: '100vw', alt: section.settings.image.alt | escape }}
+        <picture>
+          {%- if section.settings.image_mobile != blank -%}
+            <source media="(max-width: 749px)" srcset="{{ section.settings.image_mobile | image_url: width: 780 }} 780w, {{ section.settings.image_mobile | image_url: width: 1170 }} 1170w" sizes="100vw">
+          {%- endif -%}
+          {{ image | image_url: width: 2400 | image_tag: loading: 'eager', fetchpriority: 'high', widths: '780, 1200, 1800, 2400', sizes: '100vw', alt: image.alt | escape }}
+        </picture>
       {%- endif -%}
-    {%- else -%}
-      {{ 'lifestyle-1' | placeholder_svg_tag }}
-    {%- endif -%}
-  </div>
+      <div class="hero__overlay" style="opacity: {{ section.settings.overlay | divided_by: 100.0 }};"></div>
+    </div>
+  {%- endif -%}
 
-  <div class="hero__content page-width stack">
+  <div class="hero__content page-width">
     {%- if section.settings.eyebrow != blank -%}
       <p class="text-label">{{ section.settings.eyebrow | escape }}</p>
     {%- endif -%}
-    <h2 class="text-display">{{ heading | default: 'Escalação da temporada' | escape }}</h2>
+    <{{ heading_tag }} class="hero__title text-display hero__title--{{ section.settings.title_align }}">{{ section.settings.heading | escape }}</{{ heading_tag }}>
     {%- if section.settings.text != blank -%}
-      <p class="text-body-lg">{{ section.settings.text | escape }}</p>
+      <p class="hero__text text-body-lg">{{ section.settings.text | escape }}</p>
     {%- endif -%}
-    {%- if target != blank -%}
-      <a href="{{ target.url }}" class="button text-label">{{ section.settings.button_label | escape }}</a>
+    {%- if section.settings.button_label != blank -%}
+      <a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="hero__cta button button--inverse text-label">
+        {{- section.settings.button_label | escape -}}
+      </a>
     {%- endif -%}
   </div>
+
+  {%- if video != blank -%}
+    <button type="button" class="hero__video-toggle icon-button" data-video-toggle aria-pressed="false" aria-label="{{ 'titular.hero.pause' | t }}" data-label-pause="{{ 'titular.hero.pause' | t }}" data-label-play="{{ 'titular.hero.play' | t }}">
+      <span data-icon-pause>{% render 'icon', name: 'pause' %}</span>
+      <span data-icon-play hidden>{% render 'icon', name: 'play' %}</span>
+    </button>
+  {%- endif -%}
 </section>
 
 {% stylesheet %}
-  .hero { display: grid; }
-  .hero__content { padding-block: var(--space-6) var(--space-12); }
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-height: calc(100vh - var(--hero-offset, 0px));
+    min-height: calc(100svh - var(--hero-offset, 0px));
+    overflow: hidden;
+    color: var(--ink-inverse);
+    background: var(--ink);
+    --focus: var(--ink-inverse);
+  }
+  .hero__media,
+  .hero__overlay { position: absolute; inset: 0; }
+  .hero__media img,
+  .hero__media video { width: 100%; height: 100%; object-fit: cover; }
+  .hero__overlay { background: var(--ink); }
+
+  .hero__content {
+    position: relative;
+    display: grid;
+    gap: var(--space-4);
+    padding-top: var(--space-24);
+    padding-bottom: var(--space-12);
+  }
+  .hero__title--left { text-align: left; }
+  .hero__title--right { text-align: right; }
+  .hero__text { margin-top: var(--space-2); }
+  .hero__cta { width: 100%; margin-top: var(--space-4); }
+
+  .hero__video-toggle {
+    position: absolute;
+    right: var(--page-gutter);
+    top: var(--space-24);
+    color: var(--ink-inverse);
+  }
+
   @media (min-width: 990px) {
-    .hero { grid-template-columns: 1fr 1fr; align-items: center; }
-    .hero__media { --ratio: 1; }
-    .hero__content { padding: var(--space-12); }
+    .hero__content { padding-bottom: var(--space-24); }
+    .hero__cta { width: auto; justify-self: start; padding-inline: var(--space-12); }
+    .hero__title--right ~ .hero__cta { justify-self: end; }
+    .hero__title--right ~ .hero__text { justify-self: end; text-align: right; }
+    .hero__video-toggle { top: auto; bottom: var(--space-24); }
   }
 {% endstylesheet %}
 
 {% schema %}
 {
-  "name": "Destaque da temporada",
+  "name": "Hero",
   "tag": "section",
   "class": "section-hero",
   "settings": [
+    { "type": "header", "content": "Mídia" },
+    { "type": "paragraph", "content": "Sem mídia, o fundo é preto (--ink). Vídeo tem prioridade sobre imagem; a imagem vira capa enquanto o vídeo carrega." },
+    { "type": "video", "id": "video", "label": "Vídeo (mudo, em loop)" },
     { "type": "image_picker", "id": "image", "label": "Imagem" },
-    { "type": "image_picker", "id": "image_mobile", "label": "Imagem no celular (opcional)" },
+    { "type": "image_picker", "id": "image_mobile", "label": "Imagem no celular (opcional, vertical)" },
+    {
+      "type": "range",
+      "id": "overlay",
+      "label": "Escurecer a mídia",
+      "min": 0,
+      "max": 80,
+      "step": 10,
+      "unit": "%",
+      "default": 40,
+      "info": "Garante contraste do texto branco sobre a foto/vídeo."
+    },
+    { "type": "header", "content": "Texto" },
     { "type": "text", "id": "eyebrow", "label": "Rótulo", "default": "Temporada 2026/27" },
-    { "type": "text", "id": "heading", "label": "Título", "info": "Vazio usa o nome da coleção." },
-    { "type": "text", "id": "text", "label": "Texto", "default": "Os uniformes novos dos clubes brasileiros, com medida em centímetros em cada página." },
-    { "type": "collection", "id": "collection", "label": "Coleção" },
-    { "type": "text", "id": "button_label", "label": "Botão", "default": "Ver lançamentos" }
+    { "type": "text", "id": "heading", "label": "Título", "default": "Vista como titular." },
+    {
+      "type": "select",
+      "id": "title_align",
+      "label": "Alinhamento do título",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Esquerda" },
+        { "value": "right", "label": "Direita" }
+      ]
+    },
+    { "type": "text", "id": "text", "label": "Descrição", "default": "Clubes, seleções e retrô. Medida em centímetros e prazo pelo CEP em toda camisa." },
+    { "type": "text", "id": "button_label", "label": "Botão", "default": "Ver camisas" },
+    { "type": "url", "id": "button_link", "label": "Link do botão", "default": "/collections/all" }
   ],
-  "presets": [{ "name": "Destaque da temporada" }]
+  "presets": [{ "name": "Hero" }]
 }
 {% endschema %}

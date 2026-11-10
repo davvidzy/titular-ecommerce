@@ -9,7 +9,7 @@
 {%- endcomment -%}
 <section class="section--alt">
   <div class="page-width version-explainer">
-    <h2 class="text-h2">{{ section.settings.heading | escape }}</h2>
+    {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
     <dl class="version-explainer__list">
       {%- for block in section.blocks -%}
         <div class="version-explainer__item" {{ block.shopify_attributes }}>
@@ -25,10 +25,14 @@
 </section>
 
 {% stylesheet %}
-  .version-explainer > * + * { margin-top: var(--space-6); }
-  .version-explainer__list { display: grid; gap: var(--space-4); }
-  .version-explainer__item { display: grid; gap: var(--space-1); }
-  @media (min-width: 990px) { .version-explainer__list { grid-template-columns: repeat(3, 1fr); gap: var(--space-6); } }
+  .version-explainer__list { display: grid; gap: var(--space-6); }
+  .version-explainer__item { display: grid; gap: var(--space-2); padding-top: var(--space-4); border-top: 1px solid var(--line-strong); }
+  .version-explainer > .button { margin-top: var(--space-6); width: 100%; }
+  @media (min-width: 750px) { .version-explainer > .button { width: auto; padding-inline: var(--space-12); } }
+  @media (min-width: 990px) {
+    .version-explainer__list { grid-template-columns: repeat(3, 1fr); }
+    .version-explainer > .button { margin-top: var(--space-12); }
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -37,6 +41,7 @@
   "tag": "section",
   "class": "section-version-explainer",
   "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Rótulo", "default": "Antes de escolher" },
     { "type": "text", "id": "heading", "label": "Título", "default": "Torcedor ou Jogador?" },
     { "type": "text", "id": "link_label", "label": "Link", "default": "Ver a diferença completa" }
   ],
