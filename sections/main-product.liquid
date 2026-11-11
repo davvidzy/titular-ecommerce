@@ -198,32 +198,15 @@
             {%- endunless -%}
 
           {%- comment -%}
-            4. Personalização: só um aviso. Nome e número são pedidos pelo
-            WhatsApp (não há cobrança automática do valor extra no checkout).
-            "WhatsApp" é só destaque visual, sem link. Aparece se o produto
-            tiver uma opção de personalização (ex.: "Customization type") ou o
-            metafield titular.personalizavel.
+            4. Personalização: só um aviso, em todo produto. Nome e número são
+            pedidos pelo WhatsApp (não há cobrança do valor extra no checkout).
+            "WhatsApp" é só destaque visual, sem link.
           {%- endcomment -%}
           {%- when 'personalization' -%}
-            {%- liquid
-              assign has_custom = false
-              if mf.personalizavel.value == true
-                assign has_custom = true
-              endif
-              for option in product.options
-                assign option_down = option | downcase
-                if option_down contains 'custom' or option_down contains 'personaliz'
-                  assign has_custom = true
-                endif
-              endfor
-            -%}
-            <!-- titular-debug personalization has_custom={{ has_custom }} options={{ product.options | join: '|' | escape }} -->
-            {%- if has_custom -%}
-              <p class="product__block product__custom-note notice text-small" {{ block.shopify_attributes }}>
-                {% render 'icon', name: 'info' %}
-                <span>{{ 'titular.personalization.request_html' | t }}</span>
-              </p>
-            {%- endif -%}
+            <p class="product__block product__custom-note notice text-small" {{ block.shopify_attributes }}>
+              {% render 'icon', name: 'info' %}
+              <span>{{ 'titular.personalization.request_html' | t }}</span>
+            </p>
 
           {%- when 'buy_buttons' -%}
             <div class="product__block product__buy" {{ block.shopify_attributes }}>
@@ -537,7 +520,7 @@
       "name": "Aviso personalização",
       "limit": 1,
       "settings": [
-        { "type": "paragraph", "content": "Mostra o aviso para pedir personalização pelo WhatsApp. Aparece se o produto tiver uma opção de personalização ou o metafield titular.personalizavel. O texto fica no idioma (titular.personalization.request_html)." }
+        { "type": "paragraph", "content": "Mostra em todo produto o aviso para pedir personalização pelo WhatsApp. Texto no idioma (titular.personalization.request_html). Remova o bloco para esconder." }
       ]
     },
     { "type": "buy_buttons", "name": "Comprar", "limit": 1 },
