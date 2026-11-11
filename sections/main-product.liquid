@@ -164,7 +164,14 @@
                         </button>
                       {%- endif -%}
                     </div>
-                    <div class="size-picker">
+                    {%- liquid
+                      # Até 6 tamanhos: uma linha só. Mais que isso: 2 linhas iguais.
+                      assign size_cols = option.values.size
+                      if size_cols > 6
+                        assign size_cols = size_cols | plus: 1 | divided_by: 2
+                      endif
+                    -%}
+                    <div class="size-picker" style="--size-cols: {{ size_cols }};">
                       {%- for value in option.values -%}
                         {%- liquid
                           assign value_available = false
@@ -391,7 +398,12 @@
   .product__option + .product__option { margin-top: var(--space-6); }
   .product__option-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-2); }
   .product__guide { display: inline-flex; align-items: center; gap: var(--space-1); }
-  .size-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--tap) + var(--space-6)), 1fr)); gap: var(--space-2); }
+  /* Colunas = nº de tamanhos (até 6), todos na mesma linha e com a mesma largura. */
+  .size-picker { display: grid; grid-template-columns: repeat(var(--size-cols, 4), minmax(0, 1fr)); gap: var(--space-2); }
+  /* Telas muito estreitas: 6 botões ficariam abaixo de 44px; vira 2 linhas de 3. */
+  @media (max-width: 359px) {
+    .size-picker { grid-template-columns: repeat(min(var(--size-cols, 4), 3), minmax(0, 1fr)); }
+  }
   .size-picker__label {
     display: flex;
     align-items: center;
