@@ -243,8 +243,12 @@
     border: 0;
     cursor: pointer;
   }
-  .collection__sort { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+  .collection__sort { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-1); min-width: 0; }
+  /* Largura do texto escolhido (field-sizing), sem passar da margem. */
   .collection__sort-select {
+    field-sizing: content;
+    min-width: 0;
+    max-width: 100%;
     min-height: var(--tap);
     padding: 0 var(--space-6) 0 0;
     font-weight: 700;
