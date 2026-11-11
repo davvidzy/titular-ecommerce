@@ -279,6 +279,25 @@ textarea.field__input { padding-block: var(--space-2); min-height: calc(var(--ta
 }
 .card-product__badges { position: absolute; top: var(--space-2); left: var(--space-2); display: flex; gap: var(--space-1); }
 .card-product__info { padding-top: var(--space-4); }
+/* Nome do produto: no máximo 2 linhas ("..." no fim) e altura fixa de
+   2 linhas, para todos os cards da grade ficarem alinhados (preço na
+   mesma altura). No celular o card tem ~170px: usa o corpo do
+   .text-body (16px) em negrito; no desktop volta ao .text-h3 (20/28). */
+.card-product__title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-size: 16px;
+  line-height: 22px;
+  height: calc(22px * 2);
+}
+.card-product__title .card-product__link { display: inline; }
+@media (min-width: 990px) {
+  .card-product__title { font-size: 20px; line-height: 28px; height: calc(28px * 2); }
+}
 .card-product__info > * + * { margin-top: var(--space-2); }
 .card-product__info .price-extras > * + * { margin-top: var(--space-1); }
 

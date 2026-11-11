@@ -87,7 +87,7 @@
     {%- if versao != blank -%}
       <span class="tag text-label">{{ versao | escape }}</span>
     {%- endif -%}
-    <h3 class="text-h3">
+    <h3 class="card-product__title text-h3" title="{{ card_product.title | escape }}">
       <a href="{{ card_product.url }}" class="card-product__link">{{ card_product.title | escape }}</a>
     </h3>
     {% render 'price', product: card_product, use_variant: false, show_compare: false %}
