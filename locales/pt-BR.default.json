@@ -382,6 +382,10 @@
       "help": "Ajuda",
       "my_account": "Minha conta",
       "login": "Entrar ou criar conta"
+    },
+    "general": {
+      "scroll_prev": "Ver anteriores",
+      "scroll_next": "Ver mais"
     }
   }
 }

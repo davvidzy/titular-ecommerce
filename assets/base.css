@@ -341,17 +341,20 @@ textarea.field__input { padding-block: var(--space-2); min-height: calc(var(--ta
 
 @media (hover: hover) and (min-width: 990px) {
   .card-product__quick { left: var(--space-2); }
+  /* Barra preta com texto branco: contraste máximo sobre qualquer foto
+     (as fotos ficam sobre --surface-alt, quase branco). Ao passar o
+     mouse na barra, inverte para branco com borda preta. */
   .card-product__add {
     width: 100%;
-    color: var(--ink);
-    background: var(--surface);
-    border: 1px solid var(--surface);
+    color: var(--ink-inverse);
+    background: var(--ink);
+    border: 1px solid var(--ink);
     border-radius: var(--radius-sm);
     opacity: 0;
     transform: translateY(var(--space-2));
-    transition: opacity 150ms ease-out, transform 150ms ease-out;
+    transition: opacity 150ms ease-out, transform 150ms ease-out, color 150ms ease-out, background-color 150ms ease-out;
   }
-  .card-product__add:hover { border-color: var(--ink); }
+  .card-product__add:hover { color: var(--ink); background: var(--surface); border-color: var(--ink); }
   .card-product__add-label { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
   .card-product:hover .card-product__add,
   .card-product:focus-within .card-product__add,
@@ -572,6 +575,18 @@ dialog[open]::backdrop { animation: titular-backdrop var(--motion-slow) ease-out
   margin-top: var(--space-4);
 }
 .scroll-dots[hidden] { display: none; }
+.scroll-nav { display: flex; align-items: center; justify-content: center; gap: var(--space-4); margin-top: var(--space-4); }
+.scroll-nav[hidden] { display: none; }
+.scroll-nav .scroll-dots { margin-top: 0; }
+.scroll-nav__arrow { display: none; }
+.scroll-nav__arrow--prev svg { transform: rotate(90deg); }
+.scroll-nav__arrow--next svg { transform: rotate(-90deg); }
+.scroll-nav__arrow:disabled { color: var(--ink-disabled); cursor: default; }
+@media (hover: hover) and (min-width: 990px) {
+  .scroll-nav__arrow { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius-pill); }
+  .scroll-nav__arrow:not(:disabled):hover { border-color: var(--ink); }
+  .scroll-nav__arrow:disabled { border-color: var(--line); }
+}
 .scroll-dots__dot {
   width: calc(var(--space-1) * 1.5);
   height: calc(var(--space-1) * 1.5);

@@ -68,7 +68,11 @@
         {%- endif -%}
       </div>
       <ul class="tag-showcase__grid" role="list" style="--grid-columns: {{ columns }};" data-scroll-dots-target>{{ cards }}</ul>
-      <div class="scroll-dots" aria-hidden="true" data-scroll-dots hidden></div>
+<div class="scroll-nav" data-scroll-dots hidden>
+        <button type="button" class="scroll-nav__arrow scroll-nav__arrow--prev icon-button" data-scroll-prev aria-label="{{ 'titular.general.scroll_prev' | t }}">{% render 'icon', name: 'chevron' %}</button>
+        <div class="scroll-dots" aria-hidden="true" data-scroll-dots-track></div>
+        <button type="button" class="scroll-nav__arrow scroll-nav__arrow--next icon-button" data-scroll-next aria-label="{{ 'titular.general.scroll_next' | t }}">{% render 'icon', name: 'chevron' %}</button>
+      </div>
     </section>
   {%- elsif request.design_mode -%}
     <section class="section page-width">

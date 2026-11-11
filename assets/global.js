@@ -150,16 +150,27 @@
   /* ---------- Pontos de listas horizontais ---------- */
 
   // [data-scroll-dots] logo depois de uma lista [data-scroll-dots-target]
-  // que rola na horizontal: um ponto por tela de conteúdo, o atual em
-  // destaque. Sem rolagem (desktop), os pontos ficam escondidos.
-  document.querySelectorAll('[data-scroll-dots]').forEach(function (dots) {
-    var list = dots.previousElementSibling;
+  // que rola na horizontal: um ponto por tela de conteúdo (o atual em
+  // destaque, dentro de [data-scroll-dots-track]) e setas
+  // [data-scroll-prev]/[data-scroll-next] (visíveis só no desktop, onde
+  // não dá para arrastar com o dedo). Sem rolagem, tudo fica escondido.
+  document.querySelectorAll('[data-scroll-dots]').forEach(function (nav) {
+    var list = nav.previousElementSibling;
     if (!list || !list.hasAttribute('data-scroll-dots-target')) return;
+    var dots = nav.querySelector('[data-scroll-dots-track]') || nav;
+    var prev = nav.querySelector('[data-scroll-prev]');
+    var next = nav.querySelector('[data-scroll-next]');
     var count = 0;
+
+    function step(direction) {
+      list.scrollBy({ left: direction * list.clientWidth * 0.8, behavior: 'smooth' });
+    }
+    if (prev) prev.addEventListener('click', function () { step(-1); });
+    if (next) next.addEventListener('click', function () { step(1); });
 
     function build() {
       var pages = list.scrollWidth > list.clientWidth + 1 ? Math.ceil(list.scrollWidth / list.clientWidth) : 0;
-      dots.hidden = pages < 2;
+      nav.hidden = pages < 2;
       if (pages === count) return update();
       count = pages;
       dots.innerHTML = '';
@@ -175,6 +186,8 @@
       if (count < 2) return;
       var max = list.scrollWidth - list.clientWidth;
       var active = max > 0 ? Math.round((list.scrollLeft / max) * (count - 1)) : 0;
+      if (prev) prev.disabled = list.scrollLeft <= 1;
+      if (next) next.disabled = list.scrollLeft >= max - 1;
       Array.prototype.forEach.call(dots.children, function (dot, i) {
         dot.classList.toggle('is-active', i === active);
       });

@@ -14,9 +14,11 @@
   --surface-alt e o brasão é exibido inteiro (contain), sem corte.
   Sem imagem: mostra as iniciais do clube.
 
-  LAYOUT: uma linha que rola SÓ na horizontal no celular (scroll-snap,
-  overflow-y travado) com pontos de posição embaixo (decorativos,
-  assets/global.js); no desktop, quebra em linhas e os pontos somem.
+  LAYOUT: uma linha só, que rola SÓ na horizontal (scroll-snap,
+  overflow-y travado), no celular e no desktop. A fileira ocupa a
+  largura toda da tela, com o 1º clube alinhado à margem do conteúdo.
+  Embaixo: pontos de posição e, no desktop, setas anterior/próximo
+  (assets/global.js, "Pontos de listas horizontais").
   Nome do clube em 1 linha (reticências se não couber). Espaço de 16px
   no celular para o 4º brasão aparecer na borda (indica que rola).
 {%- endcomment -%}
@@ -55,7 +57,11 @@
   </div>
 
   <ul class="clubs__list" role="list" data-scroll-dots-target>{{ club_items }}</ul>
-  <div class="scroll-dots" aria-hidden="true" data-scroll-dots hidden></div>
+<div class="scroll-nav" data-scroll-dots hidden>
+    <button type="button" class="scroll-nav__arrow scroll-nav__arrow--prev icon-button" data-scroll-prev aria-label="{{ 'titular.general.scroll_prev' | t }}">{% render 'icon', name: 'chevron' %}</button>
+    <div class="scroll-dots" aria-hidden="true" data-scroll-dots-track></div>
+    <button type="button" class="scroll-nav__arrow scroll-nav__arrow--next icon-button" data-scroll-next aria-label="{{ 'titular.general.scroll_next' | t }}">{% render 'icon', name: 'chevron' %}</button>
+  </div>
 </section>
 {%- endif -%}
 
@@ -106,13 +112,11 @@
   }
 
   @media (min-width: 990px) {
+    /* Largura total; o recuo acompanha a margem do conteúdo (--page-max). */
     .clubs__list {
-      flex-wrap: wrap;
-      justify-content: flex-start;
       gap: var(--space-6);
-      max-width: var(--page-max);
-      margin-inline: auto;
-      overflow: visible;
+      padding-inline: max(var(--page-gutter), calc((100% - var(--page-max)) / 2 + var(--page-gutter)));
+      scroll-padding-inline: max(var(--page-gutter), calc((100% - var(--page-max)) / 2 + var(--page-gutter)));
     }
     .clubs__link { --crest: calc(var(--space-24) + var(--space-4)); width: calc(var(--crest) + var(--space-6)); } /* 112px */
   }
