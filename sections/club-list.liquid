@@ -16,7 +16,7 @@
 
   LAYOUT: uma linha só, que rola SÓ na horizontal (scroll-snap,
   overflow-y travado), no celular e no desktop. A fileira ocupa a
-  largura toda da tela, com o 1º clube alinhado à margem do conteúdo.
+  largura toda da tela, de borda a borda (só o respiro do gutter).
   Embaixo: pontos de posição e, no desktop, setas anterior/próximo
   (assets/global.js, "Pontos de listas horizontais").
   Nome do clube em 1 linha (reticências se não couber). Espaço de 16px
@@ -112,12 +112,9 @@
   }
 
   @media (min-width: 990px) {
-    /* Largura total; o recuo acompanha a margem do conteúdo (--page-max). */
-    .clubs__list {
-      gap: var(--space-6);
-      padding-inline: max(var(--page-gutter), calc((100% - var(--page-max)) / 2 + var(--page-gutter)));
-      scroll-padding-inline: max(var(--page-gutter), calc((100% - var(--page-max)) / 2 + var(--page-gutter)));
-    }
+    /* Largura total da tela, de borda a borda (só o respiro do --page-gutter),
+       em qualquer largura de monitor. */
+    .clubs__list { gap: var(--space-6); }
     .clubs__link { --crest: calc(var(--space-24) + var(--space-4)); width: calc(var(--crest) + var(--space-6)); } /* 112px */
   }
 {% endstylesheet %}
