@@ -544,6 +544,24 @@ dialog[open]::backdrop { animation: titular-backdrop var(--motion-slow) ease-out
 @keyframes titular-drawer-in-left { from { transform: translateX(calc(var(--space-12) * -1)); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes titular-backdrop { from { opacity: 0; } to { opacity: 0.4; } }
 
+/* Pontos de posição de listas que rolam na horizontal (decorativos,
+   assets/global.js). Um ponto por "página"; o atual vira um traço. */
+.scroll-dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+}
+.scroll-dots[hidden] { display: none; }
+.scroll-dots__dot {
+  width: calc(var(--space-1) * 1.5);
+  height: calc(var(--space-1) * 1.5);
+  background: var(--line);
+  border-radius: var(--radius-pill);
+  transition: width var(--motion-base) var(--ease-out), background-color var(--motion-base) ease-out;
+}
+.scroll-dots__dot.is-active { width: var(--space-4); background: var(--ink); }
+
 /* Galeria do produto (desktop): foto nova entra com fade. */
 @media (min-width: 990px) {
   .product__media-item.is-active { animation: titular-fade var(--motion-base) ease-out; }

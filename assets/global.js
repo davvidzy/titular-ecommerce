@@ -148,7 +148,7 @@
   // na tela (CSS em base.css, "Movimento"). Só marca o que está ABAIXO
   // da dobra no carregamento, para nada que já está visível piscar.
   // Itens que entram juntos ganham um atraso escalonado (--reveal-i).
-  var REVEAL = '.section__header, .product-grid > li, .clubs__list > li, .models__grid > li, .guarantees__item';
+  var REVEAL = '.section__header, .product-grid > li, .clubs__list, .models__grid > li, .guarantees__item';
   if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     var revealObserver = new IntersectionObserver(function (entries) {
       var i = 0;
@@ -168,6 +168,48 @@
     });
     document.documentElement.classList.add('has-reveal');
   }
+
+  /* ---------- Pontos de listas horizontais ---------- */
+
+  // [data-scroll-dots] logo depois de uma lista [data-scroll-dots-target]
+  // que rola na horizontal: um ponto por tela de conteúdo, o atual em
+  // destaque. Sem rolagem (desktop), os pontos ficam escondidos.
+  document.querySelectorAll('[data-scroll-dots]').forEach(function (dots) {
+    var list = dots.previousElementSibling;
+    if (!list || !list.hasAttribute('data-scroll-dots-target')) return;
+    var count = 0;
+
+    function build() {
+      var pages = list.scrollWidth > list.clientWidth + 1 ? Math.ceil(list.scrollWidth / list.clientWidth) : 0;
+      dots.hidden = pages < 2;
+      if (pages === count) return update();
+      count = pages;
+      dots.innerHTML = '';
+      for (var i = 0; i < pages; i++) {
+        var dot = document.createElement('span');
+        dot.className = 'scroll-dots__dot';
+        dots.appendChild(dot);
+      }
+      update();
+    }
+
+    function update() {
+      if (count < 2) return;
+      var max = list.scrollWidth - list.clientWidth;
+      var active = max > 0 ? Math.round((list.scrollLeft / max) * (count - 1)) : 0;
+      Array.prototype.forEach.call(dots.children, function (dot, i) {
+        dot.classList.toggle('is-active', i === active);
+      });
+    }
+
+    var frame = null;
+    list.addEventListener('scroll', function () {
+      if (frame) return;
+      frame = requestAnimationFrame(function () { frame = null; update(); });
+    }, { passive: true });
+    window.addEventListener('resize', build);
+    build();
+  });
 
   /* ---------- Busca preditiva ---------- */
 
