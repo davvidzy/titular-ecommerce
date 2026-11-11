@@ -202,6 +202,86 @@
     build();
   });
 
+  /* ---------- Diálogo que abre sozinho ---------- */
+
+  // [data-open-on-load]: formulário enviado (sucesso ou erro) volta com o
+  // diálogo aberto para mostrar o resultado.
+  document.querySelectorAll('dialog[data-open-on-load]').forEach(function (dialog) {
+    openDialog(dialog.id);
+  });
+
+  /* ---------- Clubes: busca na gaveta "Ver todos" ---------- */
+
+  function normalize(text) {
+    return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  }
+  document.querySelectorAll('[data-club-filter]').forEach(function (input) {
+    var body = input.closest('.drawer__body');
+    var items = body.querySelectorAll('[data-club-filter-list] > li');
+    var empty = body.querySelector('[data-club-filter-empty]');
+    input.addEventListener('input', function () {
+      var term = normalize(input.value);
+      var shown = 0;
+      items.forEach(function (item) {
+        var match = !term || normalize(item.textContent).indexOf(term) > -1;
+        item.hidden = !match;
+        if (match) shown++;
+      });
+      if (empty) empty.hidden = shown > 0;
+    });
+  });
+
+  /* ---------- Pop-up de oferta (sections/newsletter-popup.liquid) ---------- */
+
+  (function () {
+    var popup = document.querySelector('[data-offer-popup]');
+    if (!popup) return;
+    var KEY = 'titular-offer';
+    var WEEK = 7 * 24 * 60 * 60 * 1000;
+
+    function read() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } }
+    function save(state) { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+    if (popup.hasAttribute('data-offer-subscribed')) save({ subscribed: true });
+
+    // Fechar sem se inscrever: some por 7 dias.
+    popup.addEventListener('close', function () {
+      var state = read();
+      if (!state.subscribed) save({ dismissedAt: Date.now() });
+    });
+
+    // Copiar o cupom.
+    var copy = popup.querySelector('[data-offer-copy]');
+    if (copy) {
+      copy.addEventListener('click', function () {
+        var code = popup.querySelector('[data-offer-code]').textContent.trim();
+        var done = function () { copy.textContent = copy.getAttribute('data-label-copied'); };
+        if (navigator.clipboard) navigator.clipboard.writeText(code).then(done, function () {});
+        else done();
+      });
+    }
+
+    if (popup.hasAttribute('data-open-on-load')) return; // já aberto acima
+    var state = read();
+    if (state.subscribed || (state.dismissedAt && Date.now() - state.dismissedAt < WEEK)) return;
+    if (window.Shopify && window.Shopify.designMode) return;
+
+    var shown = false;
+    function show() {
+      if (shown) return;
+      if (document.querySelector('dialog[open]')) { setTimeout(show, 4000); return; }
+      shown = true;
+      openDialog(popup.id);
+    }
+    var delay = (parseInt(popup.getAttribute('data-delay'), 10) || 6) * 1000;
+    setTimeout(show, delay);
+    // Desktop: mouse saindo pelo topo da janela (intenção de sair).
+    document.addEventListener('mouseout', function (event) {
+      if (!event.relatedTarget && event.clientY <= 0 && Date.now() > startedAt + 3000) show();
+    });
+    var startedAt = Date.now();
+  })();
+
   /* ---------- Busca preditiva ---------- */
 
   var searchInput = document.querySelector('[data-predictive-search-input]');

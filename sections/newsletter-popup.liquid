@@ -1,0 +1,199 @@
+{%- comment -%}
+  ============================================================
+  NEWSLETTER POPUP — oferta de boas-vindas (cupom por e-mail)
+  ============================================================
+
+  TRABALHO:
+  Captar e-mail na primeira visita em troca de um cupom. Padrão de
+  e-commerce: aparece depois de alguns segundos, uma vez por visitante.
+
+  COMO FUNCIONA:
+  - Form nativo {% form 'customer' %} com a tag "newsletter": o e-mail
+    vira cliente inscrito em Clientes (aceita marketing). Sem app.
+  - Depois do envio a página recarrega (?customer_posted=true) e o modal
+    abre sozinho no estado de sucesso, mostrando o cupom
+    (setting discount_code) com botão de copiar e o link
+    /discount/<CUPOM>, que já aplica o desconto no carrinho.
+  - O CUPOM PRECISA EXISTIR no admin (Descontos > Criar > Código).
+
+  QUANDO APARECE (assets/global.js, "Pop-up de oferta"):
+  - Depois de N segundos (setting delay) ou, no desktop, quando o mouse
+    sai pela parte de cima da janela (intenção de sair), o que vier antes.
+  - Não aparece: no carrinho, conta, busca e senha; se outro diálogo
+    estiver aberto; por 7 dias depois de fechado; nunca mais depois de
+    inscrito (localStorage "titular-offer").
+
+  LAYOUT: desktop = foto à esquerda + texto à direita (modal central);
+  celular = folha que sobe de baixo, sem foto.
+{%- endcomment -%}
+{%- liquid
+  assign blocked_templates = 'cart,customers/account,customers/login,customers/register,customers/order,customers/addresses,customers/reset_password,customers/activate_account,search,password,gift_card'
+  assign template_key = template.name
+  if template.directory != blank
+    assign template_key = template.directory | append: '/' | append: template.name
+  endif
+-%}
+{%- if section.settings.enabled -%}
+  {%- unless blocked_templates contains template_key -%}
+    {%- form 'customer', id: 'NewsletterPopupForm', class: 'offer-popup__form-wrap' -%}
+      {%- liquid
+        assign posted = false
+        if form.posted_successfully?
+          assign posted = true
+        endif
+      -%}
+      <dialog
+        id="OfferPopup"
+        class="offer-popup"
+        aria-labelledby="OfferPopup-title"
+        data-offer-popup
+        data-delay="{{ section.settings.delay }}"
+        {% if posted or form.errors %}data-open-on-load{% endif %}
+        {% if posted %}data-offer-subscribed{% endif %}
+      >
+        <div class="offer-popup__inner">
+          {%- if section.settings.image != blank -%}
+            <div class="offer-popup__media media">
+              {{ section.settings.image | image_url: width: 900 | image_tag: loading: 'lazy', widths: '450, 900', sizes: '400px', alt: '' }}
+            </div>
+          {%- else -%}
+            <div class="offer-popup__media offer-popup__media--brand" aria-hidden="true">
+              <img src="{{ 'titular-horizontal-branco.svg' | asset_url }}" alt="" width="200" height="55" loading="lazy">
+            </div>
+          {%- endif -%}
+
+          <div class="offer-popup__body">
+            <button type="button" class="offer-popup__close icon-button" data-dialog-close aria-label="{{ 'accessibility.close' | t }}">
+              {% render 'icon', name: 'close' %}
+            </button>
+
+            {%- if posted -%}
+              <p class="text-label muted">{{ 'titular.offer.success_eyebrow' | t }}</p>
+              <h2 id="OfferPopup-title" class="text-h2">{{ section.settings.success_heading | escape }}</h2>
+              {%- if section.settings.discount_code != blank -%}
+                <div class="offer-popup__code">
+                  <span class="offer-popup__code-value text-h3" data-offer-code>{{ section.settings.discount_code | escape }}</span>
+                  <button type="button" class="button button--secondary text-label" data-offer-copy data-label-copied="{{ 'titular.offer.copied' | t }}">{{ 'titular.offer.copy' | t }}</button>
+                </div>
+              {%- endif -%}
+              <p class="text-body muted">{{ section.settings.success_text | escape }}</p>
+              {%- liquid
+                assign shop_url = section.settings.success_link | default: routes.all_products_collection_url
+                if section.settings.discount_code != blank
+                  assign code_encoded = section.settings.discount_code | strip | url_encode
+                  assign shop_url = '/discount/' | append: code_encoded | append: '?redirect=' | append: shop_url
+                endif
+              -%}
+              <a href="{{ shop_url }}" class="button button--full text-label">{{ section.settings.success_button | escape }}</a>
+            {%- else -%}
+              {%- if section.settings.eyebrow != blank -%}<p class="text-label muted">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
+              <h2 id="OfferPopup-title" class="text-h2">{{ section.settings.heading | escape }}</h2>
+              {%- if section.settings.text != blank -%}<p class="text-body muted">{{ section.settings.text | escape }}</p>{%- endif -%}
+
+              <input type="hidden" name="contact[tags]" value="newsletter,popup-oferta">
+              <div class="field">
+                <label class="visually-hidden" for="OfferPopup-email">{{ 'general.newsletter_form.newsletter_email' | t }}</label>
+                <input
+                  id="OfferPopup-email"
+                  class="field__input"
+                  type="email"
+                  name="contact[email]"
+                  value="{{ form.email }}"
+                  autocomplete="email"
+                  autocapitalize="off"
+                  autocorrect="off"
+                  placeholder="{{ 'titular.offer.placeholder' | t }}"
+                  required
+                  {% if form.errors %}aria-invalid="true" aria-describedby="OfferPopup-error"{% endif %}
+                >
+                {%- if form.errors -%}
+                  <p id="OfferPopup-error" class="field__error text-small" role="alert">
+                    {% render 'icon', name: 'alert' %}<span>{{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}</span>
+                  </p>
+                {%- endif -%}
+              </div>
+              <button type="submit" class="button button--full button--large text-label">{{ section.settings.button_label | escape }}</button>
+              <p class="text-small muted offer-popup__fine">{{ 'titular.offer.fine_print' | t }}</p>
+              <button type="button" class="button--link text-small offer-popup__dismiss" data-dialog-close>{{ 'titular.offer.dismiss' | t }}</button>
+            {%- endif -%}
+          </div>
+        </div>
+      </dialog>
+    {%- endform -%}
+  {%- endunless -%}
+{%- endif -%}
+
+{% stylesheet %}
+  /* Folha que sobe de baixo no celular; modal central no desktop. */
+  .offer-popup {
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+    margin: 0;
+    overflow-y: auto;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  }
+  .offer-popup[open] { animation: titular-sheet-in var(--motion-slow) var(--ease-out); }
+  @keyframes titular-sheet-in { from { transform: translateY(var(--space-12)); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  .offer-popup__inner { display: grid; }
+  .offer-popup__media { display: none; }
+  .offer-popup__body { position: relative; display: grid; gap: var(--space-4); padding: var(--space-12) var(--space-6) var(--space-6); }
+  .offer-popup__close { position: absolute; top: var(--space-1); right: var(--space-1); }
+  .offer-popup__fine { margin-top: calc(var(--space-2) * -1); }
+  .offer-popup__dismiss { justify-self: center; color: var(--ink-muted); }
+
+  .offer-popup__code {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-sm);
+  }
+  .offer-popup__code-value { letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
+
+  @media (min-width: 750px) {
+    .offer-popup {
+      inset: 0;
+      width: calc(100% - var(--space-12));
+      max-width: 800px;
+      max-height: calc(100% - var(--space-12));
+      margin: auto;
+      border-radius: var(--radius-sm);
+    }
+    .offer-popup[open] { animation: titular-rise var(--motion-base) var(--ease-out); }
+    .offer-popup__inner { grid-template-columns: 1fr 1fr; min-height: 440px; }
+    .offer-popup__media { display: block; aspect-ratio: auto; height: 100%; }
+    .offer-popup__media--brand { display: flex; align-items: center; justify-content: center; background: var(--ink); }
+    .offer-popup__media--brand img { width: 60%; height: auto; }
+    .offer-popup__body { align-content: center; padding: var(--space-12); }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Pop-up de oferta",
+  "tag": "section",
+  "class": "section-offer-popup",
+  "settings": [
+    { "type": "checkbox", "id": "enabled", "label": "Mostrar pop-up", "default": true },
+    { "type": "range", "id": "delay", "label": "Aparece depois de", "min": 2, "max": 30, "step": 1, "unit": "s", "default": 6 },
+    { "type": "image_picker", "id": "image", "label": "Foto (desktop)", "info": "Vertical. Sem foto, mostra o logo sobre fundo preto." },
+    { "type": "header", "content": "Antes do cadastro" },
+    { "type": "text", "id": "eyebrow", "label": "Rótulo", "default": "Primeira compra" },
+    { "type": "text", "id": "heading", "label": "Título", "default": "10% de desconto na primeira camisa" },
+    { "type": "textarea", "id": "text", "label": "Texto", "default": "Cadastre seu e-mail e receba o cupom na hora. Avisamos também quando chegam lançamentos e retrôs." },
+    { "type": "text", "id": "button_label", "label": "Botão", "default": "Quero meu cupom" },
+    { "type": "header", "content": "Depois do cadastro" },
+    { "type": "text", "id": "discount_code", "label": "Cupom", "default": "TITULAR10", "info": "Crie o mesmo código em Descontos no admin." },
+    { "type": "text", "id": "success_heading", "label": "Título", "default": "Seu cupom chegou" },
+    { "type": "textarea", "id": "success_text", "label": "Texto", "default": "Vale 10% na primeira compra. Ao clicar abaixo, o desconto já entra no carrinho." },
+    { "type": "text", "id": "success_button", "label": "Botão", "default": "Ver camisas com desconto" },
+    { "type": "url", "id": "success_link", "label": "Link do botão" }
+  ]
+}
+{% endschema %}

@@ -48,10 +48,15 @@
     "cart-drawer": {
       "type": "cart-drawer",
       "settings": {}
+    },
+    "offer-popup": {
+      "type": "newsletter-popup",
+      "settings": {}
     }
   },
   "order": [
     "footer",
-    "cart-drawer"
+    "cart-drawer",
+    "offer-popup"
   ]
 }

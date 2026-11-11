@@ -424,6 +424,24 @@
       "text_placeholder": "Tecido, caimento, prazo de entrega...",
       "email_note": "Não aparece na avaliação.",
       "send": "Enviar avaliação"
+    },
+    "clubs": {
+      "view_all": {
+        "one": "Ver o time",
+        "many": "Ver todos os {{ count }} times",
+        "other": "Ver todos os {{ count }} times"
+      },
+      "all_title": "Todos os times",
+      "search": "Buscar time",
+      "no_results": "Nenhum time com esse nome."
+    },
+    "offer": {
+      "placeholder": "Seu melhor e-mail",
+      "fine_print": "Sem spam. Cancele quando quiser.",
+      "dismiss": "Agora não",
+      "success_eyebrow": "Cadastro feito",
+      "copy": "Copiar",
+      "copied": "Copiado"
     }
   }
 }

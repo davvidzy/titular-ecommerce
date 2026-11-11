@@ -19,7 +19,10 @@
   largura toda da tela, de borda a borda (só o respiro do gutter).
   Embaixo: pontos de posição e, no desktop, setas anterior/próximo
   (assets/global.js, "Pontos de listas horizontais").
-  Nome do clube em 1 linha (reticências se não couber). Espaço de 16px
+  Nome do clube em 1 linha (reticências se não couber).
+  VER TODOS: botão abaixo da fileira abre uma gaveta com todos os clubes
+  em grade (3 colunas no celular, 4 no desktop) e busca por nome que
+  ignora acentos (assets/global.js, [data-club-filter]). Espaço de 16px
   no celular para o 4º brasão aparecer na borda (indica que rola).
 {%- endcomment -%}
 {%- liquid
@@ -62,6 +65,32 @@
     <div class="scroll-dots" aria-hidden="true" data-scroll-dots-track></div>
     <button type="button" class="scroll-nav__arrow scroll-nav__arrow--next icon-button" data-scroll-next aria-label="{{ 'titular.general.scroll_next' | t }}">{% render 'icon', name: 'chevron' %}</button>
   </div>
+
+  {%- comment -%} Ver todos: gaveta com a grade completa e busca por nome. {%- endcomment -%}
+  {%- assign clubs_total = club_items | split: '<li class="clubs__item"' | size | minus: 1 -%}
+  <div class="clubs__all page-width">
+    <button type="button" class="button button--secondary text-label" aria-haspopup="dialog" data-dialog-open="AllClubs-{{ section.id }}">
+      {{ 'titular.clubs.view_all' | t: count: clubs_total }}
+    </button>
+  </div>
+
+  <dialog id="AllClubs-{{ section.id }}" class="drawer clubs-drawer" aria-labelledby="AllClubs-{{ section.id }}-title">
+    <div class="drawer__inner">
+      <div class="drawer__header">
+        <h2 id="AllClubs-{{ section.id }}-title" class="text-h3">{{ 'titular.clubs.all_title' | t }}</h2>
+        <button type="button" class="icon-button" data-dialog-close aria-label="{{ 'accessibility.close' | t }}">{% render 'icon', name: 'close' %}</button>
+      </div>
+      <div class="drawer__body">
+        <div class="clubs-drawer__search">
+          <label class="visually-hidden" for="AllClubs-{{ section.id }}-search">{{ 'titular.clubs.search' | t }}</label>
+          {% render 'icon', name: 'search' %}
+          <input type="search" id="AllClubs-{{ section.id }}-search" class="field__input" placeholder="{{ 'titular.clubs.search' | t }}" autocomplete="off" data-club-filter>
+        </div>
+        <ul class="clubs-drawer__grid" role="list" data-club-filter-list>{{ club_items }}</ul>
+        <p class="text-body muted" hidden data-club-filter-empty>{{ 'titular.clubs.no_results' | t }}</p>
+      </div>
+    </div>
+  </dialog>
 </section>
 {%- endif -%}
 
@@ -116,6 +145,17 @@
        em qualquer largura de monitor. */
     .clubs__list { gap: var(--space-6); }
     .clubs__link { --crest: calc(var(--space-24) + var(--space-4)); width: calc(var(--crest) + var(--space-6)); } /* 112px */
+  }
+  .clubs__all { display: flex; justify-content: center; margin-top: var(--space-6); }
+
+  .clubs-drawer__search { position: relative; margin-bottom: var(--space-6); }
+  .clubs-drawer__search svg { position: absolute; left: var(--space-4); top: 50%; transform: translateY(-50%); pointer-events: none; }
+  .clubs-drawer__search .field__input { width: 100%; padding-left: var(--space-12); }
+  .clubs-drawer__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6) var(--space-2); }
+  .clubs-drawer__grid .clubs__link { width: 100%; --crest: calc(var(--space-12) + var(--space-6)); }
+  .clubs-drawer__grid [hidden] { display: none; }
+  @media (min-width: 750px) {
+    .clubs-drawer__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 {% endstylesheet %}
 
