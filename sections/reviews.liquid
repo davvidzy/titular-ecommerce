@@ -9,14 +9,42 @@
   REGRA: só avaliações reais. Na loja fictícia, os blocks "review"
   são placeholders e aparecem marcados como EXEMPLO. Quando houver
   app de avaliações (Fase 3), use o block "@app" e apague os exemplos.
+
+  NA PÁGINA DO PRODUTO (templates/product.json, id #Avaliacoes):
+  - Resumo no topo: nota média, estrelas e quantidade, lidos dos
+    metafields padrão reviews.rating / reviews.rating_count (snippet
+    rating-stars). As estrelas abaixo do título do produto levam até aqui.
+  - Lista: o bloco do app de avaliações (ex.: Judge.me > "Review widget"),
+    adicionado no editor do tema dentro desta seção.
+  - Sem app, sem nota e sem exemplos, a seção não aparece (no editor,
+    mostra um aviso de como ativar).
 {%- endcomment -%}
-<section class="section page-width reviews" data-section-id="{{ section.id }}">
+{%- liquid
+  assign has_examples = false
+  assign has_app = false
+  for block in section.blocks
+    if block.type == 'review'
+      assign has_examples = true
+    elsif block.type == '@app'
+      assign has_app = true
+    endif
+  endfor
+  assign has_summary = false
+  if product and product.metafields.reviews.rating_count.value > 0
+    assign has_summary = true
+  endif
+-%}
+{%- if has_app or has_examples or has_summary -%}
+<section class="section page-width reviews" id="Avaliacoes" data-section-id="{{ section.id }}">
   {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
 
-  {%- assign has_examples = false -%}
-  {%- for block in section.blocks -%}
-    {%- if block.type == 'review' -%}{%- assign has_examples = true -%}{%- endif -%}
-  {%- endfor -%}
+  {%- if has_summary -%}
+    {%- assign summary_rating = product.metafields.reviews.rating.value.rating | times: 1.0 | round: 1 | append: '' | replace: '.', ',' -%}
+    <div class="reviews__summary">
+      <p class="reviews__score text-h1" aria-hidden="true">{{ summary_rating }}</p>
+      {% render 'rating-stars', product: product, size: 'md', show_value: false %}
+    </div>
+  {%- endif -%}
 
   {%- if has_examples -%}
     <p class="placeholder-note text-small">{{ 'titular.placeholder.reviews' | t }}</p>
@@ -44,6 +72,11 @@
     {%- endfor -%}
   </ul>
 </section>
+{%- elsif request.design_mode -%}
+  <section class="section page-width">
+    <p class="placeholder-note text-small">{{ 'titular.placeholder.reviews_app' | t }}</p>
+  </section>
+{%- endif -%}
 
 {% stylesheet %}
   .reviews .placeholder-note { margin-bottom: var(--space-6); }
@@ -57,6 +90,8 @@
   }
   .reviews__item { scroll-snap-align: start; }
   .reviews__stars { display: flex; gap: var(--space-1); }
+  .reviews__summary { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); }
+  .reviews__list:empty { display: none; }
   @media (min-width: 990px) {
     .reviews__list { grid-auto-flow: row; grid-template-columns: repeat(4, 1fr); gap: var(--space-6); overflow: visible; }
   }

@@ -1,0 +1,51 @@
+{%- comment -%}
+  ============================================================
+  rating-stars — nota média em estrelas + quantidade de avaliações
+  ============================================================
+
+  COMO USAR:
+  {% render 'rating-stars', product: product %}                 → card (pequeno)
+  {% render 'rating-stars', product: product, size: 'md', link: '#Avaliacoes', show_value: true %}
+
+  DADOS (padrão da Shopify, preenchidos por apps de avaliação como
+  Judge.me, Loox, Yotpo e Okendo):
+  - product.metafields.reviews.rating        (tipo "rating": nota e escala)
+  - product.metafields.reviews.rating_count  (inteiro)
+  Também dá para preencher à mão no admin: Configurações > Dados
+  personalizados > Produtos > Adicionar definição > "Classificação do
+  produto" e "Contagem de classificações" (definições padrão).
+
+  Sem avaliação (contagem 0 ou vazia), não mostra nada. Leitores de tela
+  ouvem a frase completa ("Nota 4,8 de 5, 12 avaliações"); as estrelas são
+  decorativas.
+
+  Preenchimento parcial: uma fileira de estrelas vazias (--line-strong) e,
+  por cima, a fileira cheia (--ink) cortada na largura da nota.
+{%- endcomment -%}
+{%- liquid
+  assign rating_mf = product.metafields.reviews.rating.value
+  assign rating_count = product.metafields.reviews.rating_count.value | default: 0
+  assign size = size | default: 'sm'
+-%}
+{%- if rating_mf != blank and rating_count > 0 -%}
+  {%- liquid
+    assign rating_value = rating_mf.rating | times: 1.0
+    assign rating_max = rating_mf.scale_max | default: 5 | times: 1.0
+    assign rating_percent = rating_value | divided_by: rating_max | times: 100 | round: 1
+    assign rating_label = rating_value | round: 1 | append: '' | replace: '.', ','
+    assign rating_max_label = rating_max | round | append: ''
+  -%}
+  {%- capture stars -%}
+    {%- for i in (1..5) -%}{% render 'icon', name: 'star' %}{%- endfor -%}
+  {%- endcapture -%}
+  {%- if link != blank -%}<a href="{{ link }}" class="rating rating--{{ size }}">{%- else -%}<div class="rating rating--{{ size }}">{%- endif -%}
+    <span class="rating__stars" aria-hidden="true">
+      <span class="rating__empty">{{ stars }}</span>
+      <span class="rating__fill" style="width: {{ rating_percent }}%;">{{ stars }}</span>
+    </span>
+    <span class="rating__text text-small muted" aria-hidden="true">
+      {%- if show_value -%}{{ rating_label }} · {{ 'titular.reviews.count' | t: count: rating_count }}{%- else -%}({{ rating_count }}){%- endif -%}
+    </span>
+    <span class="visually-hidden">{{ 'titular.reviews.summary' | t: count: rating_count, rating: rating_label, max: rating_max_label }}</span>
+  {%- if link != blank -%}</a>{%- else -%}</div>{%- endif -%}
+{%- endif -%}

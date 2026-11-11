@@ -90,6 +90,8 @@
     <h3 class="card-product__title text-h3" title="{{ card_product.title | escape }}">
       <a href="{{ card_product.url }}" class="card-product__link">{{ card_product.title | escape }}</a>
     </h3>
+    {%- comment -%} Linha das estrelas sempre presente (vazia sem avaliações) para os preços ficarem alinhados na grade. {%- endcomment -%}
+    <div class="card-product__rating">{% render 'rating-stars', product: card_product %}</div>
     {% render 'price', product: card_product, use_variant: false, show_compare: false %}
     {% render 'price-extras', amount: card_product.price, pix: false, short: true %}
   </div>

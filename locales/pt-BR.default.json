@@ -375,7 +375,8 @@
       "club_short": "FC",
       "reviews": "Exemplo: avaliações fictícias para o esqueleto. Troque por avaliações reais (app) antes de publicar.",
       "personalization": "Exemplo: este produto não é personalizável (metafield titular.personalizavel). O bloco só aparece aqui no editor.",
-      "tag_empty": "Nenhum produto com a tag \"{{ tag }}\" ainda. Esta section só aparece na loja quando houver produtos com a tag."
+      "tag_empty": "Nenhum produto com a tag \"{{ tag }}\" ainda. Esta section só aparece na loja quando houver produtos com a tag.",
+      "reviews_app": "Avaliações: instale um app (ex.: Judge.me) e adicione o bloco dele nesta seção. Some do site enquanto não houver avaliações."
     },
     "menu": {
       "clubs": "Times",
@@ -386,6 +387,18 @@
     "general": {
       "scroll_prev": "Ver anteriores",
       "scroll_next": "Ver mais"
+    },
+    "reviews": {
+      "count": {
+        "one": "1 avaliação",
+        "many": "{{ count }} avaliações",
+        "other": "{{ count }} avaliações"
+      },
+      "summary": {
+        "one": "Nota {{ rating }} de {{ max }}, 1 avaliação",
+        "many": "Nota {{ rating }} de {{ max }}, {{ count }} avaliações",
+        "other": "Nota {{ rating }} de {{ max }}, {{ count }} avaliações"
+      }
     }
   }
 }

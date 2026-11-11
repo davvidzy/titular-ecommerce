@@ -127,6 +127,7 @@
                 <span class="tag text-label">{{ versao | escape }}</span>
               {%- endif -%}
               <h1 class="text-h2">{{ product.title | escape }}</h1>
+              {% render 'rating-stars', product: product, size: 'md', link: '#Avaliacoes', show_value: true %}
               {%- capture meta_line -%}
                 {%- if mf.clube != blank -%}{{ mf.clube.value | escape }}{%- endif -%}
                 {%- if mf.temporada != blank %} · {{ mf.temporada.value | escape }}{% endif -%}

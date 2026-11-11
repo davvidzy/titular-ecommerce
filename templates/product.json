@@ -122,10 +122,18 @@
         "eyebrow": "Antes de comprar",
         "heading": "Perguntas frequentes"
       }
+    },
+    "reviews": {
+      "type": "reviews",
+      "settings": {
+        "eyebrow": "Avaliações",
+        "heading": "Quem já vestiu"
+      }
     }
   },
   "order": [
     "main",
+    "reviews",
     "related",
     "faq"
   ]
