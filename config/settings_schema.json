@@ -55,6 +55,21 @@
     ]
   },
   {
+    "name": "Avaliações",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Loja de demonstração: estrelas com nota e quantidade fictícias, fixas por camisa (calculadas pelo ID do produto). Desligue se a loja passar a vender de verdade."
+      },
+      {
+        "type": "checkbox",
+        "id": "demo_ratings",
+        "label": "Mostrar notas de demonstração",
+        "default": true
+      }
+    ]
+  },
+  {
     "name": "Páginas de ajuda",
     "settings": [
       {

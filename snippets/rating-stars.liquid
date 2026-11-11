@@ -8,16 +8,12 @@
   {% render 'rating-stars', product: product, size: 'md', link: '#Avaliacoes', show_value: true %}
 
   DADOS, nesta ordem:
-  1. Metaobjeto "Avaliação" (shop.metaobjects.avaliacao, ver
-     sections/reviews.liquid): média e contagem das entradas cujo campo
-     "produto" é esta camisa. É o caminho sem app.
-  2. Metafields padrão da Shopify, preenchidos por apps de avaliação
-     (Judge.me, Loox, Yotpo, Okendo):
-  - product.metafields.reviews.rating        (tipo "rating": nota e escala)
-  - product.metafields.reviews.rating_count  (inteiro)
-  Também dá para preencher à mão no admin: Configurações > Dados
-  personalizados > Produtos > Adicionar definição > "Classificação do
-  produto" e "Contagem de classificações" (definições padrão).
+  1. Metafields padrão da Shopify, se um dia houver app de avaliações:
+     product.metafields.reviews.rating / reviews.rating_count.
+  2. NOTAS DE DEMONSTRAÇÃO (loja fictícia): com settings.demo_ratings
+     ligado (Configurações do tema > Avaliações), nota de 4,5 a 5,0 e
+     quantidade de 12 a 148, fixas por camisa (calculadas pelo ID do
+     produto, sempre iguais). Desligar se a loja vender de verdade.
 
   Sem avaliação (contagem 0 ou vazia), não mostra nada. Leitores de tela
   ouvem a frase completa ("Nota 4,8 de 5, 12 avaliações"); as estrelas são
@@ -28,27 +24,18 @@
 {%- endcomment -%}
 {%- liquid
   assign size = size | default: 'sm'
-  assign rating_count = 0
-  assign rating_total = 0
-  for review in shop.metaobjects.avaliacao.values
-    if review.produto.value.id == product.id
-      assign nota = review.nota.value.rating | default: review.nota.value | times: 1 | at_least: 1 | at_most: 5
-      assign rating_total = rating_total | plus: nota
-      assign rating_count = rating_count | plus: 1
-    endif
-  endfor
-  if rating_count > 0
-    assign rating_value = rating_total | times: 1.0 | divided_by: rating_count
+  assign rating_mf = product.metafields.reviews.rating.value
+  assign rating_count = product.metafields.reviews.rating_count.value | default: 0
+  if rating_mf != blank and rating_count > 0
+    assign rating_value = rating_mf.rating | times: 1.0
+    assign rating_max = rating_mf.scale_max | default: 5 | times: 1.0
+  elsif settings.demo_ratings and product.id
+    assign demo_step = product.id | modulo: 6
+    assign rating_value = demo_step | times: 0.1 | plus: 4.5
     assign rating_max = 5.0
+    assign rating_count = product.id | divided_by: 7 | modulo: 137 | plus: 12
   else
-    assign rating_mf = product.metafields.reviews.rating.value
-    assign rating_count = product.metafields.reviews.rating_count.value | default: 0
-    if rating_mf != blank
-      assign rating_value = rating_mf.rating | times: 1.0
-      assign rating_max = rating_mf.scale_max | default: 5 | times: 1.0
-    else
-      assign rating_count = 0
-    endif
+    assign rating_count = 0
   endif
 -%}
 {%- if rating_count > 0 -%}

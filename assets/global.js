@@ -202,25 +202,6 @@
     build();
   });
 
-  /* ---------- Avaliações (sections/reviews.liquid) ---------- */
-
-  // "Ver todas": mostra as avaliações escondidas e leva o foco à 1ª nova.
-  document.addEventListener('click', function (event) {
-    var more = event.target.closest('[data-reviews-more]');
-    if (!more) return;
-    var extras = more.parentElement.querySelectorAll('[data-review-extra]');
-    extras.forEach(function (item) { item.hidden = false; });
-    more.remove();
-    if (extras[0]) { extras[0].setAttribute('tabindex', '-1'); extras[0].focus(); }
-  });
-  // Formulário enviado com erro: reabre o modal para o cliente corrigir.
-  document.querySelectorAll('dialog[data-open-on-load]').forEach(function (dialog) {
-    openDialog(dialog.id);
-  });
-  // Enviado com sucesso: foca o aviso (leitores de tela anunciam).
-  var reviewPosted = document.querySelector('[data-review-posted]');
-  if (reviewPosted) reviewPosted.focus();
-
   /* ---------- Busca preditiva ---------- */
 
   var searchInput = document.querySelector('[data-predictive-search-input]');

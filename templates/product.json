@@ -78,13 +78,6 @@
       ],
       "settings": {}
     },
-    "reviews": {
-      "type": "reviews",
-      "settings": {
-        "eyebrow": "Avaliações",
-        "heading": "Quem já vestiu"
-      }
-    },
     "related": {
       "type": "related-products",
       "settings": {
@@ -165,7 +158,6 @@
   },
   "order": [
     "main",
-    "reviews",
     "related",
     "faq",
     "179436719006be337a"
