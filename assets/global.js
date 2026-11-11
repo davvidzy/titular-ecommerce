@@ -102,6 +102,20 @@
     window.addEventListener('resize', measureHeroOffset);
   }
 
+  // Vídeo do hero: em economia de dados ou conexão 2G, não toca e fica
+  // só a capa (poster). Se o autoplay for bloqueado, a capa também fica.
+  document.querySelectorAll('[data-hero] video').forEach(function (video) {
+    var conn = navigator.connection || {};
+    if (conn.saveData || /2g/.test(conn.effectiveType || '')) {
+      video.removeAttribute('autoplay');
+      video.preload = 'none';
+      video.pause();
+      return;
+    }
+    var attempt = video.play && video.play();
+    if (attempt && attempt.catch) attempt.catch(function () {});
+  });
+
   document.querySelectorAll('[data-video-toggle]').forEach(function (button) {
     var video = button.closest('[data-hero]').querySelector('video');
     if (!video) return;
@@ -116,6 +130,9 @@
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       video.removeAttribute('autoplay');
       video.pause();
+      setState(true);
+    } else if (!video.hasAttribute('autoplay')) {
+      // Economia de dados: o vídeo não tocou; o botão mostra "tocar".
       setState(true);
     }
 

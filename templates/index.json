@@ -3,13 +3,15 @@
     "hero": {
       "type": "image-banner",
       "settings": {
-        "eyebrow": "Temporada 2026/27",
-        "heading": "Vista como titular.",
+        "eyebrow": "",
+        "heading": "Se vista como titular",
         "title_align": "left",
-        "text": "Clubes, seleções e retrô. Medida em centímetros e prazo pelo CEP em toda camisa.",
+        "text": "Clubes, seleções e retrô. Medida em centímetros e prazo pelo CEP.",
         "button_label": "Ver camisas",
         "button_link": "/collections/all",
-        "overlay": 40
+        "overlay": 100,
+        "video_asset": "hero.mp4",
+        "poster_asset": "hero-poster.webp"
       }
     },
     "clubs": {

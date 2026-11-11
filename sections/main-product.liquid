@@ -217,6 +217,7 @@
                 endif
               endfor
             -%}
+            <!-- titular-debug personalization has_custom={{ has_custom }} options={{ product.options | join: '|' | escape }} -->
             {%- if has_custom -%}
               <p class="product__block product__custom-note notice text-small" {{ block.shopify_attributes }}>
                 {% render 'icon', name: 'info' %}

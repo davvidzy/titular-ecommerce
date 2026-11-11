@@ -20,9 +20,8 @@
 
   MODO SOBREPOSTO (home): com "transparent_home" ligado, na home o
   cabeçalho fica transparente sobre o hero (sections/image-banner),
-  texto e ícones em --ink-inverse e logo titular-horizontal-reverso.svg.
-  O reverso tem fundo --ink embutido (respiro), invisível sobre o hero
-  em cor sólida; sobre foto/vídeo vai precisar de uma versão sem fundo.
+  texto e ícones em --ink-inverse e logo titular-horizontal-branco.svg (o reverso
+  da marca sem o retângulo de fundo, para não virar caixa preta sobre o vídeo).
 {%- endcomment -%}
 {%- liquid
   assign overlay = false
@@ -39,7 +38,7 @@
     <a href="{{ routes.root_url }}" class="header__logo">
       {%- comment -%} No modo sobreposto os dois logos existem: o CSS mostra o reverso sobre o hero e o normal depois de rolar. {%- endcomment -%}
       {%- if overlay -%}
-        <img src="{{ 'titular-horizontal-reverso.svg' | asset_url }}" alt="{{ shop.name | escape }}" width="160" height="44" class="header__logo--reverse">
+        <img src="{{ 'titular-horizontal-branco.svg' | asset_url }}" alt="{{ shop.name | escape }}" width="160" height="44" class="header__logo--reverse">
       {%- endif -%}
       <img src="{{ 'titular-horizontal.svg' | asset_url }}" alt="{% unless overlay %}{{ shop.name | escape }}{% endunless %}" width="146" height="30" class="header__logo--default">
     </a>

@@ -4,34 +4,54 @@
   ============================================================
 
   TRABALHO:
-  Tela cheia (100svh, menos a faixa de aviso), mídia de fundo, e por
-  cima: rótulo, título (.text-display), descrição e um CTA curto.
-  Hierarquia: título > descrição > botão. O cabeçalho fica sobreposto
-  e transparente (sections/nav.liquid, modo sobreposto).
+  Tela cheia (100svh, menos a faixa de aviso), vídeo de fundo e, na
+  metade de baixo: título (2 linhas), descrição (2 linhas) e um CTA
+  curto. O cabeçalho fica sobreposto e transparente (sections/nav.liquid).
 
-  MÍDIA (prioridade): vídeo (hospedado na Shopify) > imagem > cor
-  sólida --ink. Sem mídia, o fundo é --ink e o texto --ink-inverse
-  (19,8:1). Com mídia, uma camada --ink com opacidade ajustável
-  ("overlay") garante contraste; sem gradiente (regra da marca).
-  Vídeo: mudo, em loop, com botão de pausar (WCAG 2.2.2) e pausado
-  quando o sistema pede menos movimento (assets/global.js).
+  MÍDIA (prioridade):
+  1. Vídeo enviado pelo editor (setting "video", hospedado na Shopify).
+  2. Vídeo do tema (setting "video_asset", padrão assets/hero.mp4):
+     sem áudio, H.264, faststart, ~1 MB. Capa = "poster_asset"
+     (assets/hero-poster.webp, 1º frame), mostrada enquanto carrega e
+     quando o vídeo não toca (aparelho fraco, economia de dados,
+     "reduzir movimento"). Ver assets/global.js.
+  3. Imagem (setting "image").
+  4. Fundo --ink.
 
-  ALTURA: --hero-offset é medido por assets/global.js (altura do que
-  fica acima do hero no fluxo: a faixa de aviso).
+  CONTRASTE: degradê --ink de baixo (escuro) para cima (transparente),
+  atrás dos textos. Exceção à regra "sem gradientes" pedida pelo dono
+  para o vídeo; intensidade no setting "overlay".
+
+  TÍTULO: .text-h1 no celular (cabe em 2 linhas a 390px) e o tamanho de
+  .text-display no desktop (valores copiados do token, ver stylesheet).
+
+  ALTURA: --hero-offset é medido por assets/global.js.
 {%- endcomment -%}
 {%- liquid
   assign video = section.settings.video
   assign image = section.settings.image
+  assign video_asset = section.settings.video_asset | strip
+  assign poster_asset = section.settings.poster_asset | strip
+  assign has_video = false
+  if video != blank or video_asset != blank
+    assign has_video = true
+  endif
   assign has_media = false
-  if video != blank or image != blank
+  if has_video or image != blank
     assign has_media = true
   endif
   assign heading_tag = 'h2'
   if template.name == 'index'
     assign heading_tag = 'h1'
   endif
+  assign poster_url = ''
+  if poster_asset != blank
+    assign poster_url = poster_asset | asset_url
+  elsif image != blank
+    assign poster_url = image | image_url: width: 1200
+  endif
 -%}
-<section class="hero" data-hero>
+<section class="hero{% if has_media %} hero--media{% endif %}" data-hero>
   {%- if has_media -%}
     <div class="hero__media">
       {%- if video != blank -%}
@@ -43,9 +63,23 @@
             muted: true,
             playsinline: true,
             controls: false,
-            preload: 'metadata',
-            image_size: '1920x'
+            preload: 'auto',
+            image_size: '1200x'
         }}
+      {%- elsif video_asset != blank -%}
+        <video
+          autoplay
+          muted
+          loop
+          playsinline
+          disablepictureinpicture
+          preload="auto"
+          {% if poster_url != blank %}poster="{{ poster_url }}"{% endif %}
+          aria-hidden="true"
+          data-hero-video
+        >
+          <source src="{{ video_asset | asset_url }}" type="video/mp4">
+        </video>
       {%- else -%}
         <picture>
           {%- if section.settings.image_mobile != blank -%}
@@ -54,7 +88,7 @@
           {{ image | image_url: width: 2400 | image_tag: loading: 'eager', fetchpriority: 'high', widths: '780, 1200, 1800, 2400', sizes: '100vw', alt: image.alt | escape }}
         </picture>
       {%- endif -%}
-      <div class="hero__overlay" style="opacity: {{ section.settings.overlay | divided_by: 100.0 }};"></div>
+      <div class="hero__shade" style="opacity: {{ section.settings.overlay | divided_by: 100.0 }};"></div>
     </div>
   {%- endif -%}
 
@@ -62,7 +96,7 @@
     {%- if section.settings.eyebrow != blank -%}
       <p class="text-label">{{ section.settings.eyebrow | escape }}</p>
     {%- endif -%}
-    <{{ heading_tag }} class="hero__title text-display hero__title--{{ section.settings.title_align }}">{{ section.settings.heading | escape }}</{{ heading_tag }}>
+    <{{ heading_tag }} class="hero__title text-h1 hero__title--{{ section.settings.title_align }}">{{ section.settings.heading | escape }}</{{ heading_tag }}>
     {%- if section.settings.text != blank -%}
       <p class="hero__text text-body-lg">{{ section.settings.text | escape }}</p>
     {%- endif -%}
@@ -73,7 +107,7 @@
     {%- endif -%}
   </div>
 
-  {%- if video != blank -%}
+  {%- if has_video -%}
     <button type="button" class="hero__video-toggle icon-button" data-video-toggle aria-pressed="false" aria-label="{{ 'titular.hero.pause' | t }}" data-label-pause="{{ 'titular.hero.pause' | t }}" data-label-play="{{ 'titular.hero.play' | t }}">
       <span data-icon-pause>{% render 'icon', name: 'pause' %}</span>
       <span data-icon-play hidden>{% render 'icon', name: 'play' %}</span>
@@ -94,22 +128,35 @@
     --focus: var(--ink-inverse);
   }
   .hero__media,
-  .hero__overlay { position: absolute; inset: 0; }
+  .hero__shade { position: absolute; inset: 0; }
   .hero__media img,
   .hero__media video { width: 100%; height: 100%; object-fit: cover; }
-  .hero__overlay { background: var(--ink); }
 
+  /* Degradê de contraste: --ink embaixo, transparente a partir do meio. */
+  .hero__shade {
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--ink) 90%, transparent) 0%,
+      color-mix(in srgb, var(--ink) 60%, transparent) 30%,
+      color-mix(in srgb, var(--ink) 15%, transparent) 55%,
+      transparent 75%
+    );
+  }
+
+  /* Textos na metade de baixo, com folga do rodapé da tela. */
   .hero__content {
     position: relative;
     display: grid;
     gap: var(--space-4);
     padding-top: var(--space-24);
-    padding-bottom: var(--space-12);
+    padding-bottom: calc(var(--space-12) + var(--space-6));
   }
+  .hero__title,
+  .hero__text { text-wrap: balance; }
   .hero__title--left { text-align: left; }
   .hero__title--right { text-align: right; }
-  .hero__text { margin-top: var(--space-2); }
-  .hero__cta { width: 100%; margin-top: var(--space-4); }
+  .hero__text { max-width: 36ch; }
+  .hero__cta { width: 100%; margin-top: var(--space-2); }
 
   .hero__video-toggle {
     position: absolute;
@@ -119,6 +166,9 @@
   }
 
   @media (min-width: 990px) {
+    /* Mesmos valores do token .text-display (brand/tokens.css). */
+    .hero__title { font-size: 56px; line-height: 56px; letter-spacing: -0.02em; }
+    .hero__text { max-width: 44ch; }
     .hero__content { padding-bottom: var(--space-24); }
     .hero__cta { width: auto; justify-self: start; padding-inline: var(--space-12); }
     .hero__title--right ~ .hero__cta { justify-self: end; }
@@ -134,24 +184,26 @@
   "class": "section-hero",
   "settings": [
     { "type": "header", "content": "Mídia" },
-    { "type": "paragraph", "content": "Sem mídia, o fundo é preto (--ink). Vídeo tem prioridade sobre imagem; a imagem vira capa enquanto o vídeo carrega." },
+    { "type": "paragraph", "content": "Ordem: vídeo enviado aqui > vídeo do tema (assets) > imagem > fundo preto." },
     { "type": "video", "id": "video", "label": "Vídeo (mudo, em loop)" },
+    { "type": "text", "id": "video_asset", "label": "Vídeo do tema (arquivo em assets)", "default": "hero.mp4", "info": "Vazio desliga. Use MP4 sem áudio." },
+    { "type": "text", "id": "poster_asset", "label": "Capa do vídeo (arquivo em assets)", "default": "hero-poster.webp", "info": "Aparece enquanto o vídeo carrega ou se não tocar." },
     { "type": "image_picker", "id": "image", "label": "Imagem" },
     { "type": "image_picker", "id": "image_mobile", "label": "Imagem no celular (opcional, vertical)" },
     {
       "type": "range",
       "id": "overlay",
-      "label": "Escurecer a mídia",
+      "label": "Intensidade do degradê",
       "min": 0,
-      "max": 80,
+      "max": 100,
       "step": 10,
       "unit": "%",
-      "default": 40,
-      "info": "Garante contraste do texto branco sobre a foto/vídeo."
+      "default": 100,
+      "info": "Degradê escuro embaixo dos textos, para contraste."
     },
     { "type": "header", "content": "Texto" },
-    { "type": "text", "id": "eyebrow", "label": "Rótulo", "default": "Temporada 2026/27" },
-    { "type": "text", "id": "heading", "label": "Título", "default": "Vista como titular." },
+    { "type": "text", "id": "eyebrow", "label": "Rótulo (opcional)" },
+    { "type": "text", "id": "heading", "label": "Título", "default": "Se vista como titular" },
     {
       "type": "select",
       "id": "title_align",
@@ -162,7 +214,7 @@
         { "value": "right", "label": "Direita" }
       ]
     },
-    { "type": "text", "id": "text", "label": "Descrição", "default": "Clubes, seleções e retrô. Medida em centímetros e prazo pelo CEP em toda camisa." },
+    { "type": "text", "id": "text", "label": "Descrição", "default": "Clubes, seleções e retrô. Medida em centímetros e prazo pelo CEP." },
     { "type": "text", "id": "button_label", "label": "Botão", "default": "Ver camisas" },
     { "type": "url", "id": "button_link", "label": "Link do botão", "default": "/collections/all" }
   ],
