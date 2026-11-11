@@ -1,28 +1,44 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
       "type": "main-product",
       "blocks": {
         "title": {
-          "type": "title"
+          "type": "title",
+          "settings": {}
         },
         "price": {
-          "type": "price"
+          "type": "price",
+          "settings": {}
         },
         "size": {
-          "type": "size"
+          "type": "size",
+          "settings": {}
         },
         "personalization": {
-          "type": "personalization"
+          "type": "personalization",
+          "settings": {}
         },
         "buy": {
-          "type": "buy_buttons"
+          "type": "buy_buttons",
+          "settings": {}
         },
         "shipping": {
-          "type": "shipping"
+          "type": "shipping",
+          "settings": {}
         },
         "guarantees": {
-          "type": "guarantees"
+          "type": "guarantees",
+          "settings": {}
         },
         "details": {
           "type": "accordion",
@@ -49,17 +65,15 @@
         "guarantees",
         "details",
         "versions"
-      ]
+      ],
+      "settings": {}
     },
     "related": {
-      "type": "related-products"
+      "type": "related-products",
+      "settings": {}
     },
     "faq": {
       "type": "faq",
-      "settings": {
-        "eyebrow": "Antes de comprar",
-        "heading": "Perguntas frequentes"
-      },
       "blocks": {
         "q1": {
           "type": "question",
@@ -103,7 +117,11 @@
         "q3",
         "q4",
         "q5"
-      ]
+      ],
+      "settings": {
+        "eyebrow": "Antes de comprar",
+        "heading": "Perguntas frequentes"
+      }
     }
   },
   "order": [

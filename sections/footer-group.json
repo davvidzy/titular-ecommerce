@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "type": "footer",
   "name": "t:section_groups.footer.name",
@@ -5,16 +14,44 @@
     "footer": {
       "type": "footer",
       "blocks": {
-        "brand": { "type": "brand" },
-        "help": { "type": "menu", "settings": { "heading": "Ajuda", "menu": "ajuda" } },
-        "about": { "type": "menu", "settings": { "heading": "Titular", "menu": "footer" } },
-        "contact": { "type": "contact" }
+        "brand": {
+          "type": "brand",
+          "settings": {}
+        },
+        "help": {
+          "type": "menu",
+          "settings": {
+            "heading": "Ajuda",
+            "menu": "ajuda"
+          }
+        },
+        "about": {
+          "type": "menu",
+          "settings": {
+            "heading": "Titular",
+            "menu": "footer"
+          }
+        },
+        "contact": {
+          "type": "contact",
+          "settings": {}
+        }
       },
-      "block_order": ["brand", "help", "about", "contact"]
+      "block_order": [
+        "brand",
+        "help",
+        "about",
+        "contact"
+      ],
+      "settings": {}
     },
     "cart-drawer": {
-      "type": "cart-drawer"
+      "type": "cart-drawer",
+      "settings": {}
     }
   },
-  "order": ["footer", "cart-drawer"]
+  "order": [
+    "footer",
+    "cart-drawer"
+  ]
 }

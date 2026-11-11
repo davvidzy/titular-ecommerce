@@ -1,17 +1,26 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "hero": {
       "type": "image-banner",
       "settings": {
+        "video_asset": "hero.mp4",
+        "poster_asset": "hero-poster.webp",
+        "overlay": 100,
         "eyebrow": "",
         "heading": "Se vista como titular",
         "title_align": "left",
         "text": "Clubes, seleções e retrô. Medida em centímetros e prazo pelo CEP.",
         "button_label": "Ver camisas",
-        "button_link": "/collections/all",
-        "overlay": 100,
-        "video_asset": "hero.mp4",
-        "poster_asset": "hero-poster.webp"
+        "button_link": "/collections/all"
       }
     },
     "clubs": {
@@ -41,10 +50,6 @@
     },
     "versions": {
       "type": "version-explainer",
-      "settings": {
-        "eyebrow": "Antes de escolher",
-        "heading": "Torcedor ou Jogador?"
-      },
       "blocks": {
         "fan": {
           "type": "version",
@@ -72,7 +77,11 @@
         "fan",
         "player",
         "retro"
-      ]
+      ],
+      "settings": {
+        "eyebrow": "Antes de escolher",
+        "heading": "Torcedor ou Jogador?"
+      }
     },
     "guarantees": {
       "type": "guarantees",
@@ -115,7 +124,8 @@
         "card",
         "exchange",
         "shipping"
-      ]
+      ],
+      "settings": {}
     },
     "retro": {
       "type": "tag-showcase",
@@ -123,9 +133,9 @@
         "tag": "retro",
         "eyebrow": "Clássicos",
         "heading": "Camisas retrô",
+        "text": "Modelos clássicos refeitos, com corte largo dos anos 90.",
         "link_label": "Ver todas",
-        "products_to_show": 3,
-        "text": "Modelos clássicos refeitos, com corte largo dos anos 90."
+        "products_to_show": 3
       }
     }
   },

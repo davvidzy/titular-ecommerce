@@ -1,20 +1,22 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
-    "nav": { "type": "help-nav" },
-    "main": { "type": "main-page" },
-    "faq": {
-      "type": "faq",
-      "blocks": {
-        "q1": { "type": "question", "settings": { "question": "A camisa é original?", "answer": "<p>Resposta de exemplo. Loja fictícia: substitua pelo texto real.</p>" } },
-        "q2": { "type": "question", "settings": { "question": "Posso pagar no Pix?", "answer": "<p>Sim, com desconto. O valor aparece na página do produto.</p>" } },
-        "q3": { "type": "question", "settings": { "question": "Quanto tempo leva a personalização?", "answer": "<p>Soma alguns dias úteis ao prazo normal. O prazo exato aparece no produto.</p>" } }
-      },
-      "block_order": ["q1", "q2", "q3"]
-    },
-    "contact": {
+    "main": {
       "type": "contact-form",
-      "settings": { "heading": "Fale com a gente" }
+      "settings": {
+        "heading": "Contato"
+      }
     }
   },
-  "order": ["nav", "main", "faq", "contact"]
+  "order": [
+    "main"
+  ]
 }
