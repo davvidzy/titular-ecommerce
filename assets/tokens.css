@@ -13,6 +13,7 @@
   --focus: #0A0A0A;  /* Anel de foco de 2px com 2px de afastamento em todo elemento interativo. */
   --danger: #A30F0F;  /* Erro de formulário e aviso de estoque crítico, sempre com ícone. 8,0:1 sobre surface. */
   --success: #0D6630;  /* Confirmação (pedido feito, cupom aplicado), sempre com ícone. 7,1:1 sobre surface. */
+  --rating: #D4A12A;  /* Só o preenchimento das estrelas de avaliação (decorativas, sempre com número ao lado). Única cor com matiz fora de estado; exceção pedida pelo dono. */
   --font-sans: "Archivo", system-ui, sans-serif;
   --space-1: 4px;
   --space-2: 8px;

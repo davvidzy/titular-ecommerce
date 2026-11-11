@@ -18,7 +18,7 @@ Siga a ordem de fases da seção 6 da arquitetura. Não construa nada que não e
 - Use apenas os tokens de `brand/tokens.css` (variáveis CSS e classes `.text-*`). Nunca escreva cor, tamanho de fonte, espaçamento ou raio em valor solto (hex, px) se existir um token para isso.
 - Fonte única: Archivo. Variação por peso e caixa, nunca por outra família.
 - Fundo de página sempre `--surface` (branco). Fotos de produto sobre `--surface-alt`.
-- Sistema monocromático: nenhuma cor de destaque. As únicas cores com matiz são `--danger` e `--success`, sempre com ícone ou texto.
+- Sistema monocromático: nenhuma cor de destaque. As únicas cores com matiz são `--danger` e `--success`, sempre com ícone ou texto, e `--rating` (dourado), só no preenchimento das estrelas de avaliação.
 - Contraste WCAG AAA (7:1) para todo texto. Borda de controle em `--line-strong`; `--line` só para divisórias decorativas.
 - Foco visível em todo elemento interativo (já definido em tokens.css; não remover `outline`).
 - Área de toque mínima de 44px. Cantos retos (`--radius-none`) em fotos e cards; `--radius-sm` em botões e campos.

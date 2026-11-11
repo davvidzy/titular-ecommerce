@@ -51,7 +51,7 @@ Regras de escrita: frases curtas, números concretos, verbo no imperativo só em
 
 ## Fundamentos visuais
 
-**Cor.** Sistema monocromático. `ink` (#0A0A0A) para texto e ação primária; `surface` (#FFFFFF) como fundo de todas as páginas; `surface-alt` (#F5F5F5) atrás das fotos de produto, para a camisa destacar sem borda. Texto secundário em `ink-muted` (#525252, contraste 7,8:1 no branco e 7,2:1 no cinza). Todas as combinações de texto atendem WCAG AAA (7:1). As únicas cores com matiz são de estado (`danger`, `success`) e sempre aparecem com ícone ou texto, nunca sozinhas.
+**Cor.** Sistema monocromático. `ink` (#0A0A0A) para texto e ação primária; `surface` (#FFFFFF) como fundo de todas as páginas; `surface-alt` (#F5F5F5) atrás das fotos de produto, para a camisa destacar sem borda. Texto secundário em `ink-muted` (#525252, contraste 7,8:1 no branco e 7,2:1 no cinza). Todas as combinações de texto atendem WCAG AAA (7:1). As únicas cores com matiz são de estado (`danger`, `success`) e sempre aparecem com ícone ou texto, nunca sozinhas. Exceção: `rating` (#D4A12A), dourado fechado usado só no preenchimento das estrelas de avaliação, sempre com o número ao lado.
 
 **Tipografia.** Uma família só: Archivo (Google Fonts). Variação por peso e caixa, não por família. Títulos em 800, maiúsculas, espaçamento negativo leve; corpo em 400 com entrelinha 1,6 e linha de no máximo 70 caracteres; preços em 700 com algarismos tabulares (`font-variant-numeric: tabular-nums`) para alinhar em listas.
 

@@ -389,8 +389,9 @@ textarea.field__input { padding-block: var(--space-2); min-height: calc(var(--ta
 .rating__stars { position: relative; display: inline-flex; line-height: 0; }
 .rating__empty,
 .rating__fill { display: inline-flex; gap: 1px; }
-.rating__empty { color: var(--line-strong); }
-.rating__fill { position: absolute; inset: 0 auto 0 0; overflow: hidden; color: var(--ink); white-space: nowrap; }
+.rating__empty { color: var(--line); }
+/* Dourado fechado (--rating): lê como avaliação sem competir com nome e preço. */
+.rating__fill { position: absolute; inset: 0 auto 0 0; overflow: hidden; color: var(--rating); white-space: nowrap; }
 .rating svg { flex: none; width: var(--space-4); height: var(--space-4); }
 /* Card: discreto, estrelas de 12px e só a quantidade entre parênteses. */
 .rating--sm svg { width: calc(var(--space-4) * 0.75); height: calc(var(--space-4) * 0.75); }
