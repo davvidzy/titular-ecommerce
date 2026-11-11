@@ -21,8 +21,8 @@
   Média e contagem também alimentam as estrelas dos cards
   (snippets/rating-stars).
 
-  COMO O CLIENTE AVALIA (sem app): botão "Escrever avaliação" abre um
-  modal com o formulário de contato nativo da Shopify ({% form 'contact' %}).
+  COMO O CLIENTE AVALIA (sem app): botão "Escrever avaliação" abre uma
+  gaveta lateral (.drawer) com o formulário de contato nativo da Shopify ({% form 'contact' %}).
   A avaliação chega por e-mail para o dono; para publicar, ele cria a
   entrada do metaobjeto no admin (moderação manual, só avaliações reais).
 
@@ -189,7 +189,8 @@
         </p>
       {%- endif -%}
 
-      <dialog id="{{ form_id }}" class="modal review-form__dialog" aria-labelledby="{{ form_id }}-title"{% if form.errors %} data-open-on-load{% endif %}>
+      <dialog id="{{ form_id }}" class="drawer review-form__dialog" aria-labelledby="{{ form_id }}-title"{% if form.errors %} data-open-on-load{% endif %}>
+        <div class="drawer__inner">
         <div class="drawer__header">
           <h2 id="{{ form_id }}-title" class="text-h3">{{ 'titular.reviews.write' | t }}</h2>
           <button type="button" class="icon-button" data-dialog-close aria-label="{{ 'accessibility.close' | t }}">{% render 'icon', name: 'close' %}</button>
@@ -266,6 +267,7 @@
 
         <div class="drawer__footer">
           <button type="submit" class="button button--full text-label">{{ 'titular.reviews.send' | t }}</button>
+        </div>
         </div>
       </dialog>
     {%- endform -%}
