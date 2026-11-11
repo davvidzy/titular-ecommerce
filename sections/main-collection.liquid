@@ -4,8 +4,14 @@
   ============================================================
 
   TRABALHO (docs/arquitetura-informacao.md §3.3):
-  2. Barra "Filtrar" + "Ordenar": fixa ao rolar no mobile; filtros
-     abrem em gaveta (<dialog id="FilterDrawer">).
+  1. Atalhos de versão em chips (Todas · Torcedor · Jogador · Retrô):
+     um toque filtra pela TAG do produto, via /collections/<coleção>/<tag>
+     (nativo do Shopify, sem app). Cada chip é um bloco "Atalho por tag"
+     (nome que aparece + tag do admin; acento/maiúscula não importam).
+     O chip ativo fica preenchido; "Todas" volta para a coleção inteira.
+  2. Barra compacta: "Filtrar" (ícone + texto, abre a gaveta
+     <dialog id="FilterDrawer">) à esquerda e "Ordenar" à direita, sem
+     caixa, só texto. Fixa ao rolar no mobile.
   3. Filtros ativos em chips removíveis: desfazer em 1 toque.
   4. Grade: 2 colunas no mobile, 4 no desktop.
   5. Carregar mais: paginação sem perder a posição (assets/colecao.js
@@ -32,13 +38,42 @@
   endfor
 -%}
 
+{%- liquid
+  # Tag ativa (URL /collections/<coleção>/<tag>), comparada pelo handle.
+  assign active_tag = ''
+  if current_tags
+    assign active_tag = current_tags.first | handleize
+  endif
+  assign sort_param = '?sort_by=' | append: sort_by
+-%}
+
 {%- paginate collection.products by section.settings.products_per_page -%}
   <div class="collection" data-section-id="{{ section.id }}" data-collection>
+    {%- comment -%} 1. Atalhos de versão (tags) {%- endcomment -%}
+    {%- if section.blocks.size > 0 -%}
+      <nav class="collection__tags" aria-label="{{ 'titular.collection.versions' | t }}">
+        <ul class="collection__tags-list page-width" role="list">
+          <li>
+            <a href="{{ collection.url }}{{ sort_param }}" class="tag-chip text-small"{% if active_tag == blank %} aria-current="page"{% endif %}>{{ 'titular.collection.all_versions' | t }}</a>
+          </li>
+          {%- for block in section.blocks -%}
+            {%- assign chip_tag = block.settings.tag | strip | handleize -%}
+            {%- if chip_tag != blank and block.settings.label != blank -%}
+              <li {{ block.shopify_attributes }}>
+                <a href="{{ collection.url }}/{{ chip_tag }}{{ sort_param }}" class="tag-chip text-small"{% if active_tag == chip_tag %} aria-current="page"{% endif %}>{{ block.settings.label | escape }}</a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+
     {%- comment -%} 2. Barra Filtrar + Ordenar {%- endcomment -%}
     <div class="collection__toolbar">
       <div class="collection__toolbar-inner page-width">
         {%- if collection.filters.size > 0 -%}
-          <button type="button" class="button button--secondary text-label" aria-haspopup="dialog" data-dialog-open="FilterDrawer">
+          <button type="button" class="collection__tool text-small" aria-haspopup="dialog" data-dialog-open="FilterDrawer">
+            {% render 'icon', name: 'filter' %}
             {{ 'products.facets.filter_button' | t }}
             {%- if active_count > 0 %} ({{ active_count }}){% endif -%}
           </button>
@@ -54,8 +89,8 @@
               {%- if filter.max_value.value != nil -%}<input type="hidden" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value | divided_by: 100 }}">{%- endif -%}
             {%- endif -%}
           {%- endfor -%}
-          <label class="visually-hidden" for="SortBy-{{ section.id }}">{{ 'products.facets.sort_by_label' | t }}</label>
-          <select name="sort_by" id="SortBy-{{ section.id }}" class="select__select" data-sort-select>
+          <label class="collection__sort-label text-small muted" for="SortBy-{{ section.id }}">{{ 'titular.collection.sort_short' | t }}</label>
+          <select name="sort_by" id="SortBy-{{ section.id }}" class="collection__sort-select text-small" data-sort-select>
             {%- for option in collection.sort_options -%}
               {%- if allowed_sorts contains option.value -%}
                 <option value="{{ option.value }}" {% if option.value == sort_by %}selected{% endif %}>{{ option.name }}</option>
@@ -193,15 +228,61 @@
     background: var(--surface);
     border-block: 1px solid var(--line);
   }
-  .collection__toolbar-inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); padding-block: var(--space-2); }
-  .collection__toolbar-inner > .button { width: 100%; }
-  .collection__sort { min-width: 0; }
-  .collection__sort .select__select { width: 100%; }
-  @media (min-width: 990px) {
-    .collection__toolbar-inner { display: flex; justify-content: space-between; }
-    .collection__toolbar-inner > .button { width: auto; }
-    .collection__sort .select__select { width: auto; }
+  /* Barra compacta: dois controles de texto, sem caixa. Altura de toque
+     de 44px mantida (min-height), mas visualmente só ícone + texto. */
+  .collection__toolbar-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  .collection__tool {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap);
+    padding: 0;
+    font-weight: 700;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    cursor: pointer;
   }
+  .collection__sort { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+  .collection__sort-select {
+    min-height: var(--tap);
+    padding: 0 var(--space-6) 0 0;
+    font-weight: 700;
+    color: var(--ink);
+    background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%230A0A0A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right center;
+    border: 0;
+    cursor: pointer;
+  }
+
+  /* Atalhos de versão: chips em pílula, rolam na lateral no celular. */
+  .collection__tags { border-top: 1px solid var(--line); }
+  .collection__tags-list {
+    display: flex;
+    gap: var(--space-2);
+    padding-block: var(--space-4);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+  .collection__tags-list::-webkit-scrollbar { display: none; }
+  .collection__tags-list > li { flex: none; }
+  .tag-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: calc(var(--tap) - var(--space-2));
+    padding: 0 var(--space-4);
+    color: var(--ink);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color var(--motion-fast) ease-out, background-color var(--motion-fast) ease-out, border-color var(--motion-fast) ease-out;
+  }
+  /* Área de toque de 44px mesmo com a pílula de 36px. */
+  .tag-chip::before { content: ''; position: absolute; inset: calc(var(--space-1) * -1) 0; }
+  .tag-chip:hover { border-color: var(--ink); }
+  .tag-chip[aria-current="page"] { color: var(--ink-inverse); background: var(--ink); border-color: var(--ink); font-weight: 700; }
   .collection__chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); padding-block: var(--space-4); }
   .collection__chips svg { width: var(--space-4); height: var(--space-4); }
   .collection .product-grid { margin-top: var(--space-6); }
@@ -224,6 +305,16 @@
   "name": "t:sections.main_collection.name",
   "tag": "section",
   "class": "section-main-collection",
+  "blocks": [
+    {
+      "type": "tag_filter",
+      "name": "Atalho por tag",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Nome no chip", "info": "Como o cliente lê. Ex.: Torcedor" },
+        { "type": "text", "id": "tag", "label": "Tag do produto", "info": "A tag do admin. Ex.: camisa-torcedor" }
+      ]
+    }
+  ],
   "settings": [
     {
       "type": "range",

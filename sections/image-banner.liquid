@@ -25,6 +25,9 @@
   TÍTULO: .text-h1 no celular (cabe em 2 linhas a 390px) e o tamanho de
   .text-display no desktop (valores copiados do token, ver stylesheet).
 
+  SEM BOTÃO DE PAUSAR (pedido do dono). O vídeo não toca com "reduzir
+  movimento" ligado nem em economia de dados (fica a capa).
+
   ALTURA: --hero-offset é medido por assets/global.js.
 {%- endcomment -%}
 {%- liquid
@@ -107,12 +110,6 @@
     {%- endif -%}
   </div>
 
-  {%- if has_video -%}
-    <button type="button" class="hero__video-toggle icon-button" data-video-toggle aria-pressed="false" aria-label="{{ 'titular.hero.pause' | t }}" data-label-pause="{{ 'titular.hero.pause' | t }}" data-label-play="{{ 'titular.hero.play' | t }}">
-      <span data-icon-pause>{% render 'icon', name: 'pause' %}</span>
-      <span data-icon-play hidden>{% render 'icon', name: 'play' %}</span>
-    </button>
-  {%- endif -%}
 </section>
 
 {% stylesheet %}
@@ -158,13 +155,6 @@
   .hero__text { max-width: 36ch; }
   .hero__cta { width: 100%; margin-top: var(--space-2); }
 
-  .hero__video-toggle {
-    position: absolute;
-    right: var(--page-gutter);
-    top: var(--space-24);
-    color: var(--ink-inverse);
-  }
-
   @media (min-width: 990px) {
     /* Mesmos valores do token .text-display (brand/tokens.css). */
     .hero__title { font-size: 56px; line-height: 56px; letter-spacing: -0.02em; }
@@ -173,7 +163,6 @@
     .hero__cta { width: auto; justify-self: start; padding-inline: var(--space-12); }
     .hero__title--right ~ .hero__cta { justify-self: end; }
     .hero__title--right ~ .hero__text { justify-self: end; text-align: right; }
-    .hero__video-toggle { top: auto; bottom: var(--space-24); }
   }
 {% endstylesheet %}
 

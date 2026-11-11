@@ -318,7 +318,10 @@
       "remove_filter": "Remover filtro",
       "show_results": "Ver camisas",
       "load_more": "Carregar mais",
-      "showing": "Mostrando {{ shown }} de {{ total }}"
+      "showing": "Mostrando {{ shown }} de {{ total }}",
+      "versions": "Versão da camisa",
+      "all_versions": "Todas",
+      "sort_short": "Ordenar:"
     },
     "search": {
       "placeholder": "Clube, seleção ou temporada",

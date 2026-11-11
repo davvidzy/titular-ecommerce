@@ -102,11 +102,13 @@
     window.addEventListener('resize', measureHeroOffset);
   }
 
-  // Vídeo do hero: em economia de dados ou conexão 2G, não toca e fica
-  // só a capa (poster). Se o autoplay for bloqueado, a capa também fica.
+  // Vídeo do hero: com "reduzir movimento", economia de dados ou conexão
+  // 2G, não toca e fica só a capa (poster). Se o autoplay for bloqueado,
+  // a capa também fica. Não há botão de pausar (pedido do dono).
   document.querySelectorAll('[data-hero] video').forEach(function (video) {
     var conn = navigator.connection || {};
-    if (conn.saveData || /2g/.test(conn.effectiveType || '')) {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || conn.saveData || /2g/.test(conn.effectiveType || '')) {
       video.removeAttribute('autoplay');
       video.preload = 'none';
       video.pause();
@@ -114,32 +116,6 @@
     }
     var attempt = video.play && video.play();
     if (attempt && attempt.catch) attempt.catch(function () {});
-  });
-
-  document.querySelectorAll('[data-video-toggle]').forEach(function (button) {
-    var video = button.closest('[data-hero]').querySelector('video');
-    if (!video) return;
-
-    function setState(paused) {
-      button.setAttribute('aria-pressed', String(paused));
-      button.setAttribute('aria-label', button.getAttribute(paused ? 'data-label-play' : 'data-label-pause'));
-      button.querySelector('[data-icon-pause]').hidden = paused;
-      button.querySelector('[data-icon-play]').hidden = !paused;
-    }
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      video.removeAttribute('autoplay');
-      video.pause();
-      setState(true);
-    } else if (!video.hasAttribute('autoplay')) {
-      // Economia de dados: o vídeo não tocou; o botão mostra "tocar".
-      setState(true);
-    }
-
-    button.addEventListener('click', function () {
-      if (video.paused) { video.play(); setState(false); }
-      else { video.pause(); setState(true); }
-    });
   });
 
   /* ---------- Aparecer ao rolar ---------- */

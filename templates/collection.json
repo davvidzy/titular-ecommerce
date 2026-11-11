@@ -4,11 +4,43 @@
       "type": "collection-banner"
     },
     "product-grid": {
-      "type": "main-collection"
+      "type": "main-collection",
+      "blocks": {
+        "torcedor": {
+          "type": "tag_filter",
+          "settings": {
+            "label": "Torcedor",
+            "tag": "camisa-torcedor"
+          }
+        },
+        "jogador": {
+          "type": "tag_filter",
+          "settings": {
+            "label": "Jogador",
+            "tag": "camisa-jogador"
+          }
+        },
+        "retro": {
+          "type": "tag_filter",
+          "settings": {
+            "label": "Retrô",
+            "tag": "retro"
+          }
+        }
+      },
+      "block_order": [
+        "torcedor",
+        "jogador",
+        "retro"
+      ]
     },
     "text": {
       "type": "collection-text"
     }
   },
-  "order": ["banner", "product-grid", "text"]
+  "order": [
+    "banner",
+    "product-grid",
+    "text"
+  ]
 }
