@@ -398,7 +398,32 @@
         "one": "Nota {{ rating }} de {{ max }}, 1 avaliação",
         "many": "Nota {{ rating }} de {{ max }}, {{ count }} avaliações",
         "other": "Nota {{ rating }} de {{ max }}, {{ count }} avaliações"
-      }
+      },
+      "stars_label": "{{ rating }} de 5 estrelas",
+      "distribution": "Notas por estrela",
+      "bar_label": "{{ stars }} estrelas: {{ count }}",
+      "empty": "Esta camisa ainda não tem avaliações. Comprou? Conte como ficou o tamanho.",
+      "write": "Escrever avaliação",
+      "show_all": {
+        "one": "Ver 1 avaliação",
+        "many": "Ver todas as {{ count }} avaliações",
+        "other": "Ver todas as {{ count }} avaliações"
+      },
+      "size": "Tamanho {{ size }}",
+      "photo_alt": "Foto enviada por {{ name }}",
+      "posted": "Recebemos sua avaliação. Ela aparece aqui depois de revisada, em até 2 dias úteis.",
+      "form_intro": "Sua avaliação de {{ product }} aparece na página depois de revisada.",
+      "field_subject": "Assunto",
+      "subject": "Avaliação: {{ product }}",
+      "field_product": "Produto",
+      "field_rating": "Nota",
+      "field_size": "Tamanho que você comprou",
+      "field_fit": "Como ficou o tamanho?",
+      "fits": "Ficou justo|Veste certo|Ficou largo",
+      "field_text": "Sua avaliação",
+      "text_placeholder": "Tecido, caimento, prazo de entrega...",
+      "email_note": "Não aparece na avaliação.",
+      "send": "Enviar avaliação"
     }
   }
 }

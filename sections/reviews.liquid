@@ -4,81 +4,376 @@
   ============================================================
 
   TRABALHO (docs/arquitetura-informacao.md §3.1 #11 e §3.2 #8):
-  Prova social / confiança para quem não conhece a marca.
+  Prova social / confiança para quem não conhece a marca. Sem app.
 
-  REGRA: só avaliações reais. Na loja fictícia, os blocks "review"
-  são placeholders e aparecem marcados como EXEMPLO. Quando houver
-  app de avaliações (Fase 3), use o block "@app" e apague os exemplos.
+  DE ONDE VÊM AS AVALIAÇÕES (metaobjeto "Avaliação", tipo avaliacao):
+  Conteúdo > Metaobjetos > Avaliação. Campos (chave → tipo):
+    produto  → Referência de produto (obrigatório)
+    nome     → Texto de linha única (obrigatório)
+    nota     → Número inteiro, 1 a 5 (obrigatório)
+    texto    → Texto de várias linhas (obrigatório)
+    tamanho  → Texto de linha única (opcional, ex.: M)
+    caimento → Texto de linha única (opcional: Veste certo / Ficou justo / Ficou largo)
+    foto     → Arquivo, imagem (opcional)
+    data     → Data (opcional)
+  A definição precisa de "Acesso à vitrine" ligado. O tema lê até 250
+  avaliações da loja e filtra as da camisa aberta (mais novas primeiro).
+  Média e contagem também alimentam as estrelas dos cards
+  (snippets/rating-stars).
 
-  NA PÁGINA DO PRODUTO (templates/product.json, id #Avaliacoes):
-  - Resumo no topo: nota média, estrelas e quantidade, lidos dos
-    metafields padrão reviews.rating / reviews.rating_count (snippet
-    rating-stars). As estrelas abaixo do título do produto levam até aqui.
-  - Lista: o bloco do app de avaliações (ex.: Judge.me > "Review widget"),
-    adicionado no editor do tema dentro desta seção.
-  - Sem app, sem nota e sem exemplos, a seção não aparece (no editor,
-    mostra um aviso de como ativar).
+  COMO O CLIENTE AVALIA (sem app): botão "Escrever avaliação" abre um
+  modal com o formulário de contato nativo da Shopify ({% form 'contact' %}).
+  A avaliação chega por e-mail para o dono; para publicar, ele cria a
+  entrada do metaobjeto no admin (moderação manual, só avaliações reais).
+
+  LAYOUT (produto): à esquerda, resumo (nota grande, estrelas, contagem,
+  barras de 5 a 1 estrela e o botão); à direita, a lista. Mostra 4 e o
+  resto atrás de "Ver todas" (assets/global.js, [data-reviews-more]).
+  No celular, tudo empilhado.
+
+  FORA DA PÁGINA DE PRODUTO (home): mantém os blocos "review" de
+  EXEMPLO e o bloco "@app" para quem quiser usar um app.
 {%- endcomment -%}
 {%- liquid
-  assign has_examples = false
-  assign has_app = false
-  for block in section.blocks
-    if block.type == 'review'
-      assign has_examples = true
-    elsif block.type == '@app'
-      assign has_app = true
-    endif
-  endfor
-  assign has_summary = false
-  if product and product.metafields.reviews.rating_count.value > 0
-    assign has_summary = true
+  assign is_product = false
+  if product and template.name == 'product'
+    assign is_product = true
   endif
 -%}
-{%- if has_app or has_examples or has_summary -%}
-<section class="section page-width reviews" id="Avaliacoes" data-section-id="{{ section.id }}">
-  {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
 
-  {%- if has_summary -%}
-    {%- assign summary_rating = product.metafields.reviews.rating.value.rating | times: 1.0 | round: 1 | append: '' | replace: '.', ',' -%}
-    <div class="reviews__summary">
-      <p class="reviews__score text-h1" aria-hidden="true">{{ summary_rating }}</p>
-      {% render 'rating-stars', product: product, size: 'md', show_value: false %}
-    </div>
-  {%- endif -%}
-
-  {%- if has_examples -%}
-    <p class="placeholder-note text-small">{{ 'titular.placeholder.reviews' | t }}</p>
-  {%- endif -%}
-
-  <ul class="reviews__list" role="list">
-    {%- for block in section.blocks -%}
-      {%- case block.type -%}
-        {%- when '@app' -%}
-          <li>{% render block %}</li>
-        {%- when 'review' -%}
-          <li class="reviews__item stack--sm" {{ block.shopify_attributes }}>
-            {%- if block.settings.image != blank -%}
-              <div class="media" style="--ratio: 1;">
-                {{ block.settings.image | image_url: width: 600 | image_tag: loading: 'lazy', widths: '300, 600', sizes: '(min-width: 990px) 25vw, 80vw' }}
-              </div>
+{%- if is_product -%}
+  {%- liquid
+    assign reviews_count = 0
+    assign reviews_total = 0
+    assign star_5 = 0
+    assign star_4 = 0
+    assign star_3 = 0
+    assign star_2 = 0
+    assign star_1 = 0
+  -%}
+  {%- if shop.metaobjects.avaliacao.values.size > 0 -%}
+  {%- paginate shop.metaobjects.avaliacao.values by 250 -%}
+    {%- capture review_items -%}
+      {%- assign all_reviews = shop.metaobjects.avaliacao.values | reverse -%}
+      {%- for review in all_reviews -%}
+        {%- if review.produto.value.id != product.id -%}{%- continue -%}{%- endif -%}
+        {%- liquid
+          assign nota = review.nota.value.rating | default: review.nota.value | times: 1 | at_least: 1 | at_most: 5
+          assign reviews_count = reviews_count | plus: 1
+          assign reviews_total = reviews_total | plus: nota
+          case nota
+            when 5
+              assign star_5 = star_5 | plus: 1
+            when 4
+              assign star_4 = star_4 | plus: 1
+            when 3
+              assign star_3 = star_3 | plus: 1
+            when 2
+              assign star_2 = star_2 | plus: 1
+            else
+              assign star_1 = star_1 | plus: 1
+          endcase
+          assign nota_percent = nota | times: 20
+        -%}
+        <li class="review"{% if reviews_count > 4 %} hidden data-review-extra{% endif %}>
+          <div class="review__head">
+            <span class="rating rating--sm">
+              <span class="rating__stars" aria-hidden="true">
+                <span class="rating__empty">{%- for i in (1..5) -%}{% render 'icon', name: 'star' %}{%- endfor -%}</span>
+                <span class="rating__fill" style="width: {{ nota_percent }}%;">{%- for i in (1..5) -%}{% render 'icon', name: 'star' %}{%- endfor -%}</span>
+              </span>
+              <span class="visually-hidden">{{ 'titular.reviews.stars_label' | t: rating: nota }}</span>
+            </span>
+            {%- if review.data.value != blank -%}
+              <time class="text-small muted" datetime="{{ review.data.value | date: '%Y-%m-%d' }}">{{ review.data.value | date: '%d/%m/%Y' }}</time>
             {%- endif -%}
-            <p class="reviews__stars" aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: block.settings.rating, rating_max: 5 }}">
-              {%- for i in (1..block.settings.rating) -%}{% render 'icon', name: 'star' %}{%- endfor -%}
-            </p>
-            <blockquote class="text-body">{{ block.settings.text | escape }}</blockquote>
-            <p class="text-small muted">{{ block.settings.author | escape }}{% if block.settings.product_label != blank %} · {{ block.settings.product_label | escape }}{% endif %}</p>
-          </li>
-      {%- endcase -%}
-    {%- endfor -%}
-  </ul>
-</section>
-{%- elsif request.design_mode -%}
-  <section class="section page-width">
-    <p class="placeholder-note text-small">{{ 'titular.placeholder.reviews_app' | t }}</p>
+          </div>
+          <p class="review__text text-body">{{ review.texto.value | escape | newline_to_br }}</p>
+          {%- if review.foto.value != blank -%}
+            {%- assign photo_alt = 'titular.reviews.photo_alt' | t: name: review.nome.value -%}
+            <a href="{{ review.foto.value | image_url: width: 1600 }}" class="review__photo media" style="--ratio: 1;" target="_blank" rel="noopener">
+              {{ review.foto.value | image_url: width: 240 | image_tag: loading: 'lazy', widths: '120, 240', sizes: '96px', alt: photo_alt }}
+            </a>
+          {%- endif -%}
+          <p class="review__meta text-small muted">
+            <strong class="review__author">{{ review.nome.value | escape }}</strong>
+            {%- if review.tamanho.value != blank %} · {{ 'titular.reviews.size' | t: size: review.tamanho.value }}{% endif -%}
+            {%- if review.caimento.value != blank %} · {{ review.caimento.value | escape }}{% endif -%}
+          </p>
+        </li>
+      {%- endfor -%}
+    {%- endcapture -%}
+  {%- endpaginate -%}
+  {%- endif -%}
+
+  {%- liquid
+    if reviews_count > 0
+      assign reviews_avg = reviews_total | times: 1.0 | divided_by: reviews_count
+      assign reviews_avg_label = reviews_avg | round: 1 | append: '' | replace: '.', ','
+      assign reviews_avg_percent = reviews_avg | times: 20 | round: 1
+    endif
+    assign form_id = 'ReviewForm-' | append: section.id
+  -%}
+
+  <section class="section page-width reviews reviews--product" id="Avaliacoes" data-section-id="{{ section.id }}">
+    {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
+
+    <div class="reviews__layout">
+      <div class="reviews__summary">
+        {%- if reviews_count > 0 -%}
+          <div class="reviews__score">
+            <p class="text-display" aria-hidden="true">{{ reviews_avg_label }}</p>
+            <div>
+              <span class="rating rating--md">
+                <span class="rating__stars" aria-hidden="true">
+                  <span class="rating__empty">{%- for i in (1..5) -%}{% render 'icon', name: 'star' %}{%- endfor -%}</span>
+                  <span class="rating__fill" style="width: {{ reviews_avg_percent }}%;">{%- for i in (1..5) -%}{% render 'icon', name: 'star' %}{%- endfor -%}</span>
+                </span>
+              </span>
+              <p class="text-small muted">{{ 'titular.reviews.count' | t: count: reviews_count }}</p>
+              <p class="visually-hidden">{{ 'titular.reviews.summary' | t: count: reviews_count, rating: reviews_avg_label, max: 5 }}</p>
+            </div>
+          </div>
+
+          <ul class="reviews__bars" role="list" aria-label="{{ 'titular.reviews.distribution' | t }}">
+            {%- for n in (1..5) reversed -%}
+              {%- liquid
+                case n
+                  when 5
+                    assign n_count = star_5
+                  when 4
+                    assign n_count = star_4
+                  when 3
+                    assign n_count = star_3
+                  when 2
+                    assign n_count = star_2
+                  else
+                    assign n_count = star_1
+                endcase
+                assign n_percent = n_count | times: 100.0 | divided_by: reviews_count | round
+              -%}
+              <li class="reviews__bar text-small">
+                <span class="reviews__bar-label" aria-hidden="true">{{ n }} {% render 'icon', name: 'star' %}</span>
+                <span class="reviews__bar-track" aria-hidden="true"><span style="width: {{ n_percent }}%;"></span></span>
+                <span class="reviews__bar-count muted" aria-hidden="true">{{ n_count }}</span>
+                <span class="visually-hidden">{{ 'titular.reviews.bar_label' | t: stars: n, count: n_count }}</span>
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- else -%}
+          <p class="text-body">{{ 'titular.reviews.empty' | t }}</p>
+        {%- endif -%}
+
+        <button type="button" class="button button--secondary button--full text-label" aria-haspopup="dialog" data-dialog-open="{{ form_id }}">
+          {{ 'titular.reviews.write' | t }}
+        </button>
+      </div>
+
+      {%- if reviews_count > 0 -%}
+        <div class="reviews__main">
+          <ul class="reviews__items" role="list">{{ review_items }}</ul>
+          {%- if reviews_count > 4 -%}
+            <button type="button" class="button button--secondary reviews__more text-label" data-reviews-more>
+              {{ 'titular.reviews.show_all' | t: count: reviews_count }}
+            </button>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} Formulário: contato nativo. O modal fica dentro do form. {%- endcomment -%}
+    {%- form 'contact', id: form_id, class: 'review-form' -%}
+      {%- if form.posted_successfully? -%}
+        <p class="notice notice--success text-small" role="status" tabindex="-1" data-review-posted>
+          {% render 'icon', name: 'check' %}<span>{{ 'titular.reviews.posted' | t }}</span>
+        </p>
+      {%- endif -%}
+
+      <dialog id="{{ form_id }}" class="modal review-form__dialog" aria-labelledby="{{ form_id }}-title"{% if form.errors %} data-open-on-load{% endif %}>
+        <div class="drawer__header">
+          <h2 id="{{ form_id }}-title" class="text-h3">{{ 'titular.reviews.write' | t }}</h2>
+          <button type="button" class="icon-button" data-dialog-close aria-label="{{ 'accessibility.close' | t }}">{% render 'icon', name: 'close' %}</button>
+        </div>
+
+        <div class="drawer__body stack">
+          <p class="text-small muted">{{ 'titular.reviews.form_intro' | t: product: product.title }}</p>
+
+          {%- if form.errors -%}
+            <div class="notice notice--danger text-small" role="alert">
+              {% render 'icon', name: 'alert' %}
+              <span>
+                {%- for field in form.errors -%}
+                  {%- if field == 'form' -%}{{ form.errors.messages[field] }}{%- else -%}{{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }}{%- endif -%}
+                  {%- unless forloop.last %} {% endunless -%}
+                {%- endfor -%}
+              </span>
+            </div>
+          {%- endif -%}
+
+          <input type="hidden" name="contact[{{ 'titular.reviews.field_subject' | t }}]" value="{{ 'titular.reviews.subject' | t: product: product.title }}">
+          <input type="hidden" name="contact[{{ 'titular.reviews.field_product' | t }}]" value="{{ product.title }} — {{ shop.url }}{{ product.url }}">
+
+          <fieldset class="star-input">
+            <legend class="text-label">{{ 'titular.reviews.field_rating' | t }}</legend>
+            <div class="star-input__row">
+              {%- for n in (1..5) reversed -%}
+                <input type="radio" class="visually-hidden" id="{{ form_id }}-star-{{ n }}" name="contact[{{ 'titular.reviews.field_rating' | t }}]" value="{{ n }}/5" required>
+                <label for="{{ form_id }}-star-{{ n }}" title="{{ 'titular.reviews.stars_label' | t: rating: n }}">
+                  {% render 'icon', name: 'star' %}
+                  <span class="visually-hidden">{{ 'titular.reviews.stars_label' | t: rating: n }}</span>
+                </label>
+              {%- endfor -%}
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label class="field__label text-small" for="{{ form_id }}-name">{{ 'templates.contact.form.name' | t }}</label>
+            <input class="field__input" type="text" id="{{ form_id }}-name" name="contact[{{ 'templates.contact.form.name' | t }}]" autocomplete="name" required value="{% if customer %}{{ customer.first_name }}{% endif %}">
+          </div>
+          <div class="field">
+            <label class="field__label text-small" for="{{ form_id }}-email">{{ 'templates.contact.form.email' | t }}</label>
+            <input class="field__input" type="email" id="{{ form_id }}-email" name="contact[email]" autocomplete="email" required value="{% if customer %}{{ customer.email }}{% endif %}">
+            <p class="text-small muted">{{ 'titular.reviews.email_note' | t }}</p>
+          </div>
+
+          {%- assign size_option = product.options_with_values | first -%}
+          {%- if size_option and size_option.values.size > 1 -%}
+            <div class="field">
+              <label class="field__label text-small" for="{{ form_id }}-size">{{ 'titular.reviews.field_size' | t }}</label>
+              <select class="select__select" id="{{ form_id }}-size" name="contact[{{ 'titular.reviews.field_size' | t }}]">
+                <option value="">—</option>
+                {%- for value in size_option.values -%}<option value="{{ value | escape }}">{{ value | escape }}</option>{%- endfor -%}
+              </select>
+            </div>
+          {%- endif -%}
+
+          <fieldset class="fit-input">
+            <legend class="text-label">{{ 'titular.reviews.field_fit' | t }}</legend>
+            {%- assign fits = 'titular.reviews.fits' | t | split: '|' -%}
+            <div class="fit-input__row">
+              {%- for fit in fits -%}
+                <input type="radio" class="visually-hidden" id="{{ form_id }}-fit-{{ forloop.index }}" name="contact[{{ 'titular.reviews.field_fit' | t }}]" value="{{ fit | escape }}">
+                <label for="{{ form_id }}-fit-{{ forloop.index }}" class="tag-chip text-small">{{ fit | escape }}</label>
+              {%- endfor -%}
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label class="field__label text-small" for="{{ form_id }}-text">{{ 'titular.reviews.field_text' | t }}</label>
+            <textarea class="field__input" id="{{ form_id }}-text" name="contact[body]" rows="4" required placeholder="{{ 'titular.reviews.text_placeholder' | t }}"></textarea>
+          </div>
+        </div>
+
+        <div class="drawer__footer">
+          <button type="submit" class="button button--full text-label">{{ 'titular.reviews.send' | t }}</button>
+        </div>
+      </dialog>
+    {%- endform -%}
   </section>
+
+{%- else -%}
+  {%- liquid
+    assign has_examples = false
+    assign has_app = false
+    for block in section.blocks
+      if block.type == 'review'
+        assign has_examples = true
+      elsif block.type == '@app'
+        assign has_app = true
+      endif
+    endfor
+  -%}
+  {%- if has_app or has_examples -%}
+    <section class="section page-width reviews" data-section-id="{{ section.id }}">
+      {% render 'section-header', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
+      {%- if has_examples -%}
+        <p class="placeholder-note text-small">{{ 'titular.placeholder.reviews' | t }}</p>
+      {%- endif -%}
+      <ul class="reviews__list" role="list">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when '@app' -%}
+              <li>{% render block %}</li>
+            {%- when 'review' -%}
+              <li class="reviews__item stack--sm" {{ block.shopify_attributes }}>
+                {%- if block.settings.image != blank -%}
+                  <div class="media" style="--ratio: 1;">
+                    {{ block.settings.image | image_url: width: 600 | image_tag: loading: 'lazy', widths: '300, 600', sizes: '(min-width: 990px) 25vw, 80vw' }}
+                  </div>
+                {%- endif -%}
+                <p class="reviews__stars" aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: block.settings.rating, rating_max: 5 }}">
+                  {%- for i in (1..block.settings.rating) -%}{% render 'icon', name: 'star' %}{%- endfor -%}
+                </p>
+                <blockquote class="text-body">{{ block.settings.text | escape }}</blockquote>
+                <p class="text-small muted">{{ block.settings.author | escape }}{% if block.settings.product_label != blank %} · {{ block.settings.product_label | escape }}{% endif %}</p>
+              </li>
+          {%- endcase -%}
+        {%- endfor -%}
+      </ul>
+    </section>
+  {%- endif -%}
 {%- endif -%}
 
 {% stylesheet %}
+  /* ---------- Página do produto ---------- */
+  .reviews__layout { display: grid; gap: var(--space-12); }
+  .reviews__summary { display: grid; gap: var(--space-6); align-content: start; }
+  .reviews__score { display: flex; align-items: center; gap: var(--space-4); }
+  .reviews__score .text-display { font-variant-numeric: tabular-nums; }
+  .reviews__score .rating { margin-bottom: var(--space-1); }
+
+  .reviews__bars { display: grid; gap: var(--space-2); }
+  .reviews__bar { display: grid; grid-template-columns: var(--space-12) 1fr var(--space-6); align-items: center; gap: var(--space-2); }
+  .reviews__bar-label { display: inline-flex; align-items: center; gap: var(--space-1); font-variant-numeric: tabular-nums; }
+  .reviews__bar-label svg { width: var(--space-4); height: var(--space-4); }
+  .reviews__bar-track { height: var(--space-2); background: var(--surface-alt); border-radius: var(--radius-pill); overflow: hidden; }
+  .reviews__bar-track > span { display: block; height: 100%; background: var(--ink); border-radius: var(--radius-pill); }
+  .reviews__bar-count { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .reviews__items { border-top: 1px solid var(--line); }
+  .review { display: grid; gap: var(--space-2); padding-block: var(--space-6); border-bottom: 1px solid var(--line); }
+  .review[hidden] { display: none; }
+  .review__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  .review__text { max-width: 70ch; }
+  .review__photo { display: block; width: var(--space-24); }
+  .review__author { color: var(--ink); font-weight: 700; }
+  .reviews__more { margin-top: var(--space-6); }
+
+  .review-form > .notice { margin-top: var(--space-6); }
+  .review-form__dialog .drawer__body { display: grid; gap: var(--space-6); }
+
+  /* Estrelas clicáveis: ordem invertida no HTML (5→1) e row-reverse,
+     para o hover/checked pintar a estrela e as anteriores com "~". */
+  .star-input, .fit-input { border: 0; margin: 0; padding: 0; }
+  .star-input legend, .fit-input legend { margin-bottom: var(--space-2); }
+  .star-input__row { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; }
+  .star-input label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--tap);
+    height: var(--tap);
+    color: var(--line-strong);
+    cursor: pointer;
+    transition: color var(--motion-fast) ease-out;
+  }
+  .star-input label svg { width: calc(var(--space-6) + var(--space-1)); height: calc(var(--space-6) + var(--space-1)); }
+  .star-input input:checked ~ label,
+  .star-input__row label:hover,
+  .star-input__row label:hover ~ label { color: var(--ink); }
+  .star-input input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: -2px; border-radius: var(--radius-sm); }
+
+  .fit-input__row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .fit-input input:checked + .tag-chip { color: var(--ink-inverse); background: var(--ink); border-color: var(--ink); font-weight: 700; }
+  .fit-input input:focus-visible + .tag-chip { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  @media (min-width: 990px) {
+    .reviews__layout { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--space-24); }
+    .reviews__summary { position: sticky; top: calc(var(--header-height, 0px) + var(--space-6)); }
+    .reviews__more { width: auto; }
+  }
+
+  /* ---------- Home (exemplos / app) ---------- */
   .reviews .placeholder-note { margin-bottom: var(--space-6); }
   .reviews__list {
     display: grid;
@@ -90,8 +385,6 @@
   }
   .reviews__item { scroll-snap-align: start; }
   .reviews__stars { display: flex; gap: var(--space-1); }
-  .reviews__summary { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); }
-  .reviews__list:empty { display: none; }
   @media (min-width: 990px) {
     .reviews__list { grid-auto-flow: row; grid-template-columns: repeat(4, 1fr); gap: var(--space-6); overflow: visible; }
   }
@@ -103,6 +396,7 @@
   "tag": "section",
   "class": "section-reviews",
   "settings": [
+    { "type": "paragraph", "content": "Na página do produto, as avaliações vêm de Conteúdo > Metaobjetos > Avaliação. Na home, use os blocos de exemplo ou de um app." },
     { "type": "text", "id": "eyebrow", "label": "Rótulo", "default": "Avaliações" },
     { "type": "text", "id": "heading", "label": "Título", "default": "Quem já vestiu" }
   ],

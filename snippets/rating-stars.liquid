@@ -7,8 +7,12 @@
   {% render 'rating-stars', product: product %}                 → card (pequeno)
   {% render 'rating-stars', product: product, size: 'md', link: '#Avaliacoes', show_value: true %}
 
-  DADOS (padrão da Shopify, preenchidos por apps de avaliação como
-  Judge.me, Loox, Yotpo e Okendo):
+  DADOS, nesta ordem:
+  1. Metaobjeto "Avaliação" (shop.metaobjects.avaliacao, ver
+     sections/reviews.liquid): média e contagem das entradas cujo campo
+     "produto" é esta camisa. É o caminho sem app.
+  2. Metafields padrão da Shopify, preenchidos por apps de avaliação
+     (Judge.me, Loox, Yotpo, Okendo):
   - product.metafields.reviews.rating        (tipo "rating": nota e escala)
   - product.metafields.reviews.rating_count  (inteiro)
   Também dá para preencher à mão no admin: Configurações > Dados
@@ -23,14 +27,32 @@
   por cima, a fileira cheia (--ink) cortada na largura da nota.
 {%- endcomment -%}
 {%- liquid
-  assign rating_mf = product.metafields.reviews.rating.value
-  assign rating_count = product.metafields.reviews.rating_count.value | default: 0
   assign size = size | default: 'sm'
+  assign rating_count = 0
+  assign rating_total = 0
+  for review in shop.metaobjects.avaliacao.values
+    if review.produto.value.id == product.id
+      assign nota = review.nota.value.rating | default: review.nota.value | times: 1 | at_least: 1 | at_most: 5
+      assign rating_total = rating_total | plus: nota
+      assign rating_count = rating_count | plus: 1
+    endif
+  endfor
+  if rating_count > 0
+    assign rating_value = rating_total | times: 1.0 | divided_by: rating_count
+    assign rating_max = 5.0
+  else
+    assign rating_mf = product.metafields.reviews.rating.value
+    assign rating_count = product.metafields.reviews.rating_count.value | default: 0
+    if rating_mf != blank
+      assign rating_value = rating_mf.rating | times: 1.0
+      assign rating_max = rating_mf.scale_max | default: 5 | times: 1.0
+    else
+      assign rating_count = 0
+    endif
+  endif
 -%}
-{%- if rating_mf != blank and rating_count > 0 -%}
+{%- if rating_count > 0 -%}
   {%- liquid
-    assign rating_value = rating_mf.rating | times: 1.0
-    assign rating_max = rating_mf.scale_max | default: 5 | times: 1.0
     assign rating_percent = rating_value | divided_by: rating_max | times: 100 | round: 1
     assign rating_label = rating_value | round: 1 | append: '' | replace: '.', ','
     assign rating_max_label = rating_max | round | append: ''
