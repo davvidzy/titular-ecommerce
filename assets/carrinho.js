@@ -200,62 +200,6 @@
       .finally(function () { busy(false); });
   });
 
-  /* ---------- Personalização na gaveta ----------
-     Caixa marcada abre Número e Nome; ao sair de um campo, salva as
-     propriedades do item (/cart/change com properties). Desmarcar limpa. */
-
-  function saveCustom(line, properties) {
-    busy(true);
-    post(routes.cartChange || '/cart/change', {
-      id: line.getAttribute('data-line-key'),
-      quantity: parseInt(line.getAttribute('data-quantity'), 10) || 1,
-      properties: properties
-    })
-      .then(render)
-      .catch(fail)
-      .finally(function () { busy(false); });
-  }
-
-  document.addEventListener('change', function (event) {
-    var toggle = event.target.closest('[data-cart-custom-toggle]');
-    var field = event.target.closest('[data-cart-prop]');
-    if (!toggle && !field) return;
-    var wrapper = event.target.closest('[data-cart-custom]');
-    var line = event.target.closest('[data-line-key]');
-    var fields = wrapper.querySelector('.drawer-item__custom-fields');
-
-    if (toggle) {
-      var customId = wrapper.getAttribute('data-variant-custom');
-      var noneId = wrapper.getAttribute('data-variant-none');
-      if (customId && noneId) {
-        // Variante com e sem personalização: o preço do item muda.
-        if (toggle.checked) swapVariant(line, customId);
-        else swapVariant(line, noneId, {});
-        return;
-      }
-      // Sem variante de personalização: só abre os campos / limpa as propriedades.
-      if (toggle.checked) {
-        fields.hidden = false;
-        var first = fields.querySelector('input');
-        if (first) first.focus();
-      } else {
-        fields.hidden = true;
-        saveCustom(line, {});
-      }
-      return;
-    }
-
-    var properties = {};
-    var filled = false;
-    wrapper.querySelectorAll('[data-cart-prop]').forEach(function (input) {
-      var value = input.value.trim();
-      if (input.inputMode === 'numeric') value = value.replace(/\D/g, '').slice(0, 2);
-      if (value) { properties[input.getAttribute('data-cart-prop')] = value; filled = true; }
-    });
-    if (filled) properties._personalizada = 'sim';
-    saveCustom(line, filled ? properties : {});
-  });
-
   /* ---------- Troca de variante (tamanho ou personalização) ----------
      O Shopify não troca a variante de uma linha: remove a linha e adiciona
      a nova variante com a mesma quantidade. properties: undefined mantém as

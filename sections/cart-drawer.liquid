@@ -4,11 +4,11 @@
   ============================================================
 
   TRABALHO (docs/arquitetura-informacao.md §3.4), de cima para baixo:
-  1. Itens: tamanho e personalização editáveis na gaveta.
+  1. Itens: tamanho editável na gaveta (seletor só com os tamanhos).
   2. Barra de frete grátis: só se settings.free_shipping_threshold > 0.
   3. Cupom: aplicar sem sair da gaveta.
   4. Subtotal + "Finalizar compra": ação única.
-  Itens personalizados mostram o aviso "sem troca" também aqui.
+  Gaveta em largura total no celular; no desktop, até --drawer-max.
 
   COMO FUNCIONA:
   - Fica no grupo do rodapé (sections/footer-group.json), uma vez por página.
@@ -17,10 +17,8 @@
     section (sections=cart-drawer) e troca [data-cart-drawer-content].
   - Sem JS: o ícone do carrinho leva para /cart (sections/main-cart).
 
-  DADOS DE PERSONALIZAÇÃO:
-  Propriedades do item (line item properties) vindas do produto:
-  "Nome", "Número" e a oculta "_personalizada". Propriedades que
-  começam com "_" não aparecem para o cliente.
+  PERSONALIZAÇÃO: não é feita no site (pedido pelo WhatsApp; ver o
+  aviso em sections/main-product.liquid).
 {%- endcomment -%}
 <dialog id="CartDrawer" class="drawer cart-drawer" aria-labelledby="CartDrawer-title">
   <div class="drawer__inner" data-cart-drawer-content>
@@ -60,8 +58,6 @@
         {%- comment -%} 1. Itens {%- endcomment -%}
         <ul class="cart-drawer__items" role="list">
           {%- for item in cart.items -%}
-            {%- assign personalized = false -%}
-            {%- if item.properties._personalizada != blank -%}{%- assign personalized = true -%}{%- endif -%}
             <li class="drawer-item" data-line-key="{{ item.key }}" data-quantity="{{ item.quantity }}">
               <a href="{{ item.url }}" class="drawer-item__media media" style="--ratio: 3 / 4;" tabindex="-1" aria-hidden="true">
                 {%- if item.image -%}
@@ -78,66 +74,6 @@
                   # mesmas opções 2 e 3 do item.
                   assign size_option = item.product.options_with_values.first
                   assign current = item.variant
-                  assign prop_number = item.properties['Número']
-                  assign prop_name = item.properties['Nome']
-
-                  # Personalização: mesma regra da página de produto. Com 2 valores
-                  # na opção (ex.: Sem personalização / Custom name & number), a
-                  # caixa troca a variante (preço muda). Com 1 valor, só grava
-                  # Número/Nome nas propriedades do item.
-                  assign can_customize = false
-                  if item.product.metafields.titular.personalizavel.value == true
-                    assign can_customize = true
-                  endif
-                  assign custom_index = -1
-                  assign custom_value = ''
-                  assign none_value = ''
-                  for option in item.product.options_with_values
-                    assign option_down = option.name | downcase
-                    if option_down contains 'custom' or option_down contains 'personaliz'
-                      assign can_customize = true
-                      assign custom_index = forloop.index0
-                      if option.values.size > 1
-                        for value in option.values
-                          assign value_down = value | append: '' | downcase
-                          if value_down contains 'sem' or value_down contains 'nenhum' or value_down contains 'none' or value_down contains 'without' or value_down contains 'no custom' or value_down contains 'padr'
-                            assign none_value = value | append: ''
-                          else
-                            assign custom_value = value | append: ''
-                          endif
-                        endfor
-                        if none_value == '' or custom_value == ''
-                          assign none_value = option.values.first | append: ''
-                          assign custom_value = option.values.last | append: ''
-                        endif
-                      endif
-                    endif
-                  endfor
-
-                  assign custom_choice = false
-                  assign variant_custom = nil
-                  assign variant_none = nil
-                  assign custom_diff = 0
-                  assign is_custom = personalized
-                  if none_value != ''
-                    for variant in item.product.variants
-                      if variant.option1 == current.option1
-                        if variant.options[custom_index] == custom_value
-                          assign variant_custom = variant
-                        elsif variant.options[custom_index] == none_value
-                          assign variant_none = variant
-                        endif
-                      endif
-                    endfor
-                    if variant_custom and variant_none
-                      assign custom_choice = true
-                      assign custom_diff = variant_custom.price | minus: variant_none.price
-                      assign is_custom = false
-                      if current.options[custom_index] == custom_value
-                        assign is_custom = true
-                      endif
-                    endif
-                  endif
                 -%}
 
                 {%- if size_option.values.size > 1 -%}
@@ -152,41 +88,6 @@
                         {%- endif -%}
                       {%- endfor -%}
                     </select>
-                  </div>
-                {%- endif -%}
-
-                {%- comment -%}
-                  Personalização: caixa de seleção. Com 2 valores, marcar/desmarcar
-                  troca a variante (data-variant-custom / data-variant-none) e o preço
-                  muda. Número e Nome salvam ao sair do campo (/cart/change com
-                  properties). Desmarcar remove a personalização.
-                {%- endcomment -%}
-                {%- if can_customize -%}
-                  <div
-                    class="drawer-item__custom"
-                    data-cart-custom
-                    {% if custom_choice %}data-variant-custom="{{ variant_custom.id }}" data-variant-none="{{ variant_none.id }}"{% endif %}
-                  >
-                    <label class="drawer-item__check text-small">
-                      <input type="checkbox" class="drawer-item__checkbox" data-cart-custom-toggle {% if is_custom %}checked{% endif %}>
-                      <span>{{ 'titular.personalization.toggle' | t }}</span>
-                      {%- if custom_diff > 0 -%}
-                        <span class="text-label drawer-item__extra">+ {{ custom_diff | money }}</span>
-                      {%- endif -%}
-                    </label>
-                    <div class="drawer-item__custom-fields" {% unless is_custom %}hidden{% endunless %}>
-                      <div class="field">
-                        <label class="text-small muted" for="CartNum-{{ item.key }}">{{ 'titular.personalization.number' | t }}</label>
-                        <input class="field__input" id="CartNum-{{ item.key }}" type="text" inputmode="numeric" maxlength="2" value="{{ prop_number | escape }}" data-cart-prop="Número" autocomplete="off">
-                      </div>
-                      <div class="field">
-                        <label class="text-small muted" for="CartName-{{ item.key }}">{{ 'titular.personalization.name' | t }}</label>
-                        <input class="field__input" id="CartName-{{ item.key }}" type="text" maxlength="12" value="{{ prop_name | escape }}" data-cart-prop="Nome" autocapitalize="characters" autocomplete="off">
-                      </div>
-                    </div>
-                    {%- if is_custom -%}
-                      <p class="notice text-small">{% render 'icon', name: 'info' %}<span>{{ 'titular.personalization.no_exchange' | t }}</span></p>
-                    {%- endif -%}
                   </div>
                 {%- endif -%}
 
@@ -256,13 +157,6 @@
     cursor: pointer;
   }
   .drawer-item__select:hover { border-color: var(--ink); }
-  .drawer-item__extra { margin-left: auto; }
-  .drawer-item__check { display: flex; align-items: center; gap: var(--space-2); min-height: var(--tap); cursor: pointer; }
-  .drawer-item__checkbox { flex: none; width: var(--space-6); height: var(--space-6); margin: 0; background: var(--surface) center / var(--space-4) no-repeat; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); cursor: pointer; }
-  .drawer-item__checkbox:checked { background-color: var(--ink); border-color: var(--ink); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 8.5 3 3 7-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
-  .drawer-item__checkbox:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-  .drawer-item__custom-fields { display: grid; grid-template-columns: calc(var(--space-12) + var(--space-6)) 1fr; gap: var(--space-2); }
-  .drawer-item__custom > * + * { margin-top: var(--space-2); }
   .drawer-item__row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
   .quantity { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
   .quantity__value { min-width: var(--space-6); text-align: center; font-variant-numeric: tabular-nums; }
@@ -270,8 +164,6 @@
   .cart-drawer__bar > span { display: block; height: 100%; max-width: 100%; background: var(--ink); }
   .cart-drawer__subtotal { display: flex; align-items: baseline; justify-content: space-between; }
   .cart-drawer[aria-busy="true"] .drawer__body { opacity: 0.6; }
-  /* Gaveta ocupa 85% da tela no celular (entra da direita); no desktop, até --drawer-max. */
-  .drawer.cart-drawer { width: 85%; max-width: var(--drawer-max); }
 {% endstylesheet %}
 
 {% schema %}

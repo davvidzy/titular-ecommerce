@@ -7,8 +7,7 @@
     1. Versão + nome + clube/temporada            → block "title"
     2. Preço, Pix e parcelas                       → block "price"
     3. Tamanho + guia de tamanhos (modal)          → block "size"
-    4. Personalização: caixa de seleção; os campos
-       Número e Nome só aparecem ao marcar        → block "personalization"
+    4. Aviso de personalização (pedido pelo WhatsApp)  → block "personalization"
     5. Adicionar ao carrinho (principal) +
        Comprar agora (secundário) + formas de
        pagamento                                   → block "buy_buttons"
@@ -39,53 +38,6 @@
   assign active_media_id = current_variant.featured_media.id | default: product.featured_media.id
   assign media_count = product.media.size
 
-  # ---- Personalização ligada à variante ----
-  # Opção cujo nome tem "custom"/"personaliz" (ex.: "Customization type").
-  # Com 2 valores (ex.: Sem personalização e Custom name & number), a
-  # caixa de seleção troca a variante e o preço muda de verdade.
-  # Com 1 valor só, a caixa só grava Número/Nome (preço não muda).
-  assign custom_index = -1
-  assign custom_value = ''
-  assign none_value = ''
-  for option in product.options_with_values
-    assign option_down = option.name | downcase
-    if option_down contains 'custom' or option_down contains 'personaliz'
-      assign custom_index = forloop.index0
-      if option.values.size > 1
-        for value in option.values
-          assign value_down = value | append: '' | downcase
-          if value_down contains 'sem' or value_down contains 'nenhum' or value_down contains 'none' or value_down contains 'without' or value_down contains 'no custom' or value_down contains 'padr'
-            assign none_value = value | append: ''
-          else
-            assign custom_value = value | append: ''
-          endif
-        endfor
-        if none_value == '' or custom_value == ''
-          assign none_value = option.values.first | append: ''
-          assign custom_value = option.values.last | append: ''
-        endif
-      endif
-    endif
-  endfor
-
-  assign custom_choice = false
-  assign custom_diff = 0
-  if none_value != ''
-    assign custom_choice = true
-    # Começa sem personalização: mesma variante, valor "sem".
-    for variant in product.variants
-      if variant.options[custom_index] == none_value and variant.option1 == current_variant.option1
-        assign current_variant = variant
-        break
-      endif
-    endfor
-    for variant in product.variants
-      if variant.options[custom_index] == custom_value and variant.option1 == current_variant.option1
-        assign custom_diff = variant.price | minus: current_variant.price
-        break
-      endif
-    endfor
-  endif
 -%}
 
 <section class="product page-width" data-section-id="{{ section.id }}" data-product-section>
@@ -196,16 +148,6 @@
               <div class="product__block product__options" {{ block.shopify_attributes }}>
                 {%- for option in product.options_with_values -%}
                   {%- assign opt_index = forloop.index0 -%}
-                  {%- comment -%} Personalização com 2 valores: escondida; a caixa de seleção do bloco "personalization" escolhe. {%- endcomment -%}
-                  {%- if opt_index == custom_index and custom_choice -%}
-                    <fieldset class="product__option" data-option-index="{{ opt_index }}" data-custom-option data-custom-value="{{ custom_value | escape }}" data-none-value="{{ none_value | escape }}" hidden>
-                      {%- for value in option.values -%}
-                        {%- assign value_str = value | append: '' -%}
-                        <input type="radio" name="option-{{ opt_index }}" value="{{ value_str | escape }}" {% if value_str == none_value %}checked{% endif %}>
-                      {%- endfor -%}
-                    </fieldset>
-                    {%- continue -%}
-                  {%- endif -%}
                   {%- comment -%} Opção com um valor só: escondida e já marcada. {%- endcomment -%}
                   {%- if option.values.size == 1 -%}
                     <fieldset class="product__option" data-option-index="{{ opt_index }}" hidden>
@@ -255,6 +197,13 @@
               </div>
             {%- endunless -%}
 
+          {%- comment -%}
+            4. Personalização: só um aviso. Nome e número são pedidos pelo
+            WhatsApp (não há cobrança automática do valor extra no checkout).
+            "WhatsApp" é só destaque visual, sem link. Aparece se o produto
+            tiver uma opção de personalização (ex.: "Customization type") ou o
+            metafield titular.personalizavel.
+          {%- endcomment -%}
           {%- when 'personalization' -%}
             {%- liquid
               assign has_custom = false
@@ -269,34 +218,10 @@
               endfor
             -%}
             {%- if has_custom -%}
-              <div class="product__block product__personalization" {{ block.shopify_attributes }} data-personalization data-extra-days="{{ block.settings.extra_days }}"{% if custom_choice %} data-personalization-variant{% endif %}>
-                <label class="personalization__toggle">
-                  <input type="checkbox" class="personalization__checkbox" data-personalization-toggle aria-controls="Personalization-{{ section.id }}" aria-expanded="false">
-                  <span class="personalization__text">
-                    <span class="text-body">{{ 'titular.personalization.toggle' | t }}</span>
-                    <span class="text-small muted">{{ 'titular.personalization.hint' | t }}</span>
-                  </span>
-                  {%- comment -%} Preço da personalização = diferença real entre as variantes (só quando existe). {%- endcomment -%}
-                  {%- if custom_diff > 0 -%}
-                    <span class="text-label">+ {{ custom_diff | money }}</span>
-                  {%- endif -%}
-                </label>
-                <fieldset id="Personalization-{{ section.id }}" class="personalization__fields" data-personalization-fields disabled hidden>
-                  <legend class="visually-hidden">{{ 'titular.personalization.toggle' | t }}</legend>
-                  <input type="hidden" name="properties[_personalizada]" value="sim">
-                  <div class="personalization__grid">
-                    <div class="field">
-                      <label class="text-small" for="PersonalNumber-{{ section.id }}">{{ 'titular.personalization.number' | t }}</label>
-                      <input class="field__input" id="PersonalNumber-{{ section.id }}" type="text" name="properties[Número]" inputmode="numeric" pattern="[0-9]{1,2}" maxlength="2" autocomplete="off" placeholder="10" data-personalization-number>
-                    </div>
-                    <div class="field">
-                      <label class="text-small" for="PersonalName-{{ section.id }}">{{ 'titular.personalization.name' | t }}</label>
-                      <input class="field__input" id="PersonalName-{{ section.id }}" type="text" name="properties[Nome]" maxlength="{{ block.settings.max_name }}" autocomplete="off" autocapitalize="characters" placeholder="TITULAR">
-                    </div>
-                  </div>
-                  <p class="notice text-small">{% render 'icon', name: 'info' %}<span>{{ 'titular.personalization.terms' | t: days: block.settings.extra_days }}</span></p>
-                </fieldset>
-              </div>
+              <p class="product__block product__custom-note notice text-small" {{ block.shopify_attributes }}>
+                {% render 'icon', name: 'info' %}
+                <span>{{ 'titular.personalization.request_html' | t }}</span>
+              </p>
             {%- endif -%}
 
           {%- when 'buy_buttons' -%}
@@ -496,38 +421,16 @@
   .size-picker__input:focus-visible + .size-picker__label { outline: 2px solid var(--focus); outline-offset: 2px; }
   .size-picker__label.is-sold-out { color: var(--ink-disabled); border-style: dashed; text-decoration: line-through; }
 
-  /* Personalização: cartão com caixa de seleção; campos só ao marcar. */
-  .product__personalization { border: 1px solid var(--line-strong); border-radius: var(--radius-sm); }
-  .personalization__toggle {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: var(--space-4);
-    min-height: calc(var(--tap) + var(--space-4));
-    padding: var(--space-2) var(--space-4);
-    cursor: pointer;
+  /* Aviso de personalização: "WhatsApp" sublinhado e em destaque, sem link. */
+  .product__custom-note { padding: var(--space-4); background: var(--surface-alt); border-radius: var(--radius-sm); }
+  .whatsapp-mark {
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    white-space: nowrap;
   }
-  /* normalizar.css zera a aparência nativa: caixa desenhada aqui. */
-  .personalization__checkbox {
-    flex: none;
-    width: var(--space-6);
-    height: var(--space-6);
-    margin: 0;
-    background: var(--surface) center / var(--space-4) no-repeat;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-  }
-  .personalization__checkbox:checked {
-    background-color: var(--ink);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 8.5 3 3 7-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    border-color: var(--ink);
-  }
-  .personalization__checkbox:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-  .product__personalization:has(.personalization__checkbox:checked) { border-color: var(--ink); }
-  .personalization__text { display: flex; flex-direction: column; }
-  .personalization__fields { margin: 0; padding: 0 var(--space-4) var(--space-4); border: 0; }
-  .personalization__grid { display: grid; grid-template-columns: calc(var(--space-24) - var(--space-4)) 1fr; gap: var(--space-2); margin-bottom: var(--space-4); }
 
   /* Compra: botão principal maior, secundário logo abaixo. */
   .product__buy > * + * { margin-top: var(--space-2); }
@@ -630,12 +533,10 @@
     { "type": "size", "name": "Tamanho + guia", "limit": 1 },
     {
       "type": "personalization",
-      "name": "Personalização",
+      "name": "Aviso personalização",
       "limit": 1,
       "settings": [
-        { "type": "paragraph", "content": "Aparece se o produto tiver uma opção de personalização (ex.: Customization type) ou o metafield titular.personalizavel. Os campos só abrem ao marcar a caixa. Se a opção tiver 2 valores (ex.: Sem personalização e Custom name & number), a caixa troca a variante e o preço; o valor exibido é a diferença entre elas." },
-        { "type": "number", "id": "extra_days", "label": "Dias úteis a mais no prazo", "default": 5 },
-        { "type": "number", "id": "max_name", "label": "Máximo de letras no nome", "default": 12 }
+        { "type": "paragraph", "content": "Mostra o aviso para pedir personalização pelo WhatsApp. Aparece se o produto tiver uma opção de personalização ou o metafield titular.personalizavel. O texto fica no idioma (titular.personalization.request_html)." }
       ]
     },
     { "type": "buy_buttons", "name": "Comprar", "limit": 1 },

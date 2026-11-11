@@ -289,7 +289,8 @@
       "number": "Número",
       "terms": "Personalizada soma {{ days }} dias úteis ao prazo e não tem troca.",
       "no_exchange": "Camisa personalizada não tem troca.",
-      "hint": "Estampado nas costas da camisa"
+      "hint": "Estampado nas costas da camisa",
+      "request_html": "Para camisa personalizada com nome e número, peça pelo <span class=\"whatsapp-mark\">WhatsApp</span>."
     },
     "shipping": {
       "label": "Calcule o prazo de entrega",

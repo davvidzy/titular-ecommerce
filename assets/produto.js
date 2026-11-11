@@ -11,7 +11,6 @@
   - [data-gallery-prev/next]  setas da foto principal
   - [data-lightbox-open="i"]  abre a galeria em tela cheia na foto i
   - [data-lightbox]           <dialog> da galeria em tela cheia
-  - [data-personalization]    caixa de seleção + campos Número/Nome
   - [data-shipping-estimate]  prazo por CEP
 
   Cada parte é independente: sem a marcação, o trecho não faz nada.
@@ -25,7 +24,6 @@
     var gallery = initGallery(section);
     initVariants(section, gallery);
     initLightbox(section);
-    initPersonalization(section);
     initShipping(section);
   });
 
@@ -173,39 +171,6 @@
     });
   }
 
-  /* ---------- Personalização: campos só com a caixa marcada ---------- */
-
-  function initPersonalization(section) {
-    var wrapper = section.querySelector('[data-personalization]');
-    if (!wrapper) return;
-    var toggle = wrapper.querySelector('[data-personalization-toggle]');
-    var fields = wrapper.querySelector('[data-personalization-fields]');
-    var number = wrapper.querySelector('[data-personalization-number]');
-
-    toggle.addEventListener('change', function () {
-      var on = toggle.checked;
-      // fieldset desabilitado = Número, Nome e _personalizada não vão para o carrinho.
-      fields.disabled = !on;
-      fields.hidden = !on;
-      toggle.setAttribute('aria-expanded', String(on));
-      if (on && number) number.focus();
-
-      // Opção de personalização com 2 valores: marca o valor certo e dispara
-      // a troca de variante (preço, botões e ?variant= se atualizam).
-      var option = section.querySelector('[data-custom-option]');
-      if (option) {
-        var value = option.getAttribute(on ? 'data-custom-value' : 'data-none-value');
-        var radio = Array.prototype.find.call(option.querySelectorAll('input[type="radio"]'), function (r) { return r.value === value; });
-        if (radio) {
-          radio.checked = true;
-          radio.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-      }
-      section.dispatchEvent(new CustomEvent('titular:personalization', { detail: { on: on } }));
-    });
-
-    if (number) number.addEventListener('input', function () { number.value = number.value.replace(/\D/g, '').slice(0, 2); });
-  }
 
   /* ---------- Prazo por CEP ---------- */
 
@@ -226,12 +191,6 @@
     var regions = {};
     try { regions = JSON.parse(box.getAttribute('data-regions')); } catch (e) {}
 
-    var personalization = section.querySelector('[data-personalization]');
-    var extraDays = 0;
-    section.addEventListener('titular:personalization', function (event) {
-      extraDays = event.detail.on ? parseInt(personalization.getAttribute('data-extra-days'), 10) || 0 : 0;
-      if (result.textContent) estimate();
-    });
 
     input.addEventListener('input', function () {
       var digits = input.value.replace(/\D/g, '').slice(0, 8);
@@ -251,7 +210,7 @@
         return;
       }
       input.removeAttribute('aria-invalid');
-      var add = handling + extraDays;
+      var add = handling;
       result.textContent = box.getAttribute('data-text-result')
         .replace('__MIN__', range[0] + add)
         .replace('__MAX__', range[1] + add);
