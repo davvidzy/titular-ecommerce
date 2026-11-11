@@ -142,6 +142,33 @@
     });
   });
 
+  /* ---------- Aparecer ao rolar ---------- */
+
+  // Cabeçalhos de seção e itens de grade sobem e aparecem quando entram
+  // na tela (CSS em base.css, "Movimento"). Só marca o que está ABAIXO
+  // da dobra no carregamento, para nada que já está visível piscar.
+  // Itens que entram juntos ganham um atraso escalonado (--reveal-i).
+  var REVEAL = '.section__header, .product-grid > li, .clubs__list > li, .models__grid > li, .guarantees__item';
+  if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var revealObserver = new IntersectionObserver(function (entries) {
+      var i = 0;
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.style.setProperty('--reveal-i', Math.min(i++, 5));
+        entry.target.classList.add('is-revealed');
+        revealObserver.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+
+    var fold = window.innerHeight;
+    document.querySelectorAll(REVEAL).forEach(function (el) {
+      if (el.getBoundingClientRect().top < fold) return;
+      el.setAttribute('data-reveal', '');
+      revealObserver.observe(el);
+    });
+    document.documentElement.classList.add('has-reveal');
+  }
+
   /* ---------- Busca preditiva ---------- */
 
   var searchInput = document.querySelector('[data-predictive-search-input]');

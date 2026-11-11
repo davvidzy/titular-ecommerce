@@ -239,11 +239,25 @@
   }
   .header--overlay .icon-button { color: inherit; }
   .header--overlay .header__cart-count { color: var(--ink); background: var(--ink-inverse); }
-  .header--overlay .header__logo--default { display: none; }
   .header--overlay.is-scrolled { color: var(--ink); background: var(--surface); border-bottom-color: var(--line); --focus: var(--ink); }
   .header--overlay.is-scrolled .header__cart-count { color: var(--ink-inverse); background: var(--ink); }
-  .header--overlay.is-scrolled .header__logo--reverse { display: none; }
-  .header--overlay.is-scrolled .header__logo--default { display: block; }
+
+  /* Troca suave entre os dois estados: fundo, cor dos ícones e borda
+     fazem transição, e os dois logos ficam empilhados na mesma célula
+     trocando por opacidade (cross-fade) em vez de display. */
+  .header--overlay,
+  .header--overlay .header__cart-count {
+    transition: background-color var(--motion-slow) var(--ease-out), color var(--motion-slow) var(--ease-out), border-color var(--motion-slow) var(--ease-out);
+  }
+  .header--overlay .header__logo { display: grid; }
+  .header--overlay .header__logo img {
+    grid-area: 1 / 1;
+    place-self: center;
+    transition: opacity var(--motion-slow) var(--ease-out);
+  }
+  .header--overlay .header__logo--default { opacity: 0; }
+  .header--overlay.is-scrolled .header__logo--reverse { opacity: 0; }
+  .header--overlay.is-scrolled .header__logo--default { opacity: 1; }
   /* O reverso tem 24px de respiro embutido: mesmo tamanho visual do logo normal. */
   .header__logo .header__logo--reverse { width: 132px; }
 

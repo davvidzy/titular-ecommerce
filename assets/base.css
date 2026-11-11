@@ -472,3 +472,92 @@ dialog::backdrop { background: var(--ink); opacity: 0.4; }
   border-radius: var(--radius-sm);
 }
 .pagination__item--current { border-color: var(--ink); }
+
+/* ============================================================
+   Movimento — animações curtas e sutis para a página não ficar
+   "parada". Só opacidade e deslocamento pequeno (barato para a GPU).
+   Tudo some com "reduzir movimento" (bloco no fim).
+   Não há token de movimento em brand/tokens.css; os valores ficam
+   centralizados aqui.
+   ============================================================ */
+
+:root {
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+  --motion-slow: 400ms;
+  --motion-reveal: 700ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Microtransições de cor/borda em controles. */
+.button,
+.icon-button,
+.size-picker__label,
+.field__input,
+.drawer-item__select,
+.clubs__crest,
+.section__link,
+.button--link {
+  transition: color var(--motion-fast) ease-out, background-color var(--motion-fast) ease-out, border-color var(--motion-fast) ease-out, opacity var(--motion-fast) ease-out, transform var(--motion-fast) ease-out;
+}
+.button:active:not([disabled]) { transform: scale(0.98); }
+
+/* Card: foto aproxima de leve e troca frente/costas com fade (desktop). */
+.card-product__media img { transition: opacity var(--motion-slow) var(--ease-out), transform var(--motion-reveal) var(--ease-out); }
+@media (hover: hover) and (min-width: 990px) {
+  .card-product:hover .card-product__media img { transform: scale(1.03); }
+  .models__card .media img { transition: transform var(--motion-reveal) var(--ease-out); }
+  .models__card:hover .media img { transform: scale(1.03); }
+}
+
+/* Hero: textos entram de baixo, um depois do outro. */
+@keyframes titular-rise {
+  from { opacity: 0; transform: translateY(var(--space-4)); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes titular-fade { from { opacity: 0; } to { opacity: 1; } }
+.hero__content > * { animation: titular-rise var(--motion-reveal) var(--ease-out) both; }
+.hero__content > :nth-child(2) { animation-delay: 100ms; }
+.hero__content > :nth-child(3) { animation-delay: 200ms; }
+.hero__content > :nth-child(4) { animation-delay: 300ms; }
+.hero__media video,
+.hero__media img { animation: titular-fade 1s ease-out both; }
+
+/* Aparecer ao rolar (assets/global.js marca [data-reveal] e liga
+   .is-revealed). Sem JS, nada fica escondido: o estado inicial só vale
+   com html.has-reveal. */
+.has-reveal [data-reveal] {
+  opacity: 0;
+  transform: translateY(var(--space-6));
+  transition: opacity var(--motion-reveal) var(--ease-out), transform var(--motion-reveal) var(--ease-out);
+  transition-delay: calc(var(--reveal-i, 0) * 70ms);
+}
+.has-reveal [data-reveal].is-revealed { opacity: 1; transform: none; }
+
+/* Gavetas e modais deslizam/aparecem ao abrir. */
+.drawer[open] { animation: titular-drawer-in var(--motion-slow) var(--ease-out); }
+.drawer--left[open] { animation-name: titular-drawer-in-left; }
+.drawer--full[open] { animation-name: titular-fade; }
+.modal[open] { animation: titular-rise var(--motion-base) var(--ease-out); }
+dialog[open]::backdrop { animation: titular-backdrop var(--motion-slow) ease-out; }
+@keyframes titular-drawer-in { from { transform: translateX(var(--space-12)); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes titular-drawer-in-left { from { transform: translateX(calc(var(--space-12) * -1)); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes titular-backdrop { from { opacity: 0; } to { opacity: 0.4; } }
+
+/* Galeria do produto (desktop): foto nova entra com fade. */
+@media (min-width: 990px) {
+  .product__media-item.is-active { animation: titular-fade var(--motion-base) ease-out; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+  .has-reveal [data-reveal] { opacity: 1; transform: none; }
+  .card-product:hover .card-product__media img,
+  .models__card:hover .media img,
+  .button:active:not([disabled]) { transform: none; }
+}
