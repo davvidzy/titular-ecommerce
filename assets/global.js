@@ -148,7 +148,9 @@
   // na tela (CSS em base.css, "Movimento"). Só marca o que está ABAIXO
   // da dobra no carregamento, para nada que já está visível piscar.
   // Itens que entram juntos ganham um atraso escalonado (--reveal-i).
-  var REVEAL = '.section__header, .product-grid > li, .clubs__list, .models__grid > li, .guarantees__item';
+  // Listas que rolam na lateral ([data-scroll-dots-target]) aparecem
+  // inteiras: deslocar os itens lá dentro criaria rolagem vertical.
+  var REVEAL = '.section__header, .product-grid > li, [data-scroll-dots-target], .models__grid > li, .guarantees__item';
   if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     var revealObserver = new IntersectionObserver(function (entries) {
       var i = 0;
