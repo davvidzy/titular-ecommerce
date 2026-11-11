@@ -16,7 +16,15 @@
     "card_show_second_image": true,
     "cart_show_note": false,
     "social_instagram_link": "",
-    "social_tiktok_link": ""
+    "social_tiktok_link": "",
+    "content_for_index": [],
+    "blocks": {
+      "14060646107696862457": {
+        "type": "shopify://apps/judge-me-reviews/blocks/judgeme_core/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+        "disabled": false,
+        "settings": {}
+      }
+    }
   },
   "presets": {
     "Titular": {
